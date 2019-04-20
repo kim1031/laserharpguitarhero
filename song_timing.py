@@ -12,6 +12,8 @@ def doIt(song, artist):
 
     conn = sqlite3.connect(beatmaps_db)
     c = conn.cursor()
+    command = 'DROP TABLE IF EXISTS ' + song + ';'
+    c.execute(command)
     command = 'CREATE TABLE IF NOT EXISTS ' + song + ' (key text, start real, duration real);'
     c.execute(command)
 
@@ -29,49 +31,39 @@ def doIt(song, artist):
             event = event[0]
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_a:
-                #print("a DOWN " + str(time.time() - starter))
                 all_notes.append(("a", True, time.time() - start))
             if event.key == pygame.K_s:
-                #print("s DOWN " + str(time.time() - starter))
                 all_notes.append(("s", True, time.time() - start))
             if event.key == pygame.K_d:
-                #print("d DOWN " + str(time.time() - starter))
                 all_notes.append(("d", True, time.time() - start))
             if event.key == pygame.K_f:
-                #print("f DOWN " + str(time.time() - starter))
                 all_notes.append(("f", True, time.time() - start))
             if event.key == pygame.K_SPACE:
                 all_notes.append(("space", True, time.time() - start))
         elif event.type == pygame.KEYUP:
             if event.key == pygame.K_a:
-                #print("a UP " + str(time.time() - starter))
                 all_notes.append(("a", False, time.time() - start))
             if event.key == pygame.K_s:
-                #print("s UP " + str(time.time() - starter))
                 all_notes.append(("s", False, time.time() - start))
             if event.key == pygame.K_d:
-                #print("d UP " + str(time.time() - starter))
                 all_notes.append(("d", False, time.time() - start))
             if event.key == pygame.K_f:
-                #print("f UP " + str(time.time() - starter))
                 all_notes.append(("f", False, time.time() - start))
             if event.key == pygame.K_SPACE:
                 record = False
 
-    #down = [False for i in range(4)] #0 = a, 1 = b, 2 = c, 3 = d
     start_times = [0 for i in range(4)]
     for notes in all_notes:
         if notes[1]:  #down press
             if notes[0] == "a":
                 start_times[0] = notes[2]
-                #down[0] = True
             elif notes[0] == "s":
                 start_times[1] = notes[2]
             elif notes[0] == "d":
                 start_times[2] = notes[2]
             elif notes[0] == "f":
                 start_times[3] = notes[2]
-        if not notes[1]:
+        if not notes[1]: #release
             if notes[0] == "a":
                 duration = notes[2] - start_times[0]
                 start = start_times[0]
@@ -89,7 +81,7 @@ def doIt(song, artist):
         
         if notes[0] == 'space':
             c.execute('''CREATE TABLE IF NOT EXISTS songlist (title text, artist text, length real);''')
-            c.execute('''INSERT into songlist VALUES (?, ?, ?);''', (song, artist, notes[2]))
+            c.execute('''INSERT OR REPLACE into songlist VALUES (?, ?, ?);''', (song, artist, notes[2]))
 
     command = 'SELECT * FROM ' + song + ' ORDER BY start ASC;'
     print(c.execute(command).fetchall())
