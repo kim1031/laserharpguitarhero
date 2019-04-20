@@ -5,14 +5,15 @@ import sqlite3
 
 beatmaps_db = "beatmaps.db"
 
-def doIt(song):
+def doIt(song, artist):
     song_file = song + ".mp3"
     pygame.init() 
     pygame.display.set_mode((100,100))
 
     conn = sqlite3.connect(beatmaps_db)
     c = conn.cursor()
-    c.execute('''CREATE TABLE IF NOT EXISTS twinkle (key text, start real, duration real);''')
+    command = 'CREATE TABLE IF NOT EXISTS ' + song + ' (key text, start real, duration real);'
+    c.execute(command)
 
     all_notes = []
 
@@ -83,9 +84,16 @@ def doIt(song):
             elif notes[0] == "f":
                 duration = notes[2] - start_times[1]
                 start = start_times[3]
-            c.execute('''INSERT into twinkle VALUES (?,?,?);''', (notes[0], start, duration))
+            command = 'INSERT into ' + song + ' VALUES (?,?,?);'
+            c.execute(command, (notes[0], start, duration))
+        
+        if notes[0] == 'space':
+            c.execute('''CREATE TABLE IF NOT EXISTS songlist (title text, artist text, length real);''')
+            c.execute('''INSERT into songlist VALUES (?, ?, ?);''', (song, artist, notes[2]))
 
-    print(c.execute('''SELECT * FROM twinkle ORDER BY start ASC;''').fetchall())
+    command = 'SELECT * FROM ' + song + ' ORDER BY start ASC;'
+    print(c.execute(command).fetchall())
+    print(c.execute('''SELECT * FROM songlist''').fetchall())
 
 if __name__ == "__main__":
-    doIt("twinkle")
+    doIt("twinkle", "folk")
