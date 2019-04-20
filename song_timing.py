@@ -2,13 +2,14 @@ import pygame
 from pygame.locals import *
 import time
 import playsound
+import sqlite3
 
-def doIt():
+def doIt(song):
+    song_file = song + ".mp3"
     pygame.init() 
     pygame.display.set_mode((100,100))
     starter = time.time()
-    playsound.playsound("almost.mp3", False)
-    print("yeee")
+    playsound.playsound(song_file, False)
     
     while True: 
         event = pygame.event.get()
