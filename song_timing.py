@@ -6,15 +6,17 @@ import sqlite3
 beatmaps_db = "beatmaps.db"
 
 def doIt(song, artist):
-    song_file = song + ".mp3"
+    song_file = "Songs/" + song + ".mp3"
+    song_table = song.replace(" ", "_")
+    song_table = song_table.replace("'", "")
     pygame.init() 
     pygame.display.set_mode((100,100))
 
     conn = sqlite3.connect(beatmaps_db)
     c = conn.cursor()
-    command = 'DROP TABLE IF EXISTS ' + song + ';'
+    command = 'DROP TABLE IF EXISTS ' + song_table + ';'
     c.execute(command)
-    command = 'CREATE TABLE IF NOT EXISTS ' + song + ' (key text, start real, duration real);'
+    command = 'CREATE TABLE IF NOT EXISTS ' + song_table + ' (key text, start real, duration real);'
     c.execute(command)
 
     all_notes = []
@@ -76,7 +78,7 @@ def doIt(song, artist):
             elif notes[0] == "f":
                 duration = notes[2] - start_times[1]
                 start = start_times[3]
-            command = 'INSERT into ' + song + ' VALUES (?,?,?);'
+            command = 'INSERT into ' + song_table + ' VALUES (?,?,?);'
             c.execute(command, (notes[0], start, duration))
         
         if notes[0] == 'space':
@@ -88,4 +90,4 @@ def doIt(song, artist):
     print(c.execute('''SELECT * FROM songlist''').fetchall())
 
 if __name__ == "__main__":
-    doIt("twinkle", "folk")
+    doIt("Hotel California", "Eagles")
