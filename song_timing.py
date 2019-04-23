@@ -85,7 +85,7 @@ def doIt(song, artist):
             c.execute('''CREATE TABLE IF NOT EXISTS songlist (title text, artist text, length real);''')
             c.execute('''INSERT OR REPLACE into songlist VALUES (?, ?, ?);''', (song, artist, notes[2]))
 
-    command = 'SELECT * FROM ' + song + ' ORDER BY start ASC;'
+    command = 'SELECT * FROM ' + song_table + ' ORDER BY start ASC;'
     print(c.execute(command).fetchall())
     print(c.execute('''SELECT * FROM songlist''').fetchall())
 
