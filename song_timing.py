@@ -90,4 +90,4 @@ def doIt(song, artist):
     print(c.execute('''SELECT * FROM songlist''').fetchall())
 
 if __name__ == "__main__":
-    doIt("Hotel California", "Eagles")
+    doIt('''Jessie's Girl''', "Rick Springfield")
