@@ -9,6 +9,7 @@ def doIt(song, artist):
     song_file = "Songs/" + song + ".mp3"
     song_table = song.replace(" ", "_")
     song_table = song_table.replace("'", "")
+    song_table = song_table.replace(",", "")
     pygame.init() 
     pygame.display.set_mode((100,100))
 
@@ -90,4 +91,4 @@ def doIt(song, artist):
     print(c.execute('''SELECT * FROM songlist''').fetchall())
 
 if __name__ == "__main__":
-    doIt("Hotel California", "Eagles")
+    doIt("Barracuda", "Heart")
