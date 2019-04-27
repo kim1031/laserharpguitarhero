@@ -24,7 +24,26 @@ char response_buffer[OUT_BUFFER_SIZE];
 
 void setup() {
   Serial.begin(115200);
-  WiFi.begin(network,password);
+  Serial.begin(115200); //for debugging if needed.
+  WiFi.begin(network, password); //attempt to connect to wifi
+  uint8_t count = 0; //count used for Wifi check times
+  Serial.print("Attempting to connect to ");
+  Serial.println(network);
+  while (WiFi.status() != WL_CONNECTED && count < 12) {
+    delay(500);
+    Serial.print(".");
+    count++;
+  }
+  delay(2000);
+  if (WiFi.isConnected()) { //if we connected then print our IP, Mac, and SSID we're on
+    Serial.println("CONNECTED!");
+    Serial.println(WiFi.localIP().toString() + " (" + WiFi.macAddress() + ") (" + WiFi.SSID() + ")");
+    delay(500);
+  } else { //if we failed to connect just Try again.
+    Serial.println("Failed to Connect :/  Going to restart");
+    Serial.println(WiFi.status());
+    ESP.restart(); // restart the ESP (proper way)
+  }
   if(!tft.begin(RA8875_800x480)) {
     Serial.println("not found");
     while(1);
@@ -41,11 +60,4 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
 
-}
-
-void getSong() {
-    sprintf(request_buffer, "GET http://608dev.net/sandbox/sc/jgonik/laserharpguitarhero/get_song.py?song=Barracuda HTTP/1.1\r\n");
-    strcat(request_buffer,"Host: 608dev.net\r\n");
-    strcat(request_buffer,"\r\n");
-    do_http_request("608dev.net", request_buffer, response_buffer, OUT_BUFFER_SIZE, RESPONSE_TIMEOUT, true);
 }
