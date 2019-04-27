@@ -1,4 +1,4 @@
-import pygame#from pygame.locals import *
+import pygame
 import time
 import playsound
 import sqlite3
@@ -89,6 +89,8 @@ def doIt(song, artist):
     command = 'SELECT * FROM ' + song_table + ' ORDER BY start ASC;'
     print(c.execute(command).fetchall())
     print(c.execute('''SELECT * FROM songlist''').fetchall())
+    conn.commit()
+    conn.close()
 
 if __name__ == "__main__":
     doIt("Barracuda", "Heart")
