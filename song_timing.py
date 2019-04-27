@@ -80,7 +80,7 @@ def doIt(song, artist):
                 duration = round(notes[2] - start_times[1], 3)
                 start = start_times[3]
             command = 'INSERT into ' + song_table + ' VALUES (?,?,?);'
-            c.execute(command, (notes[0], start, duration))
+            c.execute(command, (notes[0], round(start, 3), duration))
         
         if notes[0] == 'space':
             c.execute('''CREATE TABLE IF NOT EXISTS songlist (title text, artist text, length real);''')
@@ -93,4 +93,4 @@ def doIt(song, artist):
     conn.close()
 
 if __name__ == "__main__":
-    doIt("Barracuda", "Heart")
+    doIt("Twinkle Twinkle", "Joie")

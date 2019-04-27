@@ -11,8 +11,8 @@ char request_buffer[IN_BUFFER_SIZE];
 char response_buffer[OUT_BUFFER_SIZE];
 
 char note_arr[1000] = {0};
-float note_time_arr[2000] = {0};
-float duration_arr[2000] = {0};
+float note_time_arr[1000] = {0};
+float duration_arr[1000] = {0};
 
 void setup() {
   Serial.begin(115200);
@@ -56,22 +56,21 @@ void string_parser(string str) {
   {
     //Serial.println(str.c_str());
     int noteindex = str.find("'");
-    Serial.print("Note Index: ");
-    Serial.println(noteindex);
+    //Serial.print("Note Index: ");
+    //Serial.println(noteindex);
     if (noteindex != -1)
       note_arr[array_index] = str.at(noteindex+1);
     else
       break;
     if (noteindex+5 < str.size()) {
-      Serial.println("getting substr");
       str = str.substr(noteindex+5, str.size()-(noteindex+5));
       total += (noteindex+5);
     }
     else
       break;
     int time_end = str.find(",");
-    Serial.print("Time End: ");
-    Serial.println(time_end);
+    //Serial.print("Time End: ");
+    //Serial.println(time_end);
     if (time_end != -1) {
       note_time_arr[array_index] = atof(str.substr(0, time_end).c_str());
     } else 
@@ -83,8 +82,8 @@ void string_parser(string str) {
     else
       break;
     int duration_end = str.find(")");
-    Serial.print("Duration End: ");
-    Serial.println(duration_end);
+    //Serial.print("Duration End: ");
+    //Serial.println(duration_end);
     if (duration_end != -1) {
       duration_arr[array_index] = atof(str.substr(0, duration_end).c_str());
     } else
@@ -93,15 +92,15 @@ void string_parser(string str) {
   }
   Serial.println(note_arr);
   Serial.println(strlen(note_arr));
-  Serial.println(total);
-  /*for (int i = 0; i < sizeof(note_time_arr); i++) {
+  for (int i = 0; i < sizeof(note_time_arr); i++) {
     Serial.print(note_time_arr[i]);
     Serial.print(" ");
   }
+  Serial.println();
   for (int i = 0; i < sizeof(duration_arr); i++) {
     Serial.print(duration_arr[i]);
     Serial.print(" ");
-  }*/
+  }
 }
 
 uint8_t char_append(char* buff, char c, uint16_t buff_size) {
@@ -144,7 +143,7 @@ void do_http_request(char* host, char* request, char* response, uint16_t respons
 }
 
 void getSong() {
-    sprintf(request_buffer, "GET http://608dev.net/sandbox/sc/jgonik/laserharpguitarhero/get_song.py?song=Barracuda HTTP/1.1\r\n");
+    sprintf(request_buffer, "GET http://608dev.net/sandbox/sc/jgonik/laserharpguitarhero/get_song.py?song=Twinkle_Twinkle HTTP/1.1\r\n");
     strcat(request_buffer,"Host: 608dev.net\r\n");
     strcat(request_buffer,"\r\n");
     do_http_request("608dev.net", request_buffer, response_buffer, OUT_BUFFER_SIZE, RESPONSE_TIMEOUT, true);
