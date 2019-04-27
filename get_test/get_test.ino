@@ -1,12 +1,18 @@
 #include <SPI.h>
-
+#include <string>
 #include <WiFi.h>
+using namespace std;
+
 char network[] = "MIT";
 const int RESPONSE_TIMEOUT = 6000;
 const uint16_t IN_BUFFER_SIZE = 1000;
-const uint32_t OUT_BUFFER_SIZE = 100000;
+const uint32_t OUT_BUFFER_SIZE = 50000;
 char request_buffer[IN_BUFFER_SIZE];
 char response_buffer[OUT_BUFFER_SIZE];
+
+char note_arr[1000] = {0};
+float note_time_arr[2000] = {0};
+float duration_arr[2000] = {0};
 
 void setup() {
   Serial.begin(115200);
@@ -32,13 +38,70 @@ void setup() {
   }
 
   getSong();
-  Serial.println(response_buffer);
-
+  Serial.println(strlen(response_buffer));
+  string response(response_buffer);
+  string_parser(response);
+  //Serial.println(response.c_str());
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
 
+}
+
+void string_parser(string str) {
+  int array_index = 0;
+  int total = 0;
+  while (str.size() > 0)
+  {
+    //Serial.println(str.c_str());
+    int noteindex = str.find("'");
+    Serial.print("Note Index: ");
+    Serial.println(noteindex);
+    if (noteindex != -1)
+      note_arr[array_index] = str.at(noteindex+1);
+    else
+      break;
+    if (noteindex+5 < str.size()) {
+      Serial.println("getting substr");
+      str = str.substr(noteindex+5, str.size()-(noteindex+5));
+      total += (noteindex+5);
+    }
+    else
+      break;
+    int time_end = str.find(",");
+    Serial.print("Time End: ");
+    Serial.println(time_end);
+    if (time_end != -1) {
+      note_time_arr[array_index] = atof(str.substr(0, time_end).c_str());
+    } else 
+      break;
+    if (time_end+2 < str.size()) {
+      str = str.substr(time_end+2, str.size()-(time_end+2));
+      total += (time_end+2);
+    }
+    else
+      break;
+    int duration_end = str.find(")");
+    Serial.print("Duration End: ");
+    Serial.println(duration_end);
+    if (duration_end != -1) {
+      duration_arr[array_index] = atof(str.substr(0, duration_end).c_str());
+    } else
+      break;
+    array_index++;
+  }
+  Serial.println(note_arr);
+  Serial.println(strlen(note_arr));
+  Serial.println(total);
+  /*for (int i = 0; i < sizeof(note_time_arr); i++) {
+    Serial.print(note_time_arr[i]);
+    Serial.print(" ");
+  }
+  for (int i = 0; i < sizeof(duration_arr); i++) {
+    Serial.print(duration_arr[i]);
+    Serial.print(" ");
+  }*/
 }
 
 uint8_t char_append(char* buff, char c, uint16_t buff_size) {
