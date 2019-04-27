@@ -2,7 +2,7 @@ import sqlite3
 song_db = '__HOME__/laserharpguitarhero/beatmaps.db'
 
 def request_handler(request):
-    if request['method'] == "REQUEST":
+    if request['method'] == "GET":
         try:
             strtop = ""
             conn = sqlite3.connect(song_db)
