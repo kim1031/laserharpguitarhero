@@ -147,22 +147,6 @@ void transfer_notes() {
   }
 }
 
-void show_a_note() {
-
-}
-
-void show_s_note() {
-  
-}
-
-void show_d_note() {
-  
-}
-
-void show_f_note() {
-  
-}
-
 uint8_t char_append(char* buff, char c, uint16_t buff_size) {
   int len = strlen(buff);
   if (len > buff_size) return false;
