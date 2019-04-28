@@ -5,13 +5,13 @@
 
 #include "RectNote.h"
 
-RectNote::RectNote(int dur, int wid, int x, int y, uint16_t color)
+RectNote::RectNote(int dur, int wid, int x, uint16_t color)
 {
     this->duration = dur;
     this->width = wid;
     this->length = 0; //temporary, will increase until length = duration
     this->x = x;
-    this->y = y;
+    this->y = 0;
     this->color = color;
 }
 
@@ -32,7 +32,7 @@ void RectNote::update_y_coord(int screen_bottom)
         y++;
 }
 
-void RectNote::draw_rect(Adafruit_RA8875* tft, bool old = False)
+void RectNote::draw_rect(Adafruit_RA8875* tft, bool old=False)
 {
     if (old)
         tft.fillRect(x, y, width, length, RA8875_BLACK);
