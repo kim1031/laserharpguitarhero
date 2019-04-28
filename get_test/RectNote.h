@@ -23,6 +23,7 @@ class RectNote
         void update_y_coord();
         void draw_rect();
     public:
+        RectNote(int dur, int wid, int x, uint16_t color);
         void update();
 };
 
