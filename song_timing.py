@@ -6,7 +6,7 @@ import sqlite3
 beatmaps_db = "beatmaps.db"
 
 def doIt(song, artist):
-    song_file = "Songs/" + song + ".mp3"
+    song_file = "laserharpguitarhero/Songs/" + song + ".mp3"
     song_table = song.replace(" ", "_")
     song_table = song_table.replace("'", "")
     song_table = song_table.replace(",", "")
@@ -93,4 +93,4 @@ def doIt(song, artist):
     conn.close()
 
 if __name__ == "__main__":
-    doIt("Twinkle Twinkle", "Joie")
+    doIt("This_Love", "Maroon 5")
