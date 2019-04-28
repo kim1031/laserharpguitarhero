@@ -10,15 +10,32 @@ const uint32_t OUT_BUFFER_SIZE = 50000;
 char request_buffer[IN_BUFFER_SIZE];
 char response_buffer[OUT_BUFFER_SIZE];
 
+int timer;
+
 char note_arr[1000] = {0};
 float note_time_arr[1000] = {0};
 float duration_arr[1000] = {0};
 
+float a_arr[1000] = {0};
+float s_arr[1000] = {0};
+float d_arr[1000] = {0};
+float f_arr[1000] = {0};
+
+bool a_note = false;
+bool s_note = false;
+bool d_note = false;
+bool f_note = false;
+
+int a_index = 0;
+int s_index = 0;
+int d_index = 0;
+int f_index = 0;
+
 void setup() {
   Serial.begin(115200);
-  Serial.begin(115200); //for debugging if needed.
-  WiFi.begin(network); //attempt to connect to wifi
-  uint8_t count = 0; //count used for Wifi check times
+  Serial.begin(115200); 
+  WiFi.begin(network); 
+  uint8_t count = 0; 
   Serial.print("Attempting to connect to ");
   Serial.println(network);
   while (WiFi.status() != WL_CONNECTED && count < 12) {
@@ -27,26 +44,45 @@ void setup() {
     count++;
   }
   delay(2000);
-  if (WiFi.isConnected()) { //if we connected then print our IP, Mac, and SSID we're on
+  if (WiFi.isConnected()) { 
     Serial.println("CONNECTED!");
     Serial.println(WiFi.localIP().toString() + " (" + WiFi.macAddress() + ") (" + WiFi.SSID() + ")");
     delay(500);
-  } else { //if we failed to connect just Try again.
+  } else { 
     Serial.println("Failed to Connect :/  Going to restart");
     Serial.println(WiFi.status());
-    ESP.restart(); // restart the ESP (proper way)
+    ESP.restart(); 
   }
 
   getSong();
-  Serial.println(strlen(response_buffer));
   string response(response_buffer);
   string_parser(response);
-  //Serial.println(response.c_str());
+  transfer_notes();
+  timer = millis();
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-
+  elapsed = millis() - timer;
+  if ( fabs(a_arr[a_index] - elapsed) <= 1000 ) {
+    show_a_note();
+    a_note = true;
+    a_index++;
+  }
+  if ( fabs(s_arr[s_index] - elapsed) <= 1000 ) {
+    show_s_note();
+    s_note = true;
+    s_index++;
+  }
+  if ( fabs(d_arr[d_index] - elapsed) <= 1000 ) {
+    show_d_note();
+    d_note = true;
+    d_index++;
+  }
+  if ( fabs(f_arr[f_index] - elapsed) <= 1000 ) {
+    show_f_note();
+    f_note = true;
+    f_index++;
+  }
 }
 
 void string_parser(string str) {
@@ -54,10 +90,7 @@ void string_parser(string str) {
   int total = 0;
   while (str.size() > 0)
   {
-    //Serial.println(str.c_str());
     int noteindex = str.find("'");
-    //Serial.print("Note Index: ");
-    //Serial.println(noteindex);
     if (noteindex != -1)
       note_arr[array_index] = str.at(noteindex+1);
     else
@@ -69,8 +102,6 @@ void string_parser(string str) {
     else
       break;
     int time_end = str.find(",");
-    //Serial.print("Time End: ");
-    //Serial.println(time_end);
     if (time_end != -1) {
       note_time_arr[array_index] = atof(str.substr(0, time_end).c_str());
     } else 
@@ -82,25 +113,54 @@ void string_parser(string str) {
     else
       break;
     int duration_end = str.find(")");
-    //Serial.print("Duration End: ");
-    //Serial.println(duration_end);
     if (duration_end != -1) {
       duration_arr[array_index] = atof(str.substr(0, duration_end).c_str());
     } else
       break;
     array_index++;
   }
-  Serial.println(note_arr);
-  Serial.println(strlen(note_arr));
-  for (int i = 0; i < sizeof(note_time_arr); i++) {
-    Serial.print(note_time_arr[i]);
-    Serial.print(" ");
+}
+
+void transfer_notes() {
+  int aindex = 0;
+  int sindex = 0;
+  int dindex = 0;
+  int findex = 0;
+  for (int i = 0; i < strlen(note_arr); i++) 
+  {
+    if (note_arr[i] == 'a') {
+      a_arr[aindex++] = note_time_arr[i];
+      a_arr[aindex++] = note_time_arr[i] + duration_arr[i];
+    }
+    if (note_arr[i] == 's') {
+      s_arr[sindex++] = note_time_arr[i];
+      s_arr[sindex++] = note_time_arr[i] + duration_arr[i];
+    }
+    if (note_arr[i] == 'd') {
+      d_arr[dindex++] = note_time_arr[i];
+      d_arr[dindex++] = note_time_arr[i] + duration_arr[i];
+    }
+    if (note_arr[i] == 'f') {
+      f_arr[findex++] = note_time_arr[i];
+      f_arr[findex++] = note_time_arr[i] + duration_arr[i];
+    }
   }
-  Serial.println();
-  for (int i = 0; i < sizeof(duration_arr); i++) {
-    Serial.print(duration_arr[i]);
-    Serial.print(" ");
-  }
+}
+
+void show_a_note() {
+
+}
+
+void show_s_note() {
+  
+}
+
+void show_d_note() {
+  
+}
+
+void show_f_note() {
+  
 }
 
 uint8_t char_append(char* buff, char c, uint16_t buff_size) {
