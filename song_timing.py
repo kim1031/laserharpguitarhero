@@ -83,8 +83,10 @@ def doIt(song, artist):
             c.execute(command, (notes[0], round(start, 3), duration))
         
         if notes[0] == 'space':
+            #c.execute('''DROP TABLE IF EXISTS songlist;''')
             c.execute('''CREATE TABLE IF NOT EXISTS songlist (title text, artist text, length real);''')
-            c.execute('''INSERT OR REPLACE into songlist VALUES (?, ?, ?);''', (song, artist, notes[2]))
+            c.execute('''CREATE UNIQUE INDEX IF NOT EXISTS idx_songlist_title ON songlist (title);''')
+            c.execute('''INSERT OR REPLACE INTO songlist VALUES (?, ?, ?);''', (song, artist, notes[2]))
 
     command = 'SELECT * FROM ' + song_table + ' ORDER BY start ASC;'
     print(c.execute(command).fetchall())
