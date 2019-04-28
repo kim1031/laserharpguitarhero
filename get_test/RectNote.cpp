@@ -1,7 +1,10 @@
 #include "Arduino.h"
+#include <gfxfont.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SPITFT.h>
 #include <Adafruit_SPITFT_Macros.h>
+#include <Adafruit_RA8875.h>
+#include <SPI.h>
 
 #include "RectNote.h"
 
@@ -35,9 +38,9 @@ void RectNote::update_y_coord(int screen_bottom)
 void RectNote::draw_rect(Adafruit_RA8875* tft, bool old=False)
 {
     if (old)
-        tft.fillRect(x, y, width, length, RA8875_BLACK);
+        tft->fillRect(x, y, width, length, RA8875_BLACK);
     else
-        tft.fillRect(x, y, width, length, color);
+        tft->fillRect(x, y, width, length, color);
 }
 
 void RectNote::update(int screen_bottom, Adafruit_RA8875* tft)
