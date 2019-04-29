@@ -8,11 +8,11 @@
 
 #include "RectNote.h"
 
-RectNote::RectNote(int dur, int wid, int y, uint16_t color)
+RectNote::RectNote(int dur, int len, int y, uint16_t color)
 {
     this->duration = dur;
-    this->width = wid;
-    this->length = 0; //temporary, will increase until length = duration
+    this->width = 0;
+    this->length = len; //temporary, will increase until length = duration
     this->x = 0;
     this->y = y;
     this->color = color;
@@ -21,17 +21,17 @@ RectNote::RectNote(int dur, int wid, int y, uint16_t color)
 void RectNote::update_length(int screen_bottom)
 {   
     //grow the bar until it hits correct length
-    if (x == 0 && length < duration)
-        length++;
+    if (x == 0 && width < duration)
+        width++;
 
     //set length of the bar depending on how much can fit in screen
     if (x + duration > screen_bottom)
-        len = screen_bottom - x;
+        width = screen_bottom - x;
 }
 
-void RectNote::update_y_coord(int screen_bottom)
+void RectNote::update_x_coord(int screen_bottom)
 {
-    if (length == duration || (x > 0 && x != screen_bottom))
+    if (width == duration || (x > 0 && x != screen_bottom))
         x++;
 }
 

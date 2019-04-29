@@ -20,10 +20,10 @@ class RectNote
         uint16_t color;
 
         void update_length(int screen_bottom);
-        void update_y_coord(int screen_bottom);
+        void update_x_coord(int screen_bottom);
         void draw_rect(Adafruit_RA8875* tft, bool old);
     public:
-        RectNote(int dur, int wid, int y, uint16_t color);
+        RectNote(int dur, int len, int y, uint16_t color);
         void update(int screen_bottom, Adafruit_RA8875* tft);
 };
 
