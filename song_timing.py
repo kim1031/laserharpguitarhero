@@ -6,7 +6,7 @@ import sqlite3
 beatmaps_db = "beatmaps.db"
 
 def doIt(song, artist):
-    song_file = "laserharpguitarhero/Songs/" + song + ".mp3"
+    song_file = "Songs/" + song + ".mp3"
     song_table = song.replace(" ", "_")
     song_table = song_table.replace("'", "")
     song_table = song_table.replace(",", "")
@@ -74,10 +74,10 @@ def doIt(song, artist):
                 duration = round(notes[2] - start_times[1], 3)
                 start = start_times[1]
             elif notes[0] == "d":
-                duration = round(notes[2] - start_times[1], 3)
+                duration = round(notes[2] - start_times[2], 3)
                 start = start_times[2]
             elif notes[0] == "f":
-                duration = round(notes[2] - start_times[1], 3)
+                duration = round(notes[2] - start_times[3], 3)
                 start = start_times[3]
             command = 'INSERT into ' + song_table + ' VALUES (?,?,?);'
             c.execute(command, (notes[0], round(start, 3), duration))
@@ -95,4 +95,4 @@ def doIt(song, artist):
     conn.close()
 
 if __name__ == "__main__":
-    doIt("This_Love", "Maroon 5")
+    doIt("Twinkle Twinkle", "Folk")
