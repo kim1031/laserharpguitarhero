@@ -74,10 +74,10 @@ def doIt(song, artist):
                 duration = round(notes[2] - start_times[1], 3)
                 start = start_times[1]
             elif notes[0] == "d":
-                duration = round(notes[2] - start_times[1], 3)
+                duration = round(notes[2] - start_times[2], 3)
                 start = start_times[2]
             elif notes[0] == "f":
-                duration = round(notes[2] - start_times[1], 3)
+                duration = round(notes[2] - start_times[3], 3)
                 start = start_times[3]
             command = 'INSERT into ' + song_table + ' VALUES (?,?,?);'
             c.execute(command, (notes[0], round(start, 3), duration))
