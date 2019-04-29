@@ -23,6 +23,8 @@ const uint16_t IN_BUFFER_SIZE = 1000;
 const uint16_t OUT_BUFFER_SIZE = 1000;   
 char request_buffer[IN_BUFFER_SIZE];     
 char response_buffer[OUT_BUFFER_SIZE];  
+RectNote the_note(100,40,20,RA8875_MAGENTA);
+int timer;
 
 void setup() {
   Serial.begin(115200);
@@ -56,17 +58,17 @@ void setup() {
   tft.PWM1out(255);
 
   tft.fillScreen(RA8875_BLACK);
-  tft.setRotation(2);
+  tft.setRotation(0);
   tft.drawCircle(750, 80, 30, RA8875_MAGENTA);
   tft.drawCircle(750, 190, 30, RA8875_BLUE);
   tft.drawCircle(750, 300, 30, RA8875_YELLOW);
   tft.drawCircle(750, 420, 30, RA8875_RED);
-
-  RectNote the_note(100,40,20,RA8875_MAGENTA);
-  
+  timer = millis();
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
   the_note.update(500, &tft);
+  while (millis() - timer < 25);
+  timer = millis();
 }
