@@ -8,13 +8,16 @@ using namespace std;
 #include <Adafruit_SPITFT_Macros.h>
 #include <Adafruit_RA8875.h>
 #include "RectNote.h"
+#include <Arduino.h>
+#include <DFRobotDFPlayerMini.h>
 
 #define RA8875_INT 4
 #define RA8875_CS  15
 #define RA8875_RST 5
 
 Adafruit_RA8875 tft = Adafruit_RA8875(RA8875_CS, RA8875_RST);
-
+HardwareSerial mySoftwareSerial(2);
+DFRobotDFPlayerMini myDFPlayer;
 
 char network[] = "MIT";
 const int RESPONSE_TIMEOUT = 6000;
@@ -86,6 +89,14 @@ void setup() {
   tft.PWM1out(255);
   tft.fillScreen(RA8875_BLACK);
 
+  mySoftwareSerial.begin(9600, SERIAL_8N1, 32, 33);  // speed, type, RX, TX
+  myDFPlayer.setTimeOut(500);
+  myDFPlayer.volume(20);
+  myDFPlayer.EQ(DFPLAYER_EQ_NORMAL);
+  myDFPlayer.outputDevice(DFPLAYER_DEVICE_SD);
+  Serial.println(F("myDFPlayer.play(1)"));
+  myDFPlayer.play(1);
+
   getSong();
   string response(response_buffer);
   string_parser(response);
@@ -149,7 +160,7 @@ void loop() {
     d_rects[i].update(480, &tft);
   for (int i = 0; i < f_index; i++)
     f_rects[i].update(480, &tft);
-  while (millis() - loop_timer <= 8);
+  while (millis() - loop_timer <= 20);
   //Serial.print("End: ");
   //Serial.println(millis());
 }
