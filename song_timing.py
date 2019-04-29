@@ -95,4 +95,4 @@ def doIt(song, artist):
     conn.close()
 
 if __name__ == "__main__":
-    doIt("Twinkle Twinkle", "Folk")
+    doIt("Jessie's Girl", "Ack")
