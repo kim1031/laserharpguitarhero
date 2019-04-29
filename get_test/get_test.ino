@@ -11,9 +11,9 @@ using namespace std;
 #include <Arduino.h>
 #include <DFRobotDFPlayerMini.h>
 
-#define RA8875_INT 4
+#define RA8875_INT 34
 #define RA8875_CS  15
-#define RA8875_RST 5
+#define RA8875_RST 35
 
 Adafruit_RA8875 tft = Adafruit_RA8875(RA8875_CS, RA8875_RST);
 HardwareSerial mySoftwareSerial(2);
@@ -89,13 +89,13 @@ void setup() {
   tft.PWM1out(255);
   tft.fillScreen(RA8875_BLACK);
 
-  mySoftwareSerial.begin(9600, SERIAL_8N1, 32, 33);  // speed, type, RX, TX
+  /*mySoftwareSerial.begin(9600, SERIAL_8N1, 32, 33);  // speed, type, RX, TX
   myDFPlayer.setTimeOut(500);
   myDFPlayer.volume(20);
   myDFPlayer.EQ(DFPLAYER_EQ_NORMAL);
   myDFPlayer.outputDevice(DFPLAYER_DEVICE_SD);
   Serial.println(F("myDFPlayer.play(1)"));
-  myDFPlayer.play(1);
+  myDFPlayer.play(1);*/
 
   getSong();
   string response(response_buffer);
@@ -209,14 +209,8 @@ void transfer_notes() {
   for (int i = 0; i < strlen(note_arr); i++)
   {
     if (note_arr[i] == 'a') {
-      //Serial.print(aindex);
-      //Serial.println(" reahed a");
-      a_arr[aindex] = note_time_arr[i];
-      //Serial.println(a_arr[aindex]);
-      aindex++;
-      a_arr[aindex] = note_time_arr[i] + duration_arr[i];
-      //Serial.println(a_arr[aindex]);
-      aindex++;
+      a_arr[aindex++] = note_time_arr[i];
+      a_arr[aindex++] = note_time_arr[i] + duration_arr[i];
     }
     if (note_arr[i] == 's') {
       s_arr[sindex++] = note_time_arr[i];
