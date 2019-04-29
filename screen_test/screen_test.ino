@@ -59,10 +59,10 @@ void setup() {
 
   tft.fillScreen(RA8875_BLACK);
   tft.setRotation(0);
-  tft.drawCircle(750, 80, 30, RA8875_MAGENTA);
-  tft.drawCircle(750, 190, 30, RA8875_BLUE);
-  tft.drawCircle(750, 300, 30, RA8875_YELLOW);
-  tft.drawCircle(750, 420, 30, RA8875_RED);
+  //tft.drawCircle(750, 80, 30, RA8875_MAGENTA);
+  //tft.drawCircle(750, 190, 30, RA8875_BLUE);
+  //tft.drawCircle(750, 300, 30, RA8875_YELLOW);
+  //tft.drawCircle(750, 420, 30, RA8875_RED);
   timer = millis();
 }
 
