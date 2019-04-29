@@ -8,9 +8,11 @@
 
 #include <WiFi.h> 
 
-#define RA8875_INT 16//any pin
-#define RA8875_CS  15//restriction for Teensy3 and CS
-#define RA8875_RST 17//any pin
+#include "RectNote.h"
+
+#define RA8875_INT 4
+#define RA8875_CS  15
+#define RA8875_RST 5
 
 Adafruit_RA8875 tft = Adafruit_RA8875(RA8875_CS,RA8875_RST);
 
@@ -21,6 +23,8 @@ const uint16_t IN_BUFFER_SIZE = 1000;
 const uint16_t OUT_BUFFER_SIZE = 1000;   
 char request_buffer[IN_BUFFER_SIZE];     
 char response_buffer[OUT_BUFFER_SIZE];  
+RectNote the_note(100,40,20,RA8875_MAGENTA);
+int timer;
 
 void setup() {
   Serial.begin(115200);
@@ -53,11 +57,18 @@ void setup() {
   tft.PWM1config(true, RA8875_PWM_CLK_DIV1024);
   tft.PWM1out(255);
 
-  getSong();
-  Serial.println(request_buffer);
+  tft.fillScreen(RA8875_BLACK);
+  tft.setRotation(0);
+  tft.drawCircle(750, 80, 30, RA8875_MAGENTA);
+  tft.drawCircle(750, 190, 30, RA8875_BLUE);
+  tft.drawCircle(750, 300, 30, RA8875_YELLOW);
+  tft.drawCircle(750, 420, 30, RA8875_RED);
+  timer = millis();
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-
+  the_note.update(500, &tft);
+  while (millis() - timer < 25);
+  timer = millis();
 }
