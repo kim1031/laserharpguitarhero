@@ -17,6 +17,8 @@ class RectNote
         int duration;
         int x;
         int y;
+        bool press;
+        bool out_of_bounds;
         uint16_t color;
 
         void update_length(int screen_bottom);
@@ -26,6 +28,8 @@ class RectNote
         RectNote();
         RectNote(int dur, int wid, int x, uint16_t color);
         void update(int screen_bottom, Adafruit_RA8875* tft);
+        bool to_press();
+        bool passed();
         int getY();
 };
 

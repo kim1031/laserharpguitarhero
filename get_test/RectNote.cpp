@@ -18,6 +18,8 @@ RectNote::RectNote(int dur, int wid, int x, uint16_t color)
     this->length = 0; //temporary, will increase until length = duration
     this->x = x;
     this->y = 0;
+    this->press = false;
+    this->out_of_bounds = false;
     this->color = color;
 }
 
@@ -28,8 +30,11 @@ void RectNote::update_length(int screen_bottom)
         length += 3;
 
     //set length of the bar depending on how much can fit in screen
-    if (y + duration >= screen_bottom)
+    if (y + duration >= screen_bottom) 
+    {
         length = screen_bottom - y;
+        press = true;
+    }
 }
 
 void RectNote::update_y_coord(int screen_bottom)
@@ -52,6 +57,22 @@ void RectNote::update(int screen_bottom, Adafruit_RA8875* tft)
     update_y_coord(screen_bottom);
     update_length(screen_bottom);
     draw_rect(tft, false);
+
+    if (y > screen_bottom)
+    {
+      out_of_bounds = true;
+      press = false;
+    }
+}
+
+bool RectNote::to_press()
+{
+  return press; 
+}
+
+bool RectNote::passed()
+{
+  return out_of_bounds;
 }
 
 int RectNote::getY()
