@@ -66,6 +66,26 @@ int s_start = 0;
 int d_start = 0;
 int f_start = 0;
 
+int a_hand_in_timer;
+int actual_a_in;
+int a_hand_out_timer;
+int s_hand_in_timer;
+int actual_s_in;
+int s_hand_out_timer;
+int d_hand_in_timer;
+int actual_d_in;
+int d_hand_out_timer;
+int f_hand_in_timer;
+int actual_f_in;
+int f_hand_out_timer;
+
+bool a_hand;
+bool s_hand;
+bool d_hand;
+bool f_hand;
+
+int score;
+
 void setup() {
   Serial.begin(115200);
   WiFi.begin(network);
@@ -92,6 +112,12 @@ void setup() {
   tft.PWM1out(255);
   tft.fillScreen(RA8875_BLACK);
 
+  score = 0;
+  a_hand = false;
+  s_hand = false;
+  d_hand = false;
+  f_hand = false;
+
   pinMode(a_LED_pin, OUTPUT);
   pinMode(s_LED_pin, OUTPUT);
   pinMode(d_LED_pin, OUTPUT);
@@ -101,7 +127,7 @@ void setup() {
   digitalWrite(s_LED_pin, 0);
   digitalWrite(d_LED_pin, 0);
   digitalWrite(f_LED_pin, 0);
-  
+
   tft.fillRect(0, 380, 800, 100, RA8875_WHITE);
 
   getSong();
@@ -109,25 +135,25 @@ void setup() {
   string_parser(response);
   Serial.println(response.c_str());
   transfer_notes();
-  
+
   mySoftwareSerial.begin(9600, SERIAL_8N1, 32, 33);  // speed, type, RX, TX
   Serial.println(F("DFRobot DFPlayer Mini Demo"));
   Serial.println(F("Initializing DFPlayer ... (May take 3~5 seconds)"));
   delay(1000);
   if (!myDFPlayer.begin(mySoftwareSerial)) {  //Use softwareSerial to communicate with mp3.
-    
-    Serial.println(myDFPlayer.readType(),HEX);
+
+    Serial.println(myDFPlayer.readType(), HEX);
     Serial.println(F("Unable to begin:"));
     Serial.println(F("1.Please recheck the connection!"));
     Serial.println(F("2.Please insert the SD card!"));
-    while(true);
+    while (true);
   }
   Serial.println(F("DFPlayer Mini online."));
   myDFPlayer.setTimeOut(500); //Set serial communictaion time out 500ms
   myDFPlayer.volume(20);  //Set volume value (0~30).
   myDFPlayer.EQ(DFPLAYER_EQ_NORMAL);
   myDFPlayer.outputDevice(DFPLAYER_DEVICE_SD);
-  int delayms=100;
+  int delayms = 100;
   myDFPlayer.play(1);  //Play the first mp3
   timer = millis();
 }
@@ -184,43 +210,96 @@ void loop() {
     f_rects[i].update(380, &tft);
   tft.fillRect(0, 380, 800, 100, RA8875_WHITE);
 
-  if (a_rects[a_start].to_press())
+  if (a_rects[a_start].to_press()) {
     digitalWrite(a_LED_pin, 1);
-  if (s_rects[s_start].to_press())
+    a_hand_in_timer = millis();
+  }
+  if (s_rects[s_start].to_press()) {
     digitalWrite(s_LED_pin, 1);
-  if (d_rects[d_start].to_press())
+    s_hand_in_timer = millis();
+  }
+  if (d_rects[d_start].to_press()) {
     digitalWrite(d_LED_pin, 1);
-  if (f_rects[f_start].to_press())
+    d_hand_in_timer = millis();
+  }
+  if (f_rects[f_start].to_press()) {
     digitalWrite(f_LED_pin, 1);
+    f_hand_in_timer = millis();
+  }
 
   if (a_rects[a_start].passed())
   {
     digitalWrite(a_LED_pin, 0);
     a_start++;
+    //a_hand_out_timer = millis();
   }
   if (s_rects[s_start].passed())
   {
     digitalWrite(s_LED_pin, 0);
     s_start++;
+    //s_hand_out_timer = millis();
   }
   if (d_rects[d_start].passed())
   {
     digitalWrite(d_LED_pin, 0);
     d_start++;
+    //d_hand_out_timer = millis();
   }
   if (f_rects[f_start].passed())
   {
     digitalWrite(f_LED_pin, 0);
     f_start++;
+    //f_hand_out_timer = millis();
   }
-
-  Serial.println(a_start);
-  Serial.println(a_index);
-  Serial.println();
-
+  update_all_hands();
+  Serial.println(score);
   while (millis() - loop_timer <= 20);
   //Serial.print("End: ");
   //Serial.println(millis());
+}
+
+void update_all_hands() {
+  int a_bins = analogRead(A16);
+  float a_voltage = (a_bins / 4096.0) * 3.3;
+  if (a_voltage >= 0.9 && !a_hand) {
+    actual_a_in = millis();
+    a_hand = true;
+  } else 
+    a_hand = false;
+  if (fabs(actual_a_in - a_hand_in_timer) <= 200) {
+    score += 1;
+  }
+  int s_bins = analogRead(A16);
+  float s_voltage = (s_bins / 4096.0) * 3.3;
+  if (s_voltage >= 0.9 && !s_hand) {
+    actual_s_in = millis();
+    s_hand = true;
+  } else 
+    f_hand = false;
+  if (fabs(actual_s_in - s_hand_in_timer) <= 200) {
+    score += 1;
+  }
+  int d_bins = analogRead(A16);
+  float d_voltage = (d_bins / 4096.0) * 3.3;
+  if (d_voltage >= 0.9 && !d_hand) {
+    actual_d_in = millis();
+    d_hand = true;
+  } else
+    d_hand = false;
+  if (fabs(actual_d_in - d_hand_in_timer) <= 200) {
+    score += 1;
+  }
+  int f_bins = analogRead(A16);
+  float f_voltage = (f_bins / 4096.0) * 3.3;
+  if (f_voltage >= 0.9 && !f_hand) {
+    actual_f_in = millis();
+    f_hand = true;
+  } else
+    f_hand = false;
+  if (fabs(actual_f_in - f_hand_in_timer) <= 200) {
+    score += 1;
+  }
+
 }
 
 void string_parser(string str) {
