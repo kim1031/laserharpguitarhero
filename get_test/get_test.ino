@@ -56,11 +56,6 @@ RectNote *d_rect_index = d_rects;
 RectNote f_rects[100];
 RectNote *f_rect_index = f_rects;
 
-bool a_note = false;
-bool s_note = false;
-bool d_note = false;
-bool f_note = false;
-
 int a_index = 0;
 int s_index = 0;
 int d_index = 0;
@@ -133,18 +128,6 @@ void setup() {
   myDFPlayer.EQ(DFPLAYER_EQ_NORMAL);
   myDFPlayer.outputDevice(DFPLAYER_DEVICE_SD);
   int delayms=100;
-  /*Serial.println(F("readState--------------------"));
-  Serial.println(myDFPlayer.readState()); //read mp3 state
-  Serial.println(F("readVolume--------------------"));
-  Serial.println(myDFPlayer.readVolume()); //read current volume
-  Serial.println(F("readFileCounts--------------------"));
-  Serial.println(myDFPlayer.readFileCounts()); //read all file counts in SD card
-  Serial.println(F("readCurrentFileNumber--------------------"));
-  Serial.println(myDFPlayer.readCurrentFileNumber()); //read current play file number
-  Serial.println(F("readFileCountsInFolder--------------------"));
-  Serial.println(myDFPlayer.readFileCountsInFolder(3)); //read fill counts in folder SD:/03
-  Serial.println(F("--------------------"));
-  Serial.println(F("myDFPlayer.play(1)"));*/
   myDFPlayer.play(1);  //Play the first mp3
   timer = millis();
 }
@@ -161,7 +144,6 @@ void loop() {
     else
       dur = int(dur / 25);
     *(a_rect_index++) = RectNote( dur, 150, 50, RA8875_GREEN );
-    a_note = true;
     a_index += 2;
   }
   if ( fabs( (s_arr[s_index] * 1000) - elapsed) <= 3000 ) {
@@ -171,7 +153,6 @@ void loop() {
     else
       dur = int(dur / 25);
     *(s_rect_index++) = RectNote( dur, 150, 250, RA8875_RED );
-    s_note = true;
     s_index += 2;
   }
   if ( fabs( (d_arr[d_index] * 1000) - elapsed) <= 3000 ) {
@@ -181,7 +162,6 @@ void loop() {
     else
       dur = int(dur / 25);
     *(d_rect_index++) = RectNote( dur, 150, 450, RA8875_YELLOW );
-    d_note = true;
     d_index += 2;
   }
   if ( fabs( (f_arr[f_index] * 1000) - elapsed) <= 3000 ) {
@@ -191,7 +171,6 @@ void loop() {
     else
       dur = int(dur / 25);
     *(f_rect_index++) = RectNote( dur, 150, 650, RA8875_BLUE );
-    f_note = true;
     f_index += 2;
   }
 
