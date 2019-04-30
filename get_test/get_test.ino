@@ -2,24 +2,28 @@
 #include <string>
 #include <WiFi.h>
 using namespace std;
+
 #include <gfxfont.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SPITFT.h>
 #include <Adafruit_SPITFT_Macros.h>
 #include <Adafruit_RA8875.h>
 #include "RectNote.h"
+
 #include <Arduino.h>
 #include <DFRobotDFPlayerMini.h>
 
-#define RA8875_INT 34
+#define RA8875_INT 4
 #define RA8875_CS  15
-#define RA8875_RST 35
+#define RA8875_RST 2
 
 Adafruit_RA8875 tft = Adafruit_RA8875(RA8875_CS, RA8875_RST);
 HardwareSerial mySoftwareSerial(2);
 DFRobotDFPlayerMini myDFPlayer;
 
 char network[] = "MIT";
+//char network[] = "6s08";
+//char password[] = "iesc6s08";
 const int RESPONSE_TIMEOUT = 6000;
 const uint16_t IN_BUFFER_SIZE = 1000;
 const uint32_t OUT_BUFFER_SIZE = 30000;
@@ -59,7 +63,6 @@ int f_index = 0;
 
 void setup() {
   Serial.begin(115200);
-  Serial.begin(115200);
   WiFi.begin(network);
   uint8_t count = 0;
   Serial.print("Attempting to connect to ");
@@ -89,20 +92,43 @@ void setup() {
   tft.PWM1out(255);
   tft.fillScreen(RA8875_BLACK);
 
-  /*mySoftwareSerial.begin(9600, SERIAL_8N1, 32, 33);  // speed, type, RX, TX
-  myDFPlayer.setTimeOut(500);
-  myDFPlayer.volume(20);
-  myDFPlayer.EQ(DFPLAYER_EQ_NORMAL);
-  myDFPlayer.outputDevice(DFPLAYER_DEVICE_SD);
-  Serial.println(F("myDFPlayer.play(1)"));
-  myDFPlayer.play(1);*/
-
   getSong();
   string response(response_buffer);
   string_parser(response);
-  Serial.println(response.c_str());
   transfer_notes();
   timer = millis();
+  
+  mySoftwareSerial.begin(9600, SERIAL_8N1, 32, 33);  // speed, type, RX, TX
+  Serial.println(F("DFRobot DFPlayer Mini Demo"));
+  Serial.println(F("Initializing DFPlayer ... (May take 3~5 seconds)"));
+  delay(1000);
+  if (!myDFPlayer.begin(mySoftwareSerial)) {  //Use softwareSerial to communicate with mp3.
+    
+    Serial.println(myDFPlayer.readType(),HEX);
+    Serial.println(F("Unable to begin:"));
+    Serial.println(F("1.Please recheck the connection!"));
+    Serial.println(F("2.Please insert the SD card!"));
+    while(true);
+  }
+  Serial.println(F("DFPlayer Mini online."));
+  myDFPlayer.setTimeOut(500); //Set serial communictaion time out 500ms
+  myDFPlayer.volume(20);  //Set volume value (0~30).
+  myDFPlayer.EQ(DFPLAYER_EQ_NORMAL);
+  myDFPlayer.outputDevice(DFPLAYER_DEVICE_SD);
+  int delayms=100;
+  Serial.println(F("readState--------------------"));
+  Serial.println(myDFPlayer.readState()); //read mp3 state
+  Serial.println(F("readVolume--------------------"));
+  Serial.println(myDFPlayer.readVolume()); //read current volume
+  Serial.println(F("readFileCounts--------------------"));
+  Serial.println(myDFPlayer.readFileCounts()); //read all file counts in SD card
+  Serial.println(F("readCurrentFileNumber--------------------"));
+  Serial.println(myDFPlayer.readCurrentFileNumber()); //read current play file number
+  Serial.println(F("readFileCountsInFolder--------------------"));
+  Serial.println(myDFPlayer.readFileCountsInFolder(3)); //read fill counts in folder SD:/03
+  Serial.println(F("--------------------"));
+  Serial.println(F("myDFPlayer.play(1)"));
+  myDFPlayer.play(1);  //Play the first mp3
 }
 
 void loop() {
@@ -271,4 +297,5 @@ void getSong() {
   strcat(request_buffer, "Host: 608dev.net\r\n");
   strcat(request_buffer, "\r\n");
   do_http_request("608dev.net", request_buffer, response_buffer, OUT_BUFFER_SIZE, RESPONSE_TIMEOUT, true);
+  WiFi.mode(WIFI_OFF);
 }
