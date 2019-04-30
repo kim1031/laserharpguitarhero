@@ -174,13 +174,13 @@ void loop() {
     f_index += 2;
   }
 
-  for (int i = a_start; i < a_index; i++)
+  for (int i = a_start; i < (a_index / 2); i++)
     a_rects[i].update(380, &tft);
-  for (int i = s_start; i < s_index; i++)
+  for (int i = s_start; i < (s_index / 2); i++)
     s_rects[i].update(380, &tft);
-  for (int i = d_start; i < d_index; i++)
+  for (int i = d_start; i < (d_index / 2); i++)
     d_rects[i].update(380, &tft);
-  for (int i = f_start; i < f_index; i++)
+  for (int i = f_start; i < (f_index / 2); i++)
     f_rects[i].update(380, &tft);
   tft.fillRect(0, 380, 800, 100, RA8875_WHITE);
 
@@ -213,6 +213,10 @@ void loop() {
     digitalWrite(f_LED_pin, 0);
     f_start++;
   }
+
+  Serial.println(a_start);
+  Serial.println(a_index);
+  Serial.println();
 
   while (millis() - loop_timer <= 20);
   //Serial.print("End: ");
