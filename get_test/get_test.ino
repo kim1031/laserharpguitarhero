@@ -13,9 +13,9 @@ using namespace std;
 #include <Arduino.h>
 #include <DFRobotDFPlayerMini.h>
 
-#define RA8875_INT 4
+#define RA8875_INT 34
 #define RA8875_CS  15
-#define RA8875_RST 2
+#define RA8875_RST 35
 
 Adafruit_RA8875 tft = Adafruit_RA8875(RA8875_CS, RA8875_RST);
 HardwareSerial mySoftwareSerial(2);
@@ -64,12 +64,9 @@ int f_index = 0;
 void setup() {
   Serial.begin(115200);
   WiFi.begin(network);
-  uint8_t count = 0;
-  Serial.print("Attempting to connect to ");
-  Serial.println(network);
+  uint8_t count = 0;;
   while (WiFi.status() != WL_CONNECTED && count < 12) {
     delay(500);
-    Serial.print(".");
     count++;
   }
   delay(2000);
@@ -78,8 +75,6 @@ void setup() {
     Serial.println(WiFi.localIP().toString() + " (" + WiFi.macAddress() + ") (" + WiFi.SSID() + ")");
     delay(500);
   } else {
-    Serial.println("Failed to Connect :/  Going to restart");
-    Serial.println(WiFi.status());
     ESP.restart();
   }
   if (!tft.begin(RA8875_800x480)) {
@@ -91,12 +86,11 @@ void setup() {
   tft.PWM1config(true, RA8875_PWM_CLK_DIV1024);
   tft.PWM1out(255);
   tft.fillScreen(RA8875_BLACK);
-
+  tft.fillRect(0, 380, 800, 50, RA8875_WHITE);
   getSong();
   string response(response_buffer);
   string_parser(response);
   transfer_notes();
-  timer = millis();
   
   mySoftwareSerial.begin(9600, SERIAL_8N1, 32, 33);  // speed, type, RX, TX
   Serial.println(F("DFRobot DFPlayer Mini Demo"));
@@ -116,7 +110,7 @@ void setup() {
   myDFPlayer.EQ(DFPLAYER_EQ_NORMAL);
   myDFPlayer.outputDevice(DFPLAYER_DEVICE_SD);
   int delayms=100;
-  Serial.println(F("readState--------------------"));
+  /*Serial.println(F("readState--------------------"));
   Serial.println(myDFPlayer.readState()); //read mp3 state
   Serial.println(F("readVolume--------------------"));
   Serial.println(myDFPlayer.readVolume()); //read current volume
@@ -127,8 +121,9 @@ void setup() {
   Serial.println(F("readFileCountsInFolder--------------------"));
   Serial.println(myDFPlayer.readFileCountsInFolder(3)); //read fill counts in folder SD:/03
   Serial.println(F("--------------------"));
-  Serial.println(F("myDFPlayer.play(1)"));
+  Serial.println(F("myDFPlayer.play(1)"));*/
   myDFPlayer.play(1);  //Play the first mp3
+  timer = millis();
 }
 
 void loop() {
@@ -178,14 +173,15 @@ void loop() {
   }
   for (int i = 0; i < a_index; i++)
   {
-    a_rects[i].update(480, &tft);
+    a_rects[i].update(380, &tft);
   }
   for (int i = 0; i < s_index; i++)
-    s_rects[i].update(480, &tft);
+    s_rects[i].update(380, &tft);
   for (int i = 0; i < d_index; i++)
-    d_rects[i].update(480, &tft);
+    d_rects[i].update(380, &tft);
   for (int i = 0; i < f_index; i++)
-    f_rects[i].update(480, &tft);
+    f_rects[i].update(380, &tft);
+  tft.fillRect(0, 380, 800, 100, RA8875_WHITE);
   while (millis() - loop_timer <= 20);
   //Serial.print("End: ");
   //Serial.println(millis());
