@@ -101,12 +101,18 @@ void setup() {
   pinMode(s_LED_pin, OUTPUT);
   pinMode(d_LED_pin, OUTPUT);
   pinMode(f_LED_pin, OUTPUT);
+
+  digitalWrite(a_LED_pin, 0);
+  digitalWrite(s_LED_pin, 0);
+  digitalWrite(d_LED_pin, 0);
+  digitalWrite(f_LED_pin, 0);
   
-  tft.fillRect(0, 380, 800, 50, RA8875_WHITE);
+  tft.fillRect(0, 380, 800, 100, RA8875_WHITE);
 
   getSong();
   string response(response_buffer);
   string_parser(response);
+  Serial.println(response.c_str());
   transfer_notes();
   
   mySoftwareSerial.begin(9600, SERIAL_8N1, 32, 33);  // speed, type, RX, TX
@@ -189,41 +195,41 @@ void loop() {
     f_index += 2;
   }
 
-  for (int i = 0; i < a_index; i++)
+  for (int i = a_start; i < a_index; i++)
     a_rects[i].update(380, &tft);
-  for (int i = 0; i < s_index; i++)
+  for (int i = s_start; i < s_index; i++)
     s_rects[i].update(380, &tft);
-  for (int i = 0; i < d_index; i++)
+  for (int i = d_start; i < d_index; i++)
     d_rects[i].update(380, &tft);
-  for (int i = 0; i < f_index; i++)
+  for (int i = f_start; i < f_index; i++)
     f_rects[i].update(380, &tft);
   tft.fillRect(0, 380, 800, 100, RA8875_WHITE);
 
-  if (a_rects[0].to_press())
+  if (a_rects[a_start].to_press())
     digitalWrite(a_LED_pin, 1);
-  if (s_rects[0].to_press())
+  if (s_rects[s_start].to_press())
     digitalWrite(s_LED_pin, 1);
-  if (d_rects[0].to_press())
+  if (d_rects[d_start].to_press())
     digitalWrite(d_LED_pin, 1);
-  if (f_rects[0].to_press())
+  if (f_rects[f_start].to_press())
     digitalWrite(f_LED_pin, 1);
 
-  if (a_rects[0].passed())
+  if (a_rects[a_start].passed())
   {
     digitalWrite(a_LED_pin, 0);
     a_start++;
   }
-  if (s_rects[0].passed())
+  if (s_rects[s_start].passed())
   {
     digitalWrite(s_LED_pin, 0);
     s_start++;
   }
-  if (d_rects[0].passed())
+  if (d_rects[d_start].passed())
   {
     digitalWrite(d_LED_pin, 0);
     d_start++;
   }
-  if (f_rects[0].passed())
+  if (f_rects[f_start].passed())
   {
     digitalWrite(f_LED_pin, 0);
     f_start++;
