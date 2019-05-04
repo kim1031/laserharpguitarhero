@@ -26,9 +26,9 @@ Adafruit_RA8875 tft = Adafruit_RA8875(RA8875_CS, RA8875_RST);
 HardwareSerial mySoftwareSerial(2);
 DFRobotDFPlayerMini myDFPlayer;
 
-char network[] = "MIT";
-//char network[] = "6s08";
-//char password[] = "iesc6s08";
+//char network[] = "MIT";
+char network[] = "6s08";
+char password[] = "iesc6s08";
 const int RESPONSE_TIMEOUT = 6000;
 const uint16_t IN_BUFFER_SIZE = 1000;
 const uint32_t OUT_BUFFER_SIZE = 30000;
@@ -88,7 +88,7 @@ int score;
 
 void setup() {
   Serial.begin(115200);
-  WiFi.begin(network);
+  WiFi.begin(network, password);
   uint8_t count = 0;;
   while (WiFi.status() != WL_CONNECTED && count < 12) {
     delay(500);
@@ -259,7 +259,7 @@ void loop() {
 }
 
 void update_all_hands() {
-  int a_bins = analogRead(A16);
+  int a_bins = analogRead(A0);
   float a_voltage = (a_bins / 4096.0) * 3.3;
   if (a_voltage >= 0.9 && !a_hand) {
     actual_a_in = millis();
@@ -269,7 +269,7 @@ void update_all_hands() {
   if (fabs(actual_a_in - a_hand_in_timer) <= 200) {
     score += 1;
   }
-  int s_bins = analogRead(A16);
+  int s_bins = analogRead(A12);
   float s_voltage = (s_bins / 4096.0) * 3.3;
   if (s_voltage >= 0.9 && !s_hand) {
     actual_s_in = millis();
@@ -279,7 +279,7 @@ void update_all_hands() {
   if (fabs(actual_s_in - s_hand_in_timer) <= 200) {
     score += 1;
   }
-  int d_bins = analogRead(A16);
+  int d_bins = analogRead(A11);
   float d_voltage = (d_bins / 4096.0) * 3.3;
   if (d_voltage >= 0.9 && !d_hand) {
     actual_d_in = millis();
@@ -289,7 +289,7 @@ void update_all_hands() {
   if (fabs(actual_d_in - d_hand_in_timer) <= 200) {
     score += 1;
   }
-  int f_bins = analogRead(A16);
+  int f_bins = analogRead(A10);
   float f_voltage = (f_bins / 4096.0) * 3.3;
   if (f_voltage >= 0.9 && !f_hand) {
     actual_f_in = millis();
