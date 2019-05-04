@@ -84,6 +84,8 @@ bool s_hand;
 bool d_hand;
 bool f_hand;
 
+bool a_inc;
+
 int score;
 
 void setup() {
@@ -118,6 +120,8 @@ void setup() {
   d_hand = false;
   f_hand = false;
 
+  a_inc = true;
+
   pinMode(a_LED_pin, OUTPUT);
   pinMode(s_LED_pin, OUTPUT);
   pinMode(d_LED_pin, OUTPUT);
@@ -141,7 +145,6 @@ void setup() {
   Serial.println(F("Initializing DFPlayer ... (May take 3~5 seconds)"));
   delay(1000);
   if (!myDFPlayer.begin(mySoftwareSerial)) {  //Use softwareSerial to communicate with mp3.
-
     Serial.println(myDFPlayer.readType(), HEX);
     Serial.println(F("Unable to begin:"));
     Serial.println(F("1.Please recheck the connection!"));
@@ -231,6 +234,8 @@ void loop() {
   {
     digitalWrite(a_LED_pin, 0);
     a_start++;
+    //if (fabs(actual_a_in - a_hand_in_timer) <= 100)
+      a_inc = false;
     //a_hand_out_timer = millis();
   }
   if (s_rects[s_start].passed())
@@ -252,6 +257,7 @@ void loop() {
     //f_hand_out_timer = millis();
   }
   update_all_hands();
+  Serial.print("Score: ");
   Serial.println(score);
   while (millis() - loop_timer <= 20);
   //Serial.print("End: ");
@@ -259,17 +265,22 @@ void loop() {
 }
 
 void update_all_hands() {
-  int a_bins = analogRead(A16);
+  int a_bins = analogRead(A10);
   float a_voltage = (a_bins / 4096.0) * 3.3;
-  if (a_voltage >= 0.9 && !a_hand) {
+  Serial.print("Voltage: ");
+  Serial.println(a_voltage);
+  if (a_voltage >= 0.9 && (!a_hand)) {
     actual_a_in = millis();
     a_hand = true;
-  } else 
+    Serial.println("Laser broken");
+  } else {
     a_hand = false;
-  if (fabs(actual_a_in - a_hand_in_timer) <= 200) {
-    score += 1;
   }
-  int s_bins = analogRead(A16);
+  if (((fabs(actual_a_in - a_hand_in_timer) <= 100) && a_hand) && !a_inc) {
+      score += 1;
+      a_inc = true;
+  }
+  int s_bins = analogRead(A11);
   float s_voltage = (s_bins / 4096.0) * 3.3;
   if (s_voltage >= 0.9 && !s_hand) {
     actual_s_in = millis();
@@ -277,9 +288,9 @@ void update_all_hands() {
   } else 
     f_hand = false;
   if (fabs(actual_s_in - s_hand_in_timer) <= 200) {
-    score += 1;
+    //score += 1;
   }
-  int d_bins = analogRead(A16);
+  int d_bins = analogRead(A12);
   float d_voltage = (d_bins / 4096.0) * 3.3;
   if (d_voltage >= 0.9 && !d_hand) {
     actual_d_in = millis();
@@ -287,7 +298,7 @@ void update_all_hands() {
   } else
     d_hand = false;
   if (fabs(actual_d_in - d_hand_in_timer) <= 200) {
-    score += 1;
+    //score += 1;
   }
   int f_bins = analogRead(A16);
   float f_voltage = (f_bins / 4096.0) * 3.3;
@@ -297,7 +308,7 @@ void update_all_hands() {
   } else
     f_hand = false;
   if (fabs(actual_f_in - f_hand_in_timer) <= 200) {
-    score += 1;
+    //score += 1;
   }
 
 }

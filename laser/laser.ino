@@ -14,11 +14,11 @@ void setup() {
 }
 
 void loop() {
-  int bins = analogRead(A16);
+  int bins = analogRead(A10);
   float voltage = (bins/4096.0)*3.3;
   Serial.print("Voltage ");
   Serial.println(voltage);
-  if(voltage < 0.15) {
+  if(voltage < 0.9) {
     Serial.println("laser unbroken");   
   }
   else{
