@@ -91,8 +91,8 @@ def doIt(song, artist):
     command = 'SELECT * FROM ' + song_table + ' ORDER BY start ASC;'
     print(c.execute(command).fetchall())
     print(c.execute('''SELECT * FROM songlist''').fetchall())
-    conn.commit()
-    conn.close()
+    conn.commit() 
+    conn.close() 
 
 if __name__ == "__main__":
-    doIt("Twinkle Twinkle", "Folk")
+    doIt("Hotel California", "Eagles") 
