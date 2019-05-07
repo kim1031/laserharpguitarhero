@@ -26,9 +26,9 @@ Adafruit_RA8875 tft = Adafruit_RA8875(RA8875_CS, RA8875_RST);
 HardwareSerial mySoftwareSerial(2);
 DFRobotDFPlayerMini myDFPlayer;
 
-//char network[] = "MIT";
-char network[] = "6s08";
-char password[] = "iesc6s08";
+char network[] = "MIT";
+//char network[] = "6s08";
+//char password[] = "iesc6s08";
 const int RESPONSE_TIMEOUT = 6000;
 const uint16_t IN_BUFFER_SIZE = 1000;
 const uint32_t OUT_BUFFER_SIZE = 30000;
@@ -94,7 +94,7 @@ int score;
 void setup() {
   
   Serial.begin(115200);
-  WiFi.begin(network, password);
+  WiFi.begin(network);
   uint8_t count = 0;;
   while (WiFi.status() != WL_CONNECTED && count < 12) {
     delay(500);
@@ -274,7 +274,6 @@ void loop() {
 }
 
 void update_all_hands() {
-  /*
   int a_bins = analogRead(A0);
   float a_voltage = (a_bins/4096.0)*3.3;
   if (a_voltage >= 0.9 && (!a_hand)) {
@@ -333,7 +332,6 @@ void update_all_hands() {
       score += 1;
       s_inc = true;
   }
-  */
   int d_bins = analogRead(A6);
   float d_voltage = (d_bins / 4096.0) * 3.3;
   Serial.print("D: ");
