@@ -234,7 +234,6 @@ void loop() {
   {
     digitalWrite(a_LED_pin, 0);
     a_start++;
-    //if (fabs(actual_a_in - a_hand_in_timer) <= 100)
       a_inc = false;
     //a_hand_out_timer = millis();
   }
@@ -265,18 +264,34 @@ void loop() {
 }
 
 void update_all_hands() {
-  int a_bins = analogRead(A10);
-  float a_voltage = (a_bins / 4096.0) * 3.3;
-  Serial.print("Voltage: ");
-  Serial.println(a_voltage);
+  
+  int a_bins = analogRead(A0);
+  float a_voltage = (a_bins/4096.0)*3.3;
   if (a_voltage >= 0.9 && (!a_hand)) {
     actual_a_in = millis();
     a_hand = true;
-    Serial.println("Laser broken");
   } else {
     a_hand = false;
-  }
+  } 
+
   if (((fabs(actual_a_in - a_hand_in_timer) <= 100) && a_hand) && !a_inc) {
+      int time_diff = (fabs(actual_a_in - a_hand_in_timer));
+      if (time_diff <= 10){
+        Serial.println("Perfect");
+        score += 5;
+      }
+      else if (time_diff <= 25){
+        Serial.println("Great");
+        score += 3;
+      }
+      else if (time_diff <= 50){
+        Serial.println("Good");
+        score += 2;
+      }
+      else if (time_diff <= 100){
+        Serial.println("Okay");
+        score += 1;
+      }
       score += 1;
       a_inc = true;
   }
@@ -310,7 +325,7 @@ void update_all_hands() {
   if (fabs(actual_f_in - f_hand_in_timer) <= 200) {
     //score += 1;
   }
-
+  
 }
 
 void string_parser(string str) {
