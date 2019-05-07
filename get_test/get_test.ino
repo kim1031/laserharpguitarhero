@@ -18,7 +18,7 @@ using namespace std;
 #define RA8875_RST 21
 
 #define a_LED_pin 12
-#define s_LED_pin 14 
+#define s_LED_pin 13 
 #define d_LED_pin 27
 #define f_LED_pin 26
 
@@ -164,7 +164,7 @@ void setup() {
   myDFPlayer.EQ(DFPLAYER_EQ_NORMAL);
   myDFPlayer.outputDevice(DFPLAYER_DEVICE_SD);
   int delayms = 100;
-  myDFPlayer.play(8);  //Play the first mp3
+  myDFPlayer.play(5);  //Play the first mp3
   timer = millis();
 }
 
@@ -496,7 +496,7 @@ void do_http_request(char* host, char* request, char* response, uint16_t respons
 }
 
 void getSong() {
-  sprintf(request_buffer, "GET http://608dev.net/sandbox/sc/jgonik/laserharpguitarhero/get_song.py?song=This_Love HTTP/1.1\r\n");
+  sprintf(request_buffer, "GET http://608dev.net/sandbox/sc/jgonik/laserharpguitarhero/get_song.py?song=Paint_It_Black HTTP/1.1\r\n");
   strcat(request_buffer, "Host: 608dev.net\r\n");
   strcat(request_buffer, "\r\n");
   do_http_request("608dev.net", request_buffer, response_buffer, OUT_BUFFER_SIZE, RESPONSE_TIMEOUT, true);
