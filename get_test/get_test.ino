@@ -273,7 +273,7 @@ void loop() {
 }
 
 void update_all_hands() {
-  
+  /*
   int a_bins = analogRead(A0);
   float a_voltage = (a_bins/4096.0)*3.3;
   if (a_voltage >= 0.9 && (!a_hand)) {
@@ -332,6 +332,7 @@ void update_all_hands() {
       score += 1;
       s_inc = true;
   }
+  */
   int d_bins = analogRead(A7);
   float d_voltage = (d_bins / 4096.0) * 3.3;
   if (d_voltage >= 0.9 && !d_hand) {
