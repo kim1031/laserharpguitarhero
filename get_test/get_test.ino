@@ -13,12 +13,12 @@ using namespace std;
 #include <Arduino.h>
 #include <DFRobotDFPlayerMini.h>
 
-#define RA8875_INT 4
+#define RA8875_INT 16
 #define RA8875_CS  15
 #define RA8875_RST 21
 
 #define a_LED_pin 12
-#define s_LED_pin 13 
+#define s_LED_pin 14 
 #define d_LED_pin 27
 #define f_LED_pin 26
 
@@ -92,6 +92,7 @@ bool f_inc;
 int score;
 
 void setup() {
+  
   Serial.begin(115200);
   WiFi.begin(network);
   uint8_t count = 0;;
@@ -116,7 +117,7 @@ void setup() {
   tft.PWM1config(true, RA8875_PWM_CLK_DIV1024);
   tft.PWM1out(255);
   tft.fillScreen(RA8875_BLACK);
-
+  
   score = 0;
   a_hand = false;
   s_hand = false;
@@ -127,7 +128,7 @@ void setup() {
   s_inc = true;
   d_inc = true;
   f_inc = true;
-
+  
   pinMode(a_LED_pin, OUTPUT);
   pinMode(s_LED_pin, OUTPUT);
   pinMode(d_LED_pin, OUTPUT);
@@ -163,7 +164,7 @@ void setup() {
   myDFPlayer.EQ(DFPLAYER_EQ_NORMAL);
   myDFPlayer.outputDevice(DFPLAYER_DEVICE_SD);
   int delayms = 100;
-  myDFPlayer.play(1);  //Play the first mp3
+  myDFPlayer.play(8);  //Play the first mp3
   timer = millis();
 }
 
@@ -240,7 +241,7 @@ void loop() {
   {
     digitalWrite(a_LED_pin, 0);
     a_start++;
-      a_inc = false;
+    a_inc = false;
     //a_hand_out_timer = millis();
   }
   if (s_rects[s_start].passed())
@@ -333,8 +334,10 @@ void update_all_hands() {
       s_inc = true;
   }
   */
-  int d_bins = analogRead(A7);
+  int d_bins = analogRead(A6);
   float d_voltage = (d_bins / 4096.0) * 3.3;
+  Serial.print("D: ");
+  Serial.println(d_voltage);
   if (d_voltage >= 0.9 && !d_hand) {
     actual_d_in = millis();
     d_hand = true;
@@ -361,8 +364,10 @@ void update_all_hands() {
       score += 1;
       d_inc = true;
   }
-  int f_bins = analogRead(A6);
+  int f_bins = analogRead(A7);
   float f_voltage = (f_bins / 4096.0) * 3.3;
+  Serial.print("F: ");
+  Serial.println(f_voltage);
   if (f_voltage >= 0.9 && !f_hand) {
     actual_f_in = millis();
     f_hand = true;
@@ -493,7 +498,7 @@ void do_http_request(char* host, char* request, char* response, uint16_t respons
 }
 
 void getSong() {
-  sprintf(request_buffer, "GET http://608dev.net/sandbox/sc/jgonik/laserharpguitarhero/get_song.py?song=Twinkle_Twinkle HTTP/1.1\r\n");
+  sprintf(request_buffer, "GET http://608dev.net/sandbox/sc/jgonik/laserharpguitarhero/get_song.py?song=This_Love HTTP/1.1\r\n");
   strcat(request_buffer, "Host: 608dev.net\r\n");
   strcat(request_buffer, "\r\n");
   do_http_request("608dev.net", request_buffer, response_buffer, OUT_BUFFER_SIZE, RESPONSE_TIMEOUT, true);
