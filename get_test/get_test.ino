@@ -26,9 +26,9 @@ Adafruit_RA8875 tft = Adafruit_RA8875(RA8875_CS, RA8875_RST);
 HardwareSerial mySoftwareSerial(2);
 DFRobotDFPlayerMini myDFPlayer;
 
-char network[] = "MIT";
-//char network[] = "6s08";
-//char password[] = "iesc6s08";
+//char network[] = "MIT";
+char network[] = "6s08";
+char password[] = "iesc6s08";
 const int RESPONSE_TIMEOUT = 6000;
 const uint16_t IN_BUFFER_SIZE = 1000;
 const uint32_t OUT_BUFFER_SIZE = 30000;
@@ -94,7 +94,7 @@ int score;
 void setup() {
   
   Serial.begin(115200);
-  WiFi.begin(network);
+  WiFi.begin(network, password);
   uint8_t count = 0;;
   while (WiFi.status() != WL_CONNECTED && count < 12) {
     delay(500);
@@ -164,14 +164,12 @@ void setup() {
   myDFPlayer.EQ(DFPLAYER_EQ_NORMAL);
   myDFPlayer.outputDevice(DFPLAYER_DEVICE_SD);
   int delayms = 100;
-  myDFPlayer.play(5);  //Play the first mp3
+  myDFPlayer.play(6);  //Play the first mp3
   timer = millis();
 }
 
 void loop() {
   loop_timer = millis();
-  //Serial.print("Start: ");
-  //Serial.println(millis());
   int elapsed = millis() - timer;
   if ( fabs( (a_arr[a_index] * 1000) - elapsed) <= 3000 ) {
     int dur = int((a_arr[a_index + 1] - a_arr[a_index]) * 1000);
@@ -242,21 +240,18 @@ void loop() {
     digitalWrite(a_LED_pin, 0);
     a_start++;
     a_inc = false;
-    //a_hand_out_timer = millis();
   }
   if (s_rects[s_start].passed())
   {
     digitalWrite(s_LED_pin, 0);
     s_start++;
     s_inc = false;
-    //s_hand_out_timer = millis();
   }
   if (d_rects[d_start].passed())
   {
     digitalWrite(d_LED_pin, 0);
     d_start++;
     d_inc = false;
-    //d_hand_out_timer = millis();
   }
   if (f_rects[f_start].passed())
   {
@@ -266,15 +261,13 @@ void loop() {
     //f_hand_out_timer = millis();
   }
   update_all_hands();
-  Serial.print("Score: ");
+  Serial.println("Score: ");
   Serial.println(score);
   while (millis() - loop_timer <= 20);
-  //Serial.print("End: ");
-  //Serial.println(millis());
 }
 
 void update_all_hands() {
-  int a_bins = analogRead(A0);
+  int a_bins = analogRead(A7);
   float a_voltage = (a_bins/4096.0)*3.3;
   if (a_voltage >= 0.9 && (!a_hand)) {
     actual_a_in = millis();
@@ -301,10 +294,11 @@ void update_all_hands() {
         Serial.println("Okay");
         score += 1;
       }
-      score += 1;
       a_inc = true;
+      Serial.print("Score: ");
+      Serial.println(score);
   }
-  int s_bins = analogRead(A11);
+  int s_bins = analogRead(A6);
   float s_voltage = (s_bins / 4096.0) * 3.3;
   if (s_voltage >= 0.9 && !s_hand) {
     actual_s_in = millis();
@@ -329,13 +323,12 @@ void update_all_hands() {
         Serial.println("Okay");
         score += 1;
       }
-      score += 1;
       s_inc = true;
+      Serial.print("Score: ");
+      Serial.println(score);
   }
-  int d_bins = analogRead(A6);
+  int d_bins = analogRead(A3);
   float d_voltage = (d_bins / 4096.0) * 3.3;
-  Serial.print("D: ");
-  Serial.println(d_voltage);
   if (d_voltage >= 0.9 && !d_hand) {
     actual_d_in = millis();
     d_hand = true;
@@ -359,13 +352,12 @@ void update_all_hands() {
         Serial.println("Okay");
         score += 1;
       }
-      score += 1;
       d_inc = true;
+      Serial.print("Score: ");
+      Serial.println(score);
   }
-  int f_bins = analogRead(A7);
+  int f_bins = analogRead(A0);
   float f_voltage = (f_bins / 4096.0) * 3.3;
-  Serial.print("F: ");
-  Serial.println(f_voltage);
   if (f_voltage >= 0.9 && !f_hand) {
     actual_f_in = millis();
     f_hand = true;
@@ -389,9 +381,10 @@ void update_all_hands() {
         Serial.println("Okay");
         score += 1;
       }
-      score += 1;
       f_inc = true;
-  }
+      Serial.print("Score: ");
+      Serial.println(score);
+  } 
 }
 
 void string_parser(string str) {
@@ -496,7 +489,7 @@ void do_http_request(char* host, char* request, char* response, uint16_t respons
 }
 
 void getSong() {
-  sprintf(request_buffer, "GET http://608dev.net/sandbox/sc/jgonik/laserharpguitarhero/get_song.py?song=Paint_It_Black HTTP/1.1\r\n");
+  sprintf(request_buffer, "GET http://608dev.net/sandbox/sc/jgonik/laserharpguitarhero/get_song.py?song=Seven_Nation_Army HTTP/1.1\r\n");
   strcat(request_buffer, "Host: 608dev.net\r\n");
   strcat(request_buffer, "\r\n");
   do_http_request("608dev.net", request_buffer, response_buffer, OUT_BUFFER_SIZE, RESPONSE_TIMEOUT, true);
