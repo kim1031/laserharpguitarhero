@@ -18,7 +18,7 @@ using namespace std;
 #define RA8875_RST 21
 
 #define a_LED_pin 12
-#define s_LED_pin 13 
+#define s_LED_pin 13
 #define d_LED_pin 27
 #define f_LED_pin 26
 
