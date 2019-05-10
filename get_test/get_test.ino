@@ -164,7 +164,7 @@ void setup() {
   myDFPlayer.EQ(DFPLAYER_EQ_NORMAL);
   myDFPlayer.outputDevice(DFPLAYER_DEVICE_SD);
   int delayms = 100;
-  myDFPlayer.play(8);  //Play the first mp3
+  myDFPlayer.play(5);  //Play the first mp3
   timer = millis();
 }
 
@@ -274,7 +274,6 @@ void loop() {
 }
 
 void update_all_hands() {
-  /*
   int a_bins = analogRead(A0);
   float a_voltage = (a_bins/4096.0)*3.3;
   if (a_voltage >= 0.9 && (!a_hand)) {
@@ -333,7 +332,6 @@ void update_all_hands() {
       score += 1;
       s_inc = true;
   }
-  */
   int d_bins = analogRead(A6);
   float d_voltage = (d_bins / 4096.0) * 3.3;
   Serial.print("D: ");
@@ -498,7 +496,7 @@ void do_http_request(char* host, char* request, char* response, uint16_t respons
 }
 
 void getSong() {
-  sprintf(request_buffer, "GET http://608dev.net/sandbox/sc/jgonik/laserharpguitarhero/get_song.py?song=This_Love HTTP/1.1\r\n");
+  sprintf(request_buffer, "GET http://608dev.net/sandbox/sc/jgonik/laserharpguitarhero/get_song.py?song=Paint_It_Black HTTP/1.1\r\n");
   strcat(request_buffer, "Host: 608dev.net\r\n");
   strcat(request_buffer, "\r\n");
   do_http_request("608dev.net", request_buffer, response_buffer, OUT_BUFFER_SIZE, RESPONSE_TIMEOUT, true);
