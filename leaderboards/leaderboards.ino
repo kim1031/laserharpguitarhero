@@ -81,6 +81,8 @@ void display_leaderboard(char* song) {
   char result_str[10];
   char score_str[10];
   for (index = 0; index < strlen(users); index++) { //check that the length of the users list thing is right (boundary)
+    memset(result_str, 0, sizeof(result_str));
+    memset(score_str, 0, sizeof(score_str));
     sprintf(result_str, "%d", place_count);
     strcat(result_str, ". ");
     strcat(result_str, users[index]);
