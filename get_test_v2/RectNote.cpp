@@ -9,10 +9,15 @@
 #include <SPI.h>
 
 RectNote::RectNote()
-{  }
+{ 
+    this->start_time = 0;
+    this->end_time = 0;
+}
 
-RectNote::RectNote(int dur, int wid, int x, uint16_t color)
+RectNote::RectNote(int start_time, int end_time, int dur, int wid, int x, uint16_t color)
 {
+    this->start_time = start_time;
+    this->end_time = end_time;
     this->duration = dur;
     this->width = wid;
     this->length = 0; //temporary, will increase until length = duration
@@ -23,7 +28,7 @@ RectNote::RectNote(int dur, int wid, int x, uint16_t color)
     this->color = color;
 }
 
-void RectNote::update_length(int screen_bottom)
+void RectNote::updateLength(int screen_bottom)
 {   
     //grow the bar until it hits correct length
     if (y == 0 && length < duration)
@@ -37,13 +42,13 @@ void RectNote::update_length(int screen_bottom)
     }
 }
 
-void RectNote::update_y_coord(int screen_bottom)
+void RectNote::updateYCoord(int screen_bottom)
 {
     if (length >= duration || (y > 0 && y <= screen_bottom))
         y += 3;
 }
 
-void RectNote::draw_rect(Adafruit_RA8875* tft, bool old)
+void RectNote::drawRect(Adafruit_RA8875* tft, bool old)
 {
     if (old)
         tft->fillRect(x, y, width, 3, RA8875_BLACK);
@@ -65,7 +70,7 @@ void RectNote::update(int screen_bottom, Adafruit_RA8875* tft)
     }
 }
 
-bool RectNote::to_press()
+bool RectNote::toPress()
 {
   return press; 
 }
@@ -78,4 +83,14 @@ bool RectNote::passed()
 int RectNote::getY()
 {
   return y;
+}
+
+float RectNote::getStart()
+{
+  return start_time;
+}
+
+float RectNote::getEnd()
+{
+  return end_time;
 }

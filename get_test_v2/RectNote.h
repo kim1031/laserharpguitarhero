@@ -12,6 +12,8 @@
 class RectNote
 {
     private:
+        float start_time;
+        float end_time;
         int length;
         int width;
         int duration;
@@ -22,15 +24,17 @@ class RectNote
         uint16_t color;
     public:
         RectNote();
-        RectNote(int dur, int wid, int x, uint16_t color);
+        RectNote(int start_time, int end_time, int dur, int wid, int x, uint16_t color);
         void update(int screen_bottom, Adafruit_RA8875* tft);
-        bool to_press();
+        bool toPress();
         bool passed();
         int getY();
+        float getStart();
+        float getEnd();
     private:
-        void update_length(int screen_bottom);
-        void update_y_coord(int screen_bottom);
-        void draw_rect(Adafruit_RA8875* tft, bool old);
+        void updateLength(int screen_bottom);
+        void updateYCoord(int screen_bottom);
+        void drawRect(Adafruit_RA8875* tft, bool old);
 };
 
 #endif
