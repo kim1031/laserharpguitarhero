@@ -26,9 +26,9 @@ Adafruit_RA8875 tft = Adafruit_RA8875(RA8875_CS, RA8875_RST);
 HardwareSerial mySoftwareSerial(2);
 DFRobotDFPlayerMini myDFPlayer;
 
-char network[] = "MIT";
-//char network[] = "6s08";
-//char password[] = "iesc6s08";
+//char network[] = "MIT";
+char network[] = "6s08";
+char password[] = "iesc6s08";
 const int RESPONSE_TIMEOUT = 6000;
 const uint16_t IN_BUFFER_SIZE = 1000;
 const uint32_t OUT_BUFFER_SIZE = 30000;
@@ -90,11 +90,13 @@ bool d_inc;
 bool f_inc;
 
 int score;
+char score_string[20]; //for printing score result to screen
+char score_to_str[5]; //converting int score to char array
 
 void setup() {
   
   Serial.begin(115200);
-  WiFi.begin(network);
+  WiFi.begin(network, password);
   uint8_t count = 0;;
   while (WiFi.status() != WL_CONNECTED && count < 12) {
     delay(500);
@@ -140,6 +142,7 @@ void setup() {
   digitalWrite(f_LED_pin, 0);
 
   tft.fillRect(0, 380, 800, 100, RA8875_WHITE);
+  tft.drawString("Score: ", 0, 350, RA8875_BLACK); //print out score
 
   getSong();
   string response(response_buffer);
@@ -164,14 +167,12 @@ void setup() {
   myDFPlayer.EQ(DFPLAYER_EQ_NORMAL);
   myDFPlayer.outputDevice(DFPLAYER_DEVICE_SD);
   int delayms = 100;
-  myDFPlayer.play(5);  //Play the first mp3
+  myDFPlayer.play(6);  //Play the first mp3
   timer = millis();
 }
 
 void loop() {
   loop_timer = millis();
-  //Serial.print("Start: ");
-  //Serial.println(millis());
   int elapsed = millis() - timer;
   if ( fabs( (a_arr[a_index] * 1000) - elapsed) <= 3000 ) {
     int dur = int((a_arr[a_index + 1] - a_arr[a_index]) * 1000);
@@ -242,21 +243,18 @@ void loop() {
     digitalWrite(a_LED_pin, 0);
     a_start++;
     a_inc = false;
-    //a_hand_out_timer = millis();
   }
   if (s_rects[s_start].passed())
   {
     digitalWrite(s_LED_pin, 0);
     s_start++;
     s_inc = false;
-    //s_hand_out_timer = millis();
   }
   if (d_rects[d_start].passed())
   {
     digitalWrite(d_LED_pin, 0);
     d_start++;
     d_inc = false;
-    //d_hand_out_timer = millis();
   }
   if (f_rects[f_start].passed())
   {
@@ -266,15 +264,13 @@ void loop() {
     //f_hand_out_timer = millis();
   }
   update_all_hands();
-  Serial.print("Score: ");
+  Serial.println("Score: ");
   Serial.println(score);
   while (millis() - loop_timer <= 20);
-  //Serial.print("End: ");
-  //Serial.println(millis());
 }
 
 void update_all_hands() {
-  int a_bins = analogRead(A0);
+  int a_bins = analogRead(A7);
   float a_voltage = (a_bins/4096.0)*3.3;
   if (a_voltage >= 0.9 && (!a_hand)) {
     actual_a_in = millis();
@@ -286,25 +282,40 @@ void update_all_hands() {
   if (((fabs(actual_a_in - a_hand_in_timer) <= 100) && a_hand) && !a_inc) {
       int time_diff = (fabs(actual_a_in - a_hand_in_timer));
       if (time_diff <= 10){
+        tft.setTextColor(RA8875_GREEN);
+        tft.drawString("Perfect", 50, 190, 2);
         Serial.println("Perfect");
         score += 5;
       }
       else if (time_diff <= 25){
+        tft.setTextColor(RA8875_GREEN);
+        tft.drawString("Great", 50, 190, 2);
         Serial.println("Great");
         score += 3;
       }
       else if (time_diff <= 50){
+        tft.setTextColor(RA8875_GREEN);
+        tft.drawString("Good", 50, 190, 2);
         Serial.println("Good");
         score += 2;
       }
       else if (time_diff <= 100){
+        tft.setTextColor(RA8875_GREEN);
+        tft.drawString("Okay", 50, 190, 2);
         Serial.println("Okay");
         score += 1;
       }
-      score += 1;
       a_inc = true;
-  }
-  int s_bins = analogRead(A11);
+      Serial.print("Score: ");
+      Serial.println(score);
+      memset(score_string, 0, sizeof(score_string));
+      memset(score_to_str, 0, sizeof(score_to_str));
+      score_string = "Score: ";
+      sprintf(score_to_str, "%d", score);
+      strcat(score_string, score_to_str);
+      tft.drawString(score_string, 400, 350, 2);
+  } //need to add functionality for displaying miss, but only immediately after note
+  int s_bins = analogRead(A6);
   float s_voltage = (s_bins / 4096.0) * 3.3;
   if (s_voltage >= 0.9 && !s_hand) {
     actual_s_in = millis();
@@ -314,28 +325,41 @@ void update_all_hands() {
   if (((fabs(actual_s_in - s_hand_in_timer) <= 100) && s_hand) && !s_inc) {
       int time_diff = (fabs(actual_s_in - s_hand_in_timer));
       if (time_diff <= 10){
+        tft.setTextColor(RA8875_RED);
+        tft.drawString("Perfect", 250, 190, 2);
         Serial.println("Perfect");
         score += 5;
       }
       else if (time_diff <= 25){
+        tft.setTextColor(RA8875_RED);
+        tft.drawString("Great", 250, 190, 2);
         Serial.println("Great");
         score += 3;
       }
       else if (time_diff <= 50){
+        tft.setTextColor(RA8875_RED);
+        tft.drawString("Good", 250, 190, 2);
         Serial.println("Good");
         score += 2;
       }
       else if (time_diff <= 100){
+        tft.setTextColor(RA8875_RED);
+        tft.drawString("Okay", 250, 190, 2);
         Serial.println("Okay");
         score += 1;
       }
-      score += 1;
       s_inc = true;
+      Serial.print("Score: ");
+      Serial.println(score);
+      memset(score_string, 0, sizeof(score_string));
+      memset(score_to_str, 0, sizeof(score_to_str));
+      score_string = "Score: ";
+      sprintf(score_to_str, "%d", score);
+      strcat(score_string, score_to_str);
+      tft.drawString(score_string, 400, 350, 2);
   }
-  int d_bins = analogRead(A6);
+  int d_bins = analogRead(A3);
   float d_voltage = (d_bins / 4096.0) * 3.3;
-  Serial.print("D: ");
-  Serial.println(d_voltage);
   if (d_voltage >= 0.9 && !d_hand) {
     actual_d_in = millis();
     d_hand = true;
@@ -344,28 +368,41 @@ void update_all_hands() {
   if (((fabs(actual_d_in - d_hand_in_timer) <= 100) && d_hand) && !d_inc) {
       int time_diff = (fabs(actual_d_in - d_hand_in_timer));
       if (time_diff <= 10){
+        tft.setTextColor(RA8875_YELLOW);
+        tft.drawString("Perfect", 450, 190, 2);
         Serial.println("Perfect");
         score += 5;
       }
       else if (time_diff <= 25){
+        tft.setTextColor(RA8875_YELLOW);
+        tft.drawString("Great", 450, 190, 2);
         Serial.println("Great");
         score += 3;
       }
       else if (time_diff <= 50){
+        tft.setTextColor(RA8875_YELLOW);
+        tft.drawString("Good", 450, 190, 2);
         Serial.println("Good");
         score += 2;
       }
       else if (time_diff <= 100){
+        tft.setTextColor(RA8875_YELLOW);
+        tft.drawString("Okay", 450, 190, 2);
         Serial.println("Okay");
         score += 1;
       }
-      score += 1;
       d_inc = true;
+      Serial.print("Score: ");
+      Serial.println(score);
+      memset(score_string, 0, sizeof(score_string));
+      memset(score_to_str, 0, sizeof(score_to_str));
+      score_string = "Score: ";
+      sprintf(score_to_str, "%d", score);
+      strcat(score_string, score_to_str);
+      tft.drawString(score_string, 400, 350, 2);
   }
-  int f_bins = analogRead(A7);
+  int f_bins = analogRead(A0);
   float f_voltage = (f_bins / 4096.0) * 3.3;
-  Serial.print("F: ");
-  Serial.println(f_voltage);
   if (f_voltage >= 0.9 && !f_hand) {
     actual_f_in = millis();
     f_hand = true;
@@ -374,24 +411,39 @@ void update_all_hands() {
   if (((fabs(actual_f_in - f_hand_in_timer) <= 100) && f_hand) && !f_inc) {
       int time_diff = (fabs(actual_f_in - f_hand_in_timer));
       if (time_diff <= 10){
+        tft.setTextColor(RA8875_BLUE);
+        tft.drawString("Perfect", 650, 190, 2);
         Serial.println("Perfect");
         score += 5;
       }
       else if (time_diff <= 25){
+        tft.setTextColor(RA8875_BLUE);
+        tft.drawString("Great", 650, 190, 2);
         Serial.println("Great");
         score += 3;
       }
       else if (time_diff <= 50){
+        tft.setTextColor(RA8875_BLUE);
+        tft.drawString("Good", 650, 190, 2);
         Serial.println("Good");
         score += 2;
       }
       else if (time_diff <= 100){
+        tft.setTextColor(RA8875_BLUE);
+        tft.drawString("Okay", 650, 190, 2);
         Serial.println("Okay");
         score += 1;
       }
-      score += 1;
       f_inc = true;
-  }
+      Serial.print("Score: ");
+      Serial.println(score);
+      memset(score_string, 0, sizeof(score_string));
+      memset(score_to_str, 0, sizeof(score_to_str));
+      score_string = "Score: ";
+      sprintf(score_to_str, "%d", score);
+      strcat(score_string, score_to_str);
+      tft.drawString(score_string, 400, 350, 2);
+  } 
 }
 
 void string_parser(string str) {
@@ -496,9 +548,9 @@ void do_http_request(char* host, char* request, char* response, uint16_t respons
 }
 
 void getSong() {
-  sprintf(request_buffer, "GET http://608dev.net/sandbox/sc/jgonik/laserharpguitarhero/get_song.py?song=Paint_It_Black HTTP/1.1\r\n");
+  sprintf(request_buffer, "GET http://608dev.net/sandbox/sc/jgonik/laserharpguitarhero/get_song.py?song=Seven_Nation_Army HTTP/1.1\r\n");
   strcat(request_buffer, "Host: 608dev.net\r\n");
   strcat(request_buffer, "\r\n");
   do_http_request("608dev.net", request_buffer, response_buffer, OUT_BUFFER_SIZE, RESPONSE_TIMEOUT, true);
-  WiFi.mode(WIFI_OFF);
+  WiFi.mode(WIFI_OFF); //turn off wifi to conserve power
 }
