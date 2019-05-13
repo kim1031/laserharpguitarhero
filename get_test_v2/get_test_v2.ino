@@ -41,8 +41,6 @@ char response_buffer[OUT_BUFFER_SIZE];
 int timer;
 int loop_timer;
 
-Game game(&tft, &myDFPlayer);
-
 // char note_arr[500] = {0};
 // float note_time_arr[500] = {0};
 // float duration_arr[500] = {0};
@@ -95,6 +93,8 @@ bool d_inc;
 bool f_inc;
 
 //int score;
+
+Game game(&tft, &myDFPlayer);
 
 void setup() {
   Serial.begin(115200);
@@ -168,6 +168,7 @@ void setup() {
   // string_parser(response);
   // Serial.println(response.c_str());
   // transfer_notes();
+  //Game game(&tft, &myDFPlayer);
 
   //game.setUp(&tft, &myDFPlayer);
 
