@@ -18,7 +18,7 @@ using namespace std;
 #define RA8875_RST 21
 
 #define a_LED_pin 12
-#define s_LED_pin 13
+#define s_LED_pin 13 
 #define d_LED_pin 27
 #define f_LED_pin 26
 
@@ -94,7 +94,6 @@ char score_string[20]; //for printing score result to screen
 char score_to_str[5]; //converting int score to char array
 
 void setup() {
-  
   Serial.begin(115200);
   WiFi.begin(network, password);
   uint8_t count = 0;;

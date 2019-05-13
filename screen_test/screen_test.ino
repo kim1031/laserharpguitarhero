@@ -6,14 +6,13 @@
 #include <Adafruit_RA8875.h>
 #include <SPI.h>
 
-#define RA8875_INT 4
+#define RA8875_INT 16
 #define RA8875_CS  15
-#define RA8875_RST 5
+#define RA8875_RST 21
 
 Adafruit_RA8875 tft = Adafruit_RA8875(RA8875_CS,RA8875_RST);
 
 void setup() {
-  Serial.begin(115200);
   Serial.begin(115200); //for debugging if needed.
   if(!tft.begin(RA8875_800x480)) {
     Serial.println("not found");
@@ -24,7 +23,7 @@ void setup() {
   tft.PWM1config(true, RA8875_PWM_CLK_DIV1024);
   tft.PWM1out(255);
 
-  tft.fillScreen(RA8875_RED);
+  tft.fillScreen(RA8875_BLACK);
   tft.setRotation(0);
   tft.drawCircle(750, 80, 30, RA8875_MAGENTA);
   tft.drawCircle(750, 190, 30, RA8875_BLUE);

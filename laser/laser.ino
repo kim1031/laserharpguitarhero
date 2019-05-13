@@ -14,7 +14,7 @@ void setup() {
 }
 
 void loop() {
-  int bins = analogRead(A7);
+  int bins = analogRead(A0);
   float voltage = (bins/4096.0)*3.3;
   Serial.print("Voltage ");
   Serial.println(voltage);
