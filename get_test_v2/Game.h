@@ -29,44 +29,47 @@
 class Game
 {
     private:
-        static int score;
-        static int state;
+        int score;
+        int state;
         
-        static LaserString a_string;
-        static LaserString s_string;
-        static LaserString d_string;
-        static LaserString f_string;
+        LaserString a_string;
+        LaserString s_string;
+        LaserString d_string;
+        LaserString f_string;
 
-        static RectNote a_rects[100];
-        static int a_start;
-        static int a_end;
-        static RectNote s_rects[100];
-        static int s_start;
-        static int s_end;
-        static RectNote d_rects[100];
-        static int d_start;
-        static int d_end;
-        static RectNote f_rects[100];
-        static int f_start;
-        static int f_end;
+        RectNote a_rects[100];
+        int a_start;
+        int a_end;
+        RectNote s_rects[100];
+        int s_start;
+        int s_end;
+        RectNote d_rects[100];
+        int d_start;
+        int d_end;
+        RectNote f_rects[100];
+        int f_start;
+        int f_end;
 
-        static std::string user;
-        static std::string song_name;
-        static std::string artist_name;
-        static int song;
-        static float song_len;
+        std::string user;
+        std::string song_name;
+        std::string artist_name;
+        int song;
+        float song_len;
 
-        static Adafruit_RA8875* tft;
-        static DFRobotDFPlayerMini* mp3_player;
+        Adafruit_RA8875* tft;
+        DFRobotDFPlayerMini* mp3_player;
 
     public:
-        static void setUp(Adafruit_RA8875* input_tft, DFRobotDFPlayerMini* input_mp3_player);
-        //static int getSongNum();
-        static void gamePlay();
+        //Game();
+        Game(Adafruit_RA8875* input_tft, DFRobotDFPlayerMini* input_mp3_player);
+        //void setUp(Adafruit_RA8875* input_tft, DFRobotDFPlayerMini* input_mp3_player);
+        //int getSongNum();
+        void gamePlay(int elapsed, char* request_buffer, char* reponse_buffer);
+        int getState();
     private:
-        static void getSongData(char* request_buffer);
-        static void parseSongData(string data_to_process, char* note_arr, float* note_time_arr, float* duration_arr);
-        static void extractTimes(char* note_arr, float* note_time_arr, float* duration_arr);
+        void getSongData(char* request_buffer);
+        void parseSongData(char* response_buffer, char* note_arr, float* note_time_arr, float* duration_arr);
+        void extractTimes(char* note_arr, float* note_time_arr, float* duration_arr);
 };
 
 #endif

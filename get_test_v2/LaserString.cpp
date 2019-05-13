@@ -19,7 +19,7 @@ void LaserString::LEDControl(bool on)
         digitalWrite(LED_pin, 0);
 }
 
-void LaserString::userAction()
-{
-    
-}
+//void LaserString::userAction()
+//{
+//    
+//}

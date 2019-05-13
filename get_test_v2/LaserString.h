@@ -8,10 +8,10 @@ class LaserString
     private:
         int LED_pin;
         int analog_pin;
-    public;
+    public:
         LaserString(int LED_pin, int analog_pin);
         void LEDControl(bool on);
-        int userAction();
+        //int userAction();
 };
 
 #endif

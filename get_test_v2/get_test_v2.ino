@@ -1,4 +1,5 @@
 #include "RectNote.h"
+#include "LaserString.h"
 #include "Game.h"
 
 #include <SPI.h>
@@ -27,17 +28,20 @@ Adafruit_RA8875 tft = Adafruit_RA8875(RA8875_CS, RA8875_RST);
 HardwareSerial mySoftwareSerial(2);
 DFRobotDFPlayerMini myDFPlayer;
 
-char network[] = "MIT";
-//char network[] = "6s08";
-//char password[] = "iesc6s08";
+//char network[] = "MIT";
+char network[] = "6s08";
+char password[] = "iesc6s08";
 const int RESPONSE_TIMEOUT = 6000;
 const uint16_t IN_BUFFER_SIZE = 1000;
 const uint32_t OUT_BUFFER_SIZE = 30000;
 char request_buffer[IN_BUFFER_SIZE];
+char old_request_buffer[IN_BUFFER_SIZE];
 char response_buffer[OUT_BUFFER_SIZE];
  
 int timer;
 int loop_timer;
+
+Game game(&tft, &myDFPlayer);
 
 // char note_arr[500] = {0};
 // float note_time_arr[500] = {0};
@@ -165,9 +169,9 @@ void setup() {
   // Serial.println(response.c_str());
   // transfer_notes();
 
-  Game.setUp(&tft, &myDFPlayer);
+  //game.setUp(&tft, &myDFPlayer);
 
-  myDFPlayer.play(5);  //Play the first mp3
+  //myDFPlayer.play(5);  //Play the first mp3
   timer = millis();
 }
 
@@ -176,6 +180,14 @@ void loop() {
   //Serial.print("Start: ");
   //Serial.println(millis());
   int elapsed = millis() - timer;
+  Serial.println(game.getState());
+  game.gamePlay(elapsed, request_buffer, response_buffer);
+
+  if (strcmp(request_buffer, old_request_buffer) != 0)
+  {
+    do_http_request("608dev.net", request_buffer, response_buffer, OUT_BUFFER_SIZE, RESPONSE_TIMEOUT, true);
+    strcpy(old_request_buffer, request_buffer);
+  }
   // if ( fabs( (a_arr[a_index] * 1000) - elapsed) <= 3000 ) {
   //   int dur = int((a_arr[a_index + 1] - a_arr[a_index]) * 1000);
   //   if (dur <= 500)
@@ -223,183 +235,183 @@ void loop() {
   //   f_rects[i].update(380, &tft);
   // tft.fillRect(0, 380, 800, 100, RA8875_WHITE);
 
-  if (a_rects[a_start].toPress()) {
-    digitalWrite(a_LED_pin, 1);
-    a_hand_in_timer = millis();
-  }
-  if (s_rects[s_start].toPress()) {
-    digitalWrite(s_LED_pin, 1);
-    s_hand_in_timer = millis();
-  }
-  if (d_rects[d_start].toPress()) {
-    digitalWrite(d_LED_pin, 1);
-    d_hand_in_timer = millis();
-  }
-  if (f_rects[f_start].toPress()) {
-    digitalWrite(f_LED_pin, 1);
-    f_hand_in_timer = millis();
-  }
+  // if (a_rects[a_start].toPress()) {
+  //   digitalWrite(a_LED_pin, 1);
+  //   a_hand_in_timer = millis();
+  // }
+  // if (s_rects[s_start].toPress()) {
+  //   digitalWrite(s_LED_pin, 1);
+  //   s_hand_in_timer = millis();
+  // }
+  // if (d_rects[d_start].toPress()) {
+  //   digitalWrite(d_LED_pin, 1);
+  //   d_hand_in_timer = millis();
+  // }
+  // if (f_rects[f_start].toPress()) {
+  //   digitalWrite(f_LED_pin, 1);
+  //   f_hand_in_timer = millis();
+  // }
 
-  if (a_rects[a_start].passed())
-  {
-    digitalWrite(a_LED_pin, 0);
-    a_start++;
-    a_inc = false;
-    //a_hand_out_timer = millis();
-  }
-  if (s_rects[s_start].passed())
-  {
-    digitalWrite(s_LED_pin, 0);
-    s_start++;
-    s_inc = false;
-    //s_hand_out_timer = millis();
-  }
-  if (d_rects[d_start].passed())
-  {
-    digitalWrite(d_LED_pin, 0);
-    d_start++;
-    d_inc = false;
-    //d_hand_out_timer = millis();
-  }
-  if (f_rects[f_start].passed())
-  {
-    digitalWrite(f_LED_pin, 0);
-    f_start++;
-    f_inc = false;
-    //f_hand_out_timer = millis();
-  }
-  update_all_hands();
-  Serial.print("Score: ");
-  Serial.println(score);
+  // if (a_rects[a_start].passed())
+  // {
+  //   digitalWrite(a_LED_pin, 0);
+  //   a_start++;
+  //   a_inc = false;
+  //   //a_hand_out_timer = millis();
+  // }
+  // if (s_rects[s_start].passed())
+  // {
+  //   digitalWrite(s_LED_pin, 0);
+  //   s_start++;
+  //   s_inc = false;
+  //   //s_hand_out_timer = millis();
+  // }
+  // if (d_rects[d_start].passed())
+  // {
+  //   digitalWrite(d_LED_pin, 0);
+  //   d_start++;
+  //   d_inc = false;
+  //   //d_hand_out_timer = millis();
+  // }
+  // if (f_rects[f_start].passed())
+  // {
+  //   digitalWrite(f_LED_pin, 0);
+  //   f_start++;
+  //   f_inc = false;
+  //   //f_hand_out_timer = millis();
+  // }
+  // update_all_hands();
+  // Serial.print("Score: ");
+  // Serial.println(score);
 
-  if response buffer has changed:
-    do http request
+  // if response buffer has changed:
+  //   do http request
 
   while (millis() - loop_timer <= 20);
   //Serial.print("End: ");
   //Serial.println(millis());
 }
 
-void update_all_hands() {
-  int a_bins = analogRead(A0);
-  float a_voltage = (a_bins/4096.0)*3.3;
-  if (a_voltage >= 0.9 && (!a_hand)) {
-    actual_a_in = millis();
-    a_hand = true;
-  } else {
-    a_hand = false;
-  } 
-
-  if (((fabs(actual_a_in - a_hand_in_timer) <= 100) && a_hand) && !a_inc) {
-      int time_diff = (fabs(actual_a_in - a_hand_in_timer));
-      if (time_diff <= 10){
-        Serial.println("Perfect");
-        score += 5;
-      }
-      else if (time_diff <= 25){
-        Serial.println("Great");
-        score += 3;
-      }
-      else if (time_diff <= 50){
-        Serial.println("Good");
-        score += 2;
-      }
-      else if (time_diff <= 100){
-        Serial.println("Okay");
-        score += 1;
-      }
-      score += 1;
-      a_inc = true;
-  }
-  int s_bins = analogRead(A11);
-  float s_voltage = (s_bins / 4096.0) * 3.3;
-  if (s_voltage >= 0.9 && !s_hand) {
-    actual_s_in = millis();
-    s_hand = true;
-  } else 
-    s_hand = false;
-  if (((fabs(actual_s_in - s_hand_in_timer) <= 100) && s_hand) && !s_inc) {
-      int time_diff = (fabs(actual_s_in - s_hand_in_timer));
-      if (time_diff <= 10){
-        Serial.println("Perfect");
-        score += 5;
-      }
-      else if (time_diff <= 25){
-        Serial.println("Great");
-        score += 3;
-      }
-      else if (time_diff <= 50){
-        Serial.println("Good");
-        score += 2;
-      }
-      else if (time_diff <= 100){
-        Serial.println("Okay");
-        score += 1;
-      }
-      score += 1;
-      s_inc = true;
-  }
-  int d_bins = analogRead(A6);
-  float d_voltage = (d_bins / 4096.0) * 3.3;
-  Serial.print("D: ");
-  Serial.println(d_voltage);
-  if (d_voltage >= 0.9 && !d_hand) {
-    actual_d_in = millis();
-    d_hand = true;
-  } else
-    d_hand = false;
-  if (((fabs(actual_d_in - d_hand_in_timer) <= 100) && d_hand) && !d_inc) {
-      int time_diff = (fabs(actual_d_in - d_hand_in_timer));
-      if (time_diff <= 10){
-        Serial.println("Perfect");
-        score += 5;
-      }
-      else if (time_diff <= 25){
-        Serial.println("Great");
-        score += 3;
-      }
-      else if (time_diff <= 50){
-        Serial.println("Good");
-        score += 2;
-      }
-      else if (time_diff <= 100){
-        Serial.println("Okay");
-        score += 1;
-      }
-      score += 1;
-      d_inc = true;
-  }
-  int f_bins = analogRead(A7);
-  float f_voltage = (f_bins / 4096.0) * 3.3;
-  Serial.print("F: ");
-  Serial.println(f_voltage);
-  if (f_voltage >= 0.9 && !f_hand) {
-    actual_f_in = millis();
-    f_hand = true;
-  } else
-    f_hand = false;
-  if (((fabs(actual_f_in - f_hand_in_timer) <= 100) && f_hand) && !f_inc) {
-      int time_diff = (fabs(actual_f_in - f_hand_in_timer));
-      if (time_diff <= 10){
-        Serial.println("Perfect");
-        score += 5;
-      }
-      else if (time_diff <= 25){
-        Serial.println("Great");
-        score += 3;
-      }
-      else if (time_diff <= 50){
-        Serial.println("Good");
-        score += 2;
-      }
-      else if (time_diff <= 100){
-        Serial.println("Okay");
-        score += 1;
-      }
-      score += 1;
-      f_inc = true;
-  }
-}
+//void update_all_hands() {
+//  int a_bins = analogRead(A0);
+//  float a_voltage = (a_bins/4096.0)*3.3;
+//  if (a_voltage >= 0.9 && (!a_hand)) {
+//    actual_a_in = millis();
+//    a_hand = true;
+//  } else {
+//    a_hand = false;
+//  } 
+//
+//  if (((fabs(actual_a_in - a_hand_in_timer) <= 100) && a_hand) && !a_inc) {
+//      int time_diff = (fabs(actual_a_in - a_hand_in_timer));
+//      if (time_diff <= 10){
+//        Serial.println("Perfect");
+//        score += 5;
+//      }
+//      else if (time_diff <= 25){
+//        Serial.println("Great");
+//        score += 3;
+//      }
+//      else if (time_diff <= 50){
+//        Serial.println("Good");
+//        score += 2;
+//      }
+//      else if (time_diff <= 100){
+//        Serial.println("Okay");
+//        score += 1;
+//      }
+//      score += 1;
+//      a_inc = true;
+//  }
+//  int s_bins = analogRead(A11);
+//  float s_voltage = (s_bins / 4096.0) * 3.3;
+//  if (s_voltage >= 0.9 && !s_hand) {
+//    actual_s_in = millis();
+//    s_hand = true;
+//  } else 
+//    s_hand = false;
+//  if (((fabs(actual_s_in - s_hand_in_timer) <= 100) && s_hand) && !s_inc) {
+//      int time_diff = (fabs(actual_s_in - s_hand_in_timer));
+//      if (time_diff <= 10){
+//        Serial.println("Perfect");
+//        score += 5;
+//      }
+//      else if (time_diff <= 25){
+//        Serial.println("Great");
+//        score += 3;
+//      }
+//      else if (time_diff <= 50){
+//        Serial.println("Good");
+//        score += 2;
+//      }
+//      else if (time_diff <= 100){
+//        Serial.println("Okay");
+//        score += 1;
+//      }
+//      score += 1;
+//      s_inc = true;
+//  }
+//  int d_bins = analogRead(A6);
+//  float d_voltage = (d_bins / 4096.0) * 3.3;
+//  Serial.print("D: ");
+//  Serial.println(d_voltage);
+//  if (d_voltage >= 0.9 && !d_hand) {
+//    actual_d_in = millis();
+//    d_hand = true;
+//  } else
+//    d_hand = false;
+//  if (((fabs(actual_d_in - d_hand_in_timer) <= 100) && d_hand) && !d_inc) {
+//      int time_diff = (fabs(actual_d_in - d_hand_in_timer));
+//      if (time_diff <= 10){
+//        Serial.println("Perfect");
+//        score += 5;
+//      }
+//      else if (time_diff <= 25){
+//        Serial.println("Great");
+//        score += 3;
+//      }
+//      else if (time_diff <= 50){
+//        Serial.println("Good");
+//        score += 2;
+//      }
+//      else if (time_diff <= 100){
+//        Serial.println("Okay");
+//        score += 1;
+//      }
+//      score += 1;
+//      d_inc = true;
+//  }
+//  int f_bins = analogRead(A7);
+//  float f_voltage = (f_bins / 4096.0) * 3.3;
+//  Serial.print("F: ");
+//  Serial.println(f_voltage);
+//  if (f_voltage >= 0.9 && !f_hand) {
+//    actual_f_in = millis();
+//    f_hand = true;
+//  } else
+//    f_hand = false;
+//  if (((fabs(actual_f_in - f_hand_in_timer) <= 100) && f_hand) && !f_inc) {
+//      int time_diff = (fabs(actual_f_in - f_hand_in_timer));
+//      if (time_diff <= 10){
+//        Serial.println("Perfect");
+//        score += 5;
+//      }
+//      else if (time_diff <= 25){
+//        Serial.println("Great");
+//        score += 3;
+//      }
+//      else if (time_diff <= 50){
+//        Serial.println("Good");
+//        score += 2;
+//      }
+//      else if (time_diff <= 100){
+//        Serial.println("Okay");
+//        score += 1;
+//      }
+//      score += 1;
+//      f_inc = true;
+//  }
+//}
 
 // void string_parser(string str) {
 //   int array_index = 0;

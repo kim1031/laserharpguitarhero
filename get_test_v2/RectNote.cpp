@@ -58,10 +58,10 @@ void RectNote::drawRect(Adafruit_RA8875* tft, bool old)
 
 void RectNote::update(int screen_bottom, Adafruit_RA8875* tft)
 {
-    draw_rect(tft, true);
-    update_y_coord(screen_bottom);
-    update_length(screen_bottom);
-    draw_rect(tft, false);
+    drawRect(tft, true);
+    updateYCoord(screen_bottom);
+    updateLength(screen_bottom);
+    drawRect(tft, false);
 
     if (y > screen_bottom)
     {
