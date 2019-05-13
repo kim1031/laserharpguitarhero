@@ -18,7 +18,7 @@ using namespace std;
 #define RA8875_RST 21
 
 #define a_LED_pin 12
-#define s_LED_pin 13
+#define s_LED_pin 13 
 #define d_LED_pin 27
 #define f_LED_pin 26
 
@@ -92,7 +92,6 @@ bool f_inc;
 int score;
 
 void setup() {
-  
   Serial.begin(115200);
   WiFi.begin(network, password);
   uint8_t count = 0;;
