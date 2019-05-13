@@ -14,7 +14,7 @@ RectNote::RectNote()
     this->end_time = 0;
 }
 
-RectNote::RectNote(int start_time, int end_time, int dur, int wid, int x, uint16_t color)
+RectNote::RectNote(float start_time, float end_time, int dur, int wid, int x, uint16_t color)
 {
     this->start_time = start_time;
     this->end_time = end_time;

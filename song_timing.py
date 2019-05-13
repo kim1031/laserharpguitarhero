@@ -2,8 +2,10 @@ import pygame
 import time
 import playsound
 import sqlite3
+from  song_nums import update_db
 
 beatmaps_db = "beatmaps.db"
+local_song_db = "song_nums.db"
 
 def doIt(song, artist):
     song_file = "Songs/" + song + ".mp3"
@@ -94,5 +96,15 @@ def doIt(song, artist):
     conn.commit() 
     conn.close() 
 
+def add_new_song_num(song_name):
+    conn = sqlite3.connect(local_song_db)
+    c = conn.cursor()
+    length = c.execute('''SELECT COUNT(*) FROM song_numbers''').fetchone()[0]
+    new_index = length+1
+    c.execute('''INSERT INTO song_numbers VALUES (?,?);''', (song_name, new_index))
+    conn.commit()
+    conn.close()
+
 if __name__ == "__main__":
-    doIt("Jessie's Girl", "Rick Springfield") 
+    doIt("Jessie's Girl", "Rick Springfield")
+    add_new_song_num("Jessies_Girl")

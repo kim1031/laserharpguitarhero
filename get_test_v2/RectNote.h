@@ -24,7 +24,7 @@ class RectNote
         uint16_t color;
     public:
         RectNote();
-        RectNote(int start_time, int end_time, int dur, int wid, int x, uint16_t color);
+        RectNote(float start_time, float end_time, int dur, int wid, int x, uint16_t color);
         void update(int screen_bottom, Adafruit_RA8875* tft);
         bool toPress();
         bool passed();

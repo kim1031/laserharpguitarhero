@@ -16,9 +16,9 @@
 #include <SPI.h>
 #include <DFRobotDFPlayerMini.h>
 
-#define a_LED_pin 12
-#define s_LED_pin 13
-#define d_LED_pin 27
+#define a_LED_pin 13
+#define s_LED_pin 12
+#define d_LED_pin 14
 #define f_LED_pin 26
 
 #define a_analog_pin A0
@@ -38,6 +38,7 @@ class Game
         LaserString f_string;
 
         RectNote a_rects[100];
+        float num_a;
         int a_start;
         int a_end;
         RectNote s_rects[100];
@@ -53,6 +54,7 @@ class Game
         std::string user;
         std::string song_name;
         std::string artist_name;
+        bool playing;
         int song;
         float song_len;
 
@@ -62,10 +64,13 @@ class Game
     public:
         //Game();
         Game(Adafruit_RA8875* input_tft, DFRobotDFPlayerMini* input_mp3_player);
+        void setUpLED();
         //void setUp(Adafruit_RA8875* input_tft, DFRobotDFPlayerMini* input_mp3_player);
         //int getSongNum();
         void gamePlay(int elapsed, char* request_buffer, char* reponse_buffer);
         int getState();
+        float getAStart();
+        float getNumARects();
     private:
         void getSongData(char* request_buffer);
         void parseSongData(char* response_buffer, char* note_arr, float* note_time_arr, float* duration_arr);
