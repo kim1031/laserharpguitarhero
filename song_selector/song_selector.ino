@@ -94,9 +94,11 @@ void get_songs() {
   Serial.println(song_list);
   string s = song_list;
   int i = 0;
+  int past = 0;
   while (s.size() > 0 && s.find("'") != -1) {
-    song_indices[i] = s.find("'");
-    s = s.substr(s.find("'")+1, s.size()-1);
+    song_indices[i] = s.find("'") + past;
+    past = s.find("'") + past + 1;
+    s = s.substr(s.find("'")+1, s.size()-s.find("'"));
     num_songs++;
   }
 //  int i = 0;
@@ -137,13 +139,13 @@ void select_song() {
     
     if (a_voltage >= 0.9) {
       counter = (counter+1)%num_songs;
-      chosen = songs.substr(song_indices[counter*2+1],song_indices[counter*2+2]);
+      chosen = songs.substr(song_indices[counter*2+1]+1,song_indices[counter*2+2]-song_indices[counter*2+1]-1);
       Serial.println(chosen.c_str());
     }
 
     if (s_voltage >= 0.9) {
       counter = (counter-1)%num_songs;
-      chosen = songs.substr(song_indices[counter*2+1],song_indices[counter*2+2]);
+      chosen = songs.substr(song_indices[counter*2+1]+1,song_indices[counter*2+2]-song_indices[counter*2+1]-1);
       Serial.println(chosen.c_str());
     }
 
