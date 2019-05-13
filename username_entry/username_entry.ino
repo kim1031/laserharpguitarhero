@@ -1,12 +1,11 @@
 #include <SPI.h>
+#include <Arduino.h>
 #include <gfxfont.h>
 #include <Adafruit_GFX.h>
-#include <Adafruit_SPITFT.h>
-#include <Adafruit_SPITFT_Macros.h>
+//#include <Adafruit_SPITFT.h>
+//#include <Adafruit_SPITFT_Macros.h>
 #include <Adafruit_RA8875.h>
-#include <Arduino.h>
-#include <DFRobotDFPlayerMini.h>
-#include <string>
+
 
 #define RA8875_INT 16
 #define RA8875_CS  15
@@ -33,7 +32,8 @@ void setup() {
   tft.fillScreen(RA8875_BLACK);
   tft.textMode();
   tft.cursorBlink(32);
-  tft.textColor(RA8875_WHITE, RA8875_RED);
+  //tft.textEnlarge(1); 
+  tft.textTransparent(RA8875_WHITE);
   tft.textSetCursor(100, 10);
   tft.textWrite("Hit the left/right laser to enter your name!");
 
