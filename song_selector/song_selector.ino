@@ -5,26 +5,19 @@ using namespace std;
 
 #include <gfxfont.h>
 #include <Adafruit_GFX.h>
-#include <Adafruit_SPITFT.h>
-#include <Adafruit_SPITFT_Macros.h>
+//#include <Adafruit_SPITFT.h>
+//#include <Adafruit_SPITFT_Macros.h>
 #include <Adafruit_RA8875.h>
-#include "RectNote.h"
+//#include "RectNote.h"
 
 #include <Arduino.h>
-#include <DFRobotDFPlayerMini.h>
 
 #define RA8875_INT 16
 #define RA8875_CS  15
 #define RA8875_RST 21
 
-#define a_LED_pin 12
-#define s_LED_pin 13
-#define d_LED_pin 27
-#define f_LED_pin 26
 
 Adafruit_RA8875 tft = Adafruit_RA8875(RA8875_CS, RA8875_RST);
-HardwareSerial mySoftwareSerial(2);
-DFRobotDFPlayerMini myDFPlayer;
 
 //char network[] = "MIT";
 char network[] = "6s08";
@@ -34,21 +27,20 @@ const uint16_t IN_BUFFER_SIZE = 1000;
 const uint32_t OUT_BUFFER_SIZE = 30000;
 char request_buffer[IN_BUFFER_SIZE];
 char response_buffer[OUT_BUFFER_SIZE];
- 
+
 int timer;
 int loop_timer;
-
-
+ 
 bool a_hand;
 bool s_hand;
 bool d_hand;
 bool f_hand;
 
-char song_list[500];
+char song_list[1000];
 int song_indices[30]; //scores indices of song titles
 int num_songs = 0;
-char chosen[100];
-
+string songs;
+string chosen;
 
 
 void setup() {
@@ -82,43 +74,13 @@ void setup() {
   s_hand = false;
   d_hand = false;
   f_hand = false;
-  
-  pinMode(a_LED_pin, OUTPUT);
-  pinMode(s_LED_pin, OUTPUT);
-  pinMode(d_LED_pin, OUTPUT);
-  pinMode(f_LED_pin, OUTPUT);
-
-  digitalWrite(a_LED_pin, 0);
-  digitalWrite(s_LED_pin, 0);
-  digitalWrite(d_LED_pin, 0);
-  digitalWrite(f_LED_pin, 0);
 
   //tft.fillRect(0, 380, 800, 100, RA8875_WHITE);
   //tft.drawString("Score: ", 0, 350, RA8875_BLACK); //print out score
-
-  mySoftwareSerial.begin(9600, SERIAL_8N1, 32, 33);  // speed, type, RX, TX
-  Serial.println(F("DFRobot DFPlayer Mini Demo"));
-  Serial.println(F("Initializing DFPlayer ... (May take 3~5 seconds)"));
-  delay(1000);
-  if (!myDFPlayer.begin(mySoftwareSerial)) {  //Use softwareSerial to communicate with mp3.
-    Serial.println(myDFPlayer.readType(), HEX);
-    Serial.println(F("Unable to begin:"));
-    Serial.println(F("1.Please recheck the connection!"));
-    Serial.println(F("2.Please insert the SD card!"));
-    while (true);
-  }
-  Serial.println(F("DFPlayer Mini online."));
-  myDFPlayer.setTimeOut(500); //Set serial communictaion time out 500ms
-  myDFPlayer.volume(20);  //Set volume value (0~30).
-  myDFPlayer.EQ(DFPLAYER_EQ_NORMAL);
-  myDFPlayer.outputDevice(DFPLAYER_DEVICE_SD);
-  int delayms = 100;
-  myDFPlayer.play(6);  //Play the first mp3
-  timer = millis();
+  get_songs();
 }
 
 void loop() {
-  get_songs();
   select_song();
 }
 
@@ -128,9 +90,12 @@ void get_songs() {
   sprintf(request, "GET http://608dev.net/sandbox/sc/jgonik/laserharpguitarhero/get_songlist.py HTTP/1.1\r\n");
   strcat(request, "Host: 608dev.net\r\n");
   strcat(request, "\r\n");
-  do_http_request("608dev.net", request, song_list, 500, RESPONSE_TIMEOUT, true);
+  do_http_request("608dev.net", request, song_list, 1000, RESPONSE_TIMEOUT, true);
+  Serial.println(song_list);
+  Serial.println("works1");
   int i = 0;
   int j = 0;
+  Serial.println(strlen(song_list));
   while (i <= strlen(song_list)) {
     if (&song_list[i] == "'") {
       song_indices[j] = i;
@@ -139,16 +104,16 @@ void get_songs() {
     i++;
   }
   num_songs = j%4;
+  songs = song_list;
 }
 
 void select_song() {
-  string songs = song_list;
 
   //int len = song_indices[1]-1 - (song_indices[0]+1);
   //printf("%.*s\n", len, song_list + song_indices[0]+1);
   
   chosen = songs.substr(song_indices[0]+1,song_indices[1]-1);
-  Serial.println(chosen);
+  Serial.println(chosen.c_str());
   int counter = 0;
   while (f_hand == false) {
     int a_bins = analogRead(A0);
@@ -165,19 +130,27 @@ void select_song() {
     if (a_voltage >= 0.9) {
       counter = (counter+1)%num_songs;
       chosen = songs.substr(song_indices[counter*2+1]+1,song_indices[counter*2+2]-1);
-      Serial.println(chosen);
+      Serial.println(chosen.c_str());
     }
 
     if (s_voltage >= 0.9) {
       counter = (counter-1)%num_songs;
       chosen = songs.substr(song_indices[counter*2+1]+1,song_indices[counter*2+2]-1);
-      Serial.println(chosen);
+      Serial.println(chosen.c_str());
     }
 
   }
 
   f_hand = false;
   
+}
+
+uint8_t char_append(char* buff, char c, uint16_t buff_size) {
+  int len = strlen(buff);
+  if (len > buff_size) return false;
+  buff[len] = c;
+  buff[len + 1] = '\0';
+  return true;
 }
 
 void do_http_request(char* host, char* request, char* response, uint16_t response_size, uint16_t response_timeout, uint8_t serial) {
