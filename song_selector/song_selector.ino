@@ -94,9 +94,9 @@ void get_songs() {
   Serial.println(song_list);
   string s = song_list;
   int i = 0;
-  while (s.size() > 0 && s.find("'") != -1) {
-    song_indices[i] = s.find("'");
-    s = s.substr(s.find("'")+1, s.size()-1);
+  while (s.size() > 0 && s.find("\'") != -1) {
+    song_indices[i] = s.find("\'");
+    s = s.substr(s.find("\'")+1, s.size()-1);
     num_songs++;
   }
 //  int i = 0;
