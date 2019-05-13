@@ -10,6 +10,7 @@ class LaserString
         int analog_pin;
     public:
         LaserString(int LED_pin, int analog_pin);
+        void beginLights();
         void LEDControl(bool on);
         //int userAction();
 };

@@ -22,39 +22,6 @@
 #define GAME_PLAY_STATE 4
 #define LEADERBOARD_STATE 5
 
-//Game::Game()
-//{
-//    //sets up all LED pins, phototransistor pins
-//    //initializes score and game state
-//
-//    a_string = LaserString(a_LED_pin, a_analog_pin);
-//    s_string = LaserString(s_LED_pin, s_analog_pin);
-//    d_string = LaserString(d_LED_pin, d_analog_pin);
-//    f_string = LaserString(f_LED_pin, f_analog_pin);
-//
-//    //RectNote Game::a_rects[100];
-//    a_start = 0;
-//    a_end = 0;
-//    //RectNote s_rects[100];
-//    s_start = 0;
-//    s_end = 0;
-//    //RectNote d_rects[100];
-//    d_start = 0;
-//    d_end = 0;
-//    //RectNote f_rects[100];
-//    f_start = 0;
-//    f_end = 0;
-//
-//    user = "";
-//    song_name = "";
-//    artist_name = "";
-//    song = 0;  //number in SD card
-//    song_len = 0;
-//
-//    score = 0;
-//    state = 0;
-//}
-
 Game::Game(Adafruit_RA8875* input_tft, DFRobotDFPlayerMini* input_mp3_player):
     a_string(a_LED_pin, a_analog_pin),
     s_string(s_LED_pin, s_analog_pin),
@@ -66,32 +33,33 @@ Game::Game(Adafruit_RA8875* input_tft, DFRobotDFPlayerMini* input_mp3_player):
     tft = input_tft;
     mp3_player = input_mp3_player;
 
-//    a_string(a_LED_pin, a_analog_pin);
-//    s_string(s_LED_pin, s_analog_pin);
-//    d_string(d_LED_pin, d_analog_pin);
-//    f_string(f_LED_pin, f_analog_pin);
-
-    //RectNote Game::a_rects[100];
+    num_a = 0;
     a_start = 0;
     a_end = 0;
-    //RectNote s_rects[100];
     s_start = 0;
     s_end = 0;
-    //RectNote d_rects[100];
     d_start = 0;
     d_end = 0;
-    //RectNote f_rects[100];
     f_start = 0;
     f_end = 0;
 
+    playing = false;
     user = "";
-    song_name = "";
+    song_name = "Seven_Nation_Army";
     artist_name = "";
-    song = 0;  //number in SD card
+    song = 6;  //number in SD card
     song_len = 0;
 
     score = 0;
     state = 0;
+}
+
+void Game::setUpLED()
+{
+    a_string.beginLights();
+    s_string.beginLights();
+    d_string.beginLights();
+    f_string.beginLights();
 }
 
 void Game::gamePlay(int elapsed, char* request_buffer, char* response_buffer)
@@ -118,6 +86,7 @@ void Game::gamePlay(int elapsed, char* request_buffer, char* response_buffer)
         //     getSongData(request_buffer);
         //     state = SONG_GET_STATE;
         // }
+        getSongData(request_buffer);
         state = SONG_GET_STATE;
     } else if (state == SONG_GET_STATE)
     {
@@ -127,18 +96,24 @@ void Game::gamePlay(int elapsed, char* request_buffer, char* response_buffer)
         float duration_arr[500] = {0};
 
         //parse the data and get note times
-        getSongData(request_buffer);
+        
         parseSongData(response_buffer, note_arr, note_time_arr, duration_arr);
         extractTimes(note_arr, note_time_arr, duration_arr);
+        //num_a = note_time_arr[0];
 
-        (*mp3_player).play(song);
         (*tft).fillRect(0, 380, 800, 100, RA8875_WHITE);
         state = GAME_PLAY_STATE;
     } else if (state == GAME_PLAY_STATE)
     {
+        if (!playing)
+        {
+            playing = true;
+            (*mp3_player).play(song);
+        }
+        num_a = a_rects[a_end].getStart();
         if (fabs((a_rects[a_end].getStart() * 1000) - elapsed) <= 3000)
             a_end++;
-        if (fabs((s_rects[a_end].getStart() * 1000) - elapsed) <= 3000)
+        if (fabs((s_rects[s_end].getStart() * 1000) - elapsed) <= 3000)
             s_end++;
         if (fabs((d_rects[d_end].getStart() * 1000) - elapsed) <= 3000)
             d_end++;
@@ -174,29 +149,29 @@ void Game::gamePlay(int elapsed, char* request_buffer, char* response_buffer)
 
         if (a_rects[a_start].passed())
         {
-            a_string.LEDControl(true);
-            // a_start++;
+            a_string.LEDControl(false);
+            a_start++;
             // a_inc = false;
             //a_hand_out_timer = millis();
         }
         if (s_rects[s_start].passed())
         {
-            s_string.LEDControl(true);
-            // s_start++;
+            s_string.LEDControl(false);
+            s_start++;
             // s_inc = false;
             //s_hand_out_timer = millis();
         }
         if (d_rects[d_start].passed())
         {
-            d_string.LEDControl(true);
-            // d_start++;
+            d_string.LEDControl(false);
+            d_start++;
             // d_inc = false;
             //d_hand_out_timer = millis();
         }
         if (f_rects[f_start].passed())
         {
-            f_string.LEDControl(true);
-            // f_start++;
+            f_string.LEDControl(false);
+            f_start++;
             // f_inc = false;
             //f_hand_out_timer = millis();
         }
@@ -212,6 +187,16 @@ void Game::gamePlay(int elapsed, char* request_buffer, char* response_buffer)
 int Game::getState()
 {
     return state;
+}
+
+float Game::getAStart()
+{
+  return a_rects[a_end].getStart();
+}
+
+float Game::getNumARects()
+{
+  return num_a;
 }
 
 
@@ -281,6 +266,7 @@ void Game::extractTimes(char* note_arr, float* note_time_arr, float* duration_ar
             else
                 dur = int(dur / 25);
             *(a_index++) = RectNote(start_time, end_time, dur, 150, 50, RA8875_GREEN);
+            num_a++;
             // a_arr[aindex++] = note_time_arr[i];
             // a_arr[aindex++] = note_time_arr[i] + duration_arr[i];
         }
@@ -293,7 +279,7 @@ void Game::extractTimes(char* note_arr, float* note_time_arr, float* duration_ar
                 dur = 20;
             else
                 dur = int(dur / 25);
-            *(s_index++) = RectNote(start_time, end_time, dur, 150, 50, RA8875_RED);
+            *(s_index++) = RectNote(start_time, end_time, dur, 150, 250, RA8875_RED);
             // s_arr[sindex++] = note_time_arr[i];
             // s_arr[sindex++] = note_time_arr[i] + duration_arr[i];
         }
@@ -306,7 +292,7 @@ void Game::extractTimes(char* note_arr, float* note_time_arr, float* duration_ar
                 dur = 20;
             else
                 dur = int(dur / 25);
-            *(d_index++) = RectNote(start_time, end_time, dur, 150, 50, RA8875_YELLOW);
+            *(d_index++) = RectNote(start_time, end_time, dur, 150, 450, RA8875_YELLOW);
             // d_arr[dindex++] = note_time_arr[i];
             // d_arr[dindex++] = note_time_arr[i] + duration_arr[i];
         }
@@ -319,7 +305,7 @@ void Game::extractTimes(char* note_arr, float* note_time_arr, float* duration_ar
                 dur = 20;
             else
                 dur = int(dur / 25);
-            *(f_index++) = RectNote(start_time, end_time, dur, 150, 50, RA8875_BLUE);
+            *(f_index++) = RectNote(start_time, end_time, dur, 150, 650, RA8875_BLUE);
             // f_arr[findex++] = note_time_arr[i];
             // f_arr[findex++] = note_time_arr[i] + duration_arr[i];
         }
