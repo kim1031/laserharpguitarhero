@@ -21,10 +21,10 @@
 #define d_LED_pin 14
 #define f_LED_pin 26
 
-#define a_analog_pin A0
-#define s_analog_pin A11
-#define d_analog_pin A6
-#define f_analog_pin A7
+#define a_analog_pin A7
+#define s_analog_pin A6
+#define d_analog_pin A3
+#define f_analog_pin A0
 
 class Game
 {
@@ -69,8 +69,7 @@ class Game
         //int getSongNum();
         void gamePlay(int elapsed, char* request_buffer, char* reponse_buffer);
         int getState();
-        float getAStart();
-        float getNumARects();
+        int getScore();
     private:
         void getSongData(char* request_buffer);
         void parseSongData(char* response_buffer, char* note_arr, float* note_time_arr, float* duration_arr);

@@ -28,7 +28,6 @@ class RectNote
         void update(int screen_bottom, Adafruit_RA8875* tft);
         bool toPress();
         bool passed();
-        int getY();
         float getStart();
         float getEnd();
     private:
