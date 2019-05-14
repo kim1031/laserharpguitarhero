@@ -69,6 +69,8 @@ void Game::gamePlay(int elapsed, char* request_buffer, char* response_buffer)
     {
         //starting state = home page / title screen
         //HomePage::display();
+        Home home_screen(&tft);
+        if ()
         state = USER_SELECT_STATE;
     } else if (state == USER_SELECT_STATE)
     {

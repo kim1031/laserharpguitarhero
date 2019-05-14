@@ -1,6 +1,7 @@
-#include "RectNote.h"
+ #include "RectNote.h"
 #include "LaserString.h"
 #include "Game.h"
+#include "Home.h"
 
 #include <SPI.h>
 #include <string>
