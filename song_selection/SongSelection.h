@@ -17,6 +17,7 @@ class SongSelection {
     float durations[30];
     int array_size;
     int curr_index;
+    int old_index;
     
     
 
@@ -27,6 +28,7 @@ class SongSelection {
     void display_song_selection(Adafruit_RA8875* tft);
     void update_song_index(bool forward); // just increase index by one 
     std::string get_curr_song();
+    void display_final(Adafruit_RA8875* tft);
 };
 
 #endif

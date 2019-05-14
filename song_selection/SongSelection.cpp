@@ -12,6 +12,7 @@
 SongSelection::SongSelection() {
   this->curr_index = 0;
   this->array_size = 0;
+  this->old_index = 1;
 }
 
 void SongSelection::get_song_selection(char* request_buffer) {
@@ -60,12 +61,25 @@ void SongSelection::parse_song_selection(std::string str) { //pass in response b
     array_index++;
   }
   array_size = array_index;
-  for (int i = 0; i < array_size; i++) {
-    Serial.println(songs[i].c_str());
-  }
+//  for (int i = 0; i < array_size; i++) {
+//    Serial.println(songs[i].c_str());
+//  }
+//  Serial.println();
+//  for (int i = 0; i < array_size; i++) {
+//    Serial.println(artists[i].c_str());
+//  }
+//  Serial.println();
+//  char duration_str[30];
+//  for (int i = 0; i < array_size; i++) {
+//    memset(duration_str, 0, sizeof(duration_str));
+//    sprintf(duration_str, "%f", durations[i]);
+//    Serial.println(duration_str);
+//    
+//  }
 }
 
 void SongSelection::update_song_index(bool forward) {
+  old_index = curr_index;
   if (forward) {
     curr_index++;
   }
@@ -82,9 +96,13 @@ void SongSelection::update_song_index(bool forward) {
 }
 
 void SongSelection::display_song_selection(Adafruit_RA8875* tft) {
-  tft->fillScreen(RA8875_BLACK); //do we need this we'll see
+  //tft->fillScreen(RA8875_BLACK); //do we need this we'll see
+  Serial.println("drawing the damn rectangle");
+  tft->fillRect(0, 10, 300, 70, RA8875_BLACK);
+  tft->textTransparent(RA8875_CYAN);
   tft->textSetCursor(0, 0);
   tft->textWrite("Song Selection");
+  tft->textMode();
   tft->textSetCursor(10, 20);
   tft->textWrite(songs[curr_index].c_str());
   tft->textSetCursor(10, 40);
@@ -93,9 +111,14 @@ void SongSelection::display_song_selection(Adafruit_RA8875* tft) {
   float curr_dur = durations[curr_index];
   char dur_str[30];
   sprintf(dur_str, "%f", curr_dur);
+  strcat(dur_str, " seconds");
   tft->textWrite(dur_str);
 }
 
 std::string SongSelection::get_curr_song() {
   return songs[curr_index];
+}
+
+void SongSelection::display_final(Adafruit_RA8875* tft) {
+  //nothing 
 }
