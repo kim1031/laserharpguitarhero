@@ -26,8 +26,8 @@ class Leaderboard {
         void postToLeaderboard(char* request_buffer, int score, std::string user);
         void parseLeaderboard(char* response_buffer); //pass in response buffer
         void getLeaderboard(char* request_buffer);
-        int displayScore(Adafruit_RA8875* tft, LaserString* string_1, LaserString* string_2, int score);
-        int displayLeaderboard(Adafruit_RA8875* tft, LaserString* string_1);
+        int displayScore(Adafruit_RA8875* tft, LaserString* string_1, LaserString* string_2, LaserString* string_3, LaserString* string_4, int score);
+        int displayLeaderboard(Adafruit_RA8875* tft, LaserString* string_1, LaserString* string_2, LaserString* string_3);
 };
 
 #endif

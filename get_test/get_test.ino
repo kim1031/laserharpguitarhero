@@ -407,43 +407,8 @@ void loop() {
 //    f_hand = true;
 //  } else
 //    f_hand = false;
-////  if (((fabs(actual_f_in - f_hand_in_timer) <= 100) && f_hand) && !f_inc) {
-////      int time_diff = (fabs(actual_f_in - f_hand_in_timer));
-////      if (time_diff <= 10){
-////        tft.setTextColor(RA8875_BLUE);
-////        tft.drawString("Perfect", 650, 190, 2);
-////        Serial.println("Perfect");
-////        score += 5;
-////      }
-////      else if (time_diff <= 25){
-////        tft.setTextColor(RA8875_BLUE);
-////        tft.drawString("Great", 650, 190, 2);
-////        Serial.println("Great");
-////        score += 3;
-////      }
-////      else if (time_diff <= 50){
-////        tft.setTextColor(RA8875_BLUE);
-////        tft.drawString("Good", 650, 190, 2);
-////        Serial.println("Good");
-////        score += 2;
-////      }
-////      else if (time_diff <= 100){
-////        tft.setTextColor(RA8875_BLUE);
-////        tft.textWrite("Okay", 650, 190, 2);
-////        Serial.println("Okay");
-////        score += 1;
-////      }
-////      f_inc = true;
-////      Serial.print("Score: ");
-////      Serial.println(score);
-////      memset(score_string, 0, sizeof(score_string));
-////      memset(score_to_str, 0, sizeof(score_to_str));
-////      score_string = "Score: ";
-////      sprintf(score_to_str, "%d", score);
-////      strcat(score_string, score_to_str);
-////      tft.textWrite(score_string, 400, 350, 2);
-////  } 
-//}
+
+
 
 void string_parser(string str) {
   int array_index = 0;

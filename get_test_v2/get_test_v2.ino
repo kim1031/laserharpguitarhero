@@ -1,7 +1,8 @@
-#include "RectNote.h"
+ #include "RectNote.h"
 #include "LaserString.h"
 #include "Leaderboard.h"
 #include "Game.h"
+#include "Home.h"
 
 #include <SPI.h>
 #include <string>
@@ -68,7 +69,6 @@ void setup() {
   tft.PWM1out(255);
   tft.fillScreen(RA8875_BLACK);
   tft.textMode();
- // tft.cursorBlink(32);
   tft.textTransparent(RA8875_CYAN);
   tft.textSetCursor(0, 0);
 
@@ -104,7 +104,7 @@ void loop() {
     }
     elapsed = millis() - timer;
   }
-  if (game.getState() == 1)
+  if (game.getState() < 4)
     not_set = true;
   game.gamePlay(elapsed, request_buffer, response_buffer);
 
