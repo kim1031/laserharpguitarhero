@@ -65,9 +65,8 @@ class Game
         bool playing;
         int song;
         float song_len;
+        bool first_loop;
 
-        char username[20];
-        char building_username[20];
         UsernameGetter ug;
 
         SongSelection song_selection;
@@ -84,6 +83,8 @@ class Game
         void gamePlay(int elapsed, char* request_buffer, char* reponse_buffer);
         int getState();
         int getScore();
+        char username[20];
+        char building_username[20];
     private:
         void getSongData(char* request_buffer);
         void getSongList(char* request_buffer);

@@ -22,6 +22,8 @@ class UsernameGetter
   public:
       UsernameGetter();
       void update_name(int input, char* output);
+      void set_char_index(int num);
+      void clear_query();
 };
 
 #endif

@@ -9,7 +9,7 @@
 
 UsernameGetter::UsernameGetter()
 {
-  this->char_index = 0;
+  this->char_index = 1;
   this->scrolling_timer = millis();
   this->choosing_timer = millis();
 }
@@ -56,4 +56,12 @@ void UsernameGetter::update_name(int input, char* output)
         break;
     }
   }
+}
+
+void UsernameGetter::set_char_index(int num) {
+  char_index = num;
+}
+
+void UsernameGetter::clear_query() {
+  memset(query_string, 0, sizeof(query_string));
 }

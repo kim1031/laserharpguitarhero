@@ -51,7 +51,7 @@ void setup()
   myDFPlayer.setTimeOut(500); //Set serial communictaion time out 500ms
   
   //----Set volume----
-  myDFPlayer.volume(10);  //Set volume value (0~30).
+  myDFPlayer.volume(5);  //Set volume value (0~30).
   myDFPlayer.volumeUp(); //Volume Up
   myDFPlayer.volumeDown(); //Volume Down
   
@@ -148,8 +148,8 @@ void setup()
   Serial.println(myDFPlayer.readFileCountsInFolder(3)); //read fill counts in folder SD:/03
   Serial.println(F("--------------------"));
 
-  Serial.println(F("myDFPlayer.play(1)"));
-  myDFPlayer.play(1);  //Play the first mp3
+  Serial.println(F("myDFPlayer.play(3)"));
+  myDFPlayer.play(8);  //Play the first mp3
 }
 
 void loop()

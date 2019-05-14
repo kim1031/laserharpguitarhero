@@ -18,6 +18,10 @@ class SongSelection {
     int array_size;
     int curr_index;
     int old_index;
+    int scrolling_timer;
+    const int scrolling_threshold = 750; //ms
+    std::string old_song;
+    std::string selected_song;
     
     
 
@@ -28,7 +32,8 @@ class SongSelection {
     void display_song_selection(Adafruit_RA8875* tft);
     void update_song_index(bool forward); // just increase index by one 
     std::string get_curr_song();
-    void display_final(Adafruit_RA8875* tft);
+    int get_song_num();
+    void update_screen(int input, Adafruit_RA8875* tft);
 };
 
 #endif
