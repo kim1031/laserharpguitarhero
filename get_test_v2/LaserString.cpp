@@ -63,7 +63,6 @@ void LaserString::userAction()
 
 int LaserString::scoreAction(int time_ms)
 {
-    //tft->textTransparent(RA8875_RED);
     int time_diff = fabs(actual_hand_in_time - ref_hand_in_time);
     int add_score = 0;
     if (!scored)
@@ -71,32 +70,22 @@ int LaserString::scoreAction(int time_ms)
         feedback_time = time_ms;
         if (time_diff <= 10)
         {
-//            tft->textSetCursor(text_loc, 400);
-//            tft->textWrite("Perfect");
             feedback_tag = "Perfect";
             add_score = 5;
         } else if (time_diff <= 25)
         {
-//            tft->textSetCursor(text_loc, 400);
-//            tft->textWrite("Great");
             feedback_tag = "Great";
             add_score = 3;
         } else if (time_diff <= 50)
         {
-//            tft->textSetCursor(text_loc, 400);
-//            tft->textWrite("Good");
             feedback_tag = "Good";
             add_score = 2;
         } else if (time_diff <= 100)
         {
-//            tft->textSetCursor(text_loc, 400);
-//            tft->textWrite("Good");
             feedback_tag = "OK";
             add_score = 1;
         } else
         {
-    //        tft->textSetCursor(text_loc, 400);
-    //        tft->textWrite("Miss");
             feedback_tag = "Miss";
             add_score = 0;
         }

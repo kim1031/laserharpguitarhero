@@ -201,9 +201,11 @@ void Game::gamePlay(int elapsed, char* request_buffer, char* response_buffer)
         tft->textSetCursor(390, 440);
         tft->textWrite(score_str);
         
-
-//        if (elapsed > song_len)
-//          state = LEADERBOARD_STATE;
+        if (elapsed > (song_len * 1000))
+        {
+            mp3_player->pause();
+            state = LEADERBOARD_STATE;
+        }
     } else if (state == LEADERBOARD_STATE)
     {
         //state = HOME_STATE;
@@ -286,6 +288,8 @@ void Game::extractTimes(char* note_arr, float* note_time_arr, float* duration_ar
             else
                 dur = int(dur / 25);
             *(a_index++) = RectNote(start_time, end_time, dur, 150, 50, RA8875_GREEN);
+            if (end_time > song_len)
+                song_len = end_time;
         }
         if (note_arr[i] == 's') 
         {
@@ -297,6 +301,8 @@ void Game::extractTimes(char* note_arr, float* note_time_arr, float* duration_ar
             else
                 dur = int(dur / 25);
             *(s_index++) = RectNote(start_time, end_time, dur, 150, 250, RA8875_RED);
+            if (end_time > song_len)
+                song_len = end_time;
         }
         if (note_arr[i] == 'd') 
         {
@@ -308,6 +314,8 @@ void Game::extractTimes(char* note_arr, float* note_time_arr, float* duration_ar
             else
                 dur = int(dur / 25);
             *(d_index++) = RectNote(start_time, end_time, dur, 150, 450, RA8875_YELLOW);
+            if (end_time > song_len)
+                song_len = end_time;
         }
         if (note_arr[i] == 'f') 
         {
@@ -319,6 +327,9 @@ void Game::extractTimes(char* note_arr, float* note_time_arr, float* duration_ar
             else
                 dur = int(dur / 25);
             *(f_index++) = RectNote(start_time, end_time, dur, 150, 650, RA8875_BLUE);
+            if (end_time > song_len)
+                song_len = end_time;
         }
     }
+    song_len += 2;
 }

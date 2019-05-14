@@ -84,7 +84,7 @@ void setup() {
   }
   Serial.println(F("DFPlayer Mini online."));
   myDFPlayer.setTimeOut(500); //Set serial communictaion time out 500ms
-  myDFPlayer.volume(5);  //Set volume value (0~30).
+  myDFPlayer.volume(10);  //Set volume value (0~30).
   myDFPlayer.EQ(DFPLAYER_EQ_NORMAL);
   myDFPlayer.outputDevice(DFPLAYER_DEVICE_SD);
   

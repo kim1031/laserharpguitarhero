@@ -8,7 +8,7 @@ beatmaps_db = "beatmaps.db"
 local_song_db = "song_nums.db"
 
 def doIt(song, artist):
-    song_file = "Songs/" + song + ".mp3"
+    song_file = "Songs/Jessie's Girl.mp3"
     song_table = song.replace(" ", "_")
     song_table = song_table.replace("'", "")
     song_table = song_table.replace(",", "")
@@ -106,5 +106,5 @@ def add_new_song_num(song_name):
     conn.close()
 
 if __name__ == "__main__":
-    doIt("Jessie's Girl", "Rick Springfield")
-    add_new_song_num("Jessies_Girl")
+    doIt("Jessies Girl", "Rick Springfield")
+   # add_new_song_num("Jessies_Girl")
