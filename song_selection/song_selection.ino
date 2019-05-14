@@ -31,6 +31,7 @@ int scrolling_timer;
 int scrolling_threshold = 750; //ms
 bool choosing;
 SongSelection song_selection;
+string old_song;
 
 void setup() {
   Serial.begin(115200);
@@ -58,7 +59,6 @@ void setup() {
   tft.PWM1out(255);
   tft.fillScreen(RA8875_BLACK);
   tft.textMode();
-  tft.cursorBlink(32);
   tft.textTransparent(RA8875_CYAN);
   tft.textSetCursor(0, 80);
   tft.textWrite("Use the first or second laser to scroll through songs. Break the third laser to select a song.");
@@ -75,20 +75,22 @@ void loop() {
   if (choosing) {
     int third_bins = analogRead(A3);
     float third_voltage = (third_bins / 4096.0) * 3.3;
-    if (third_voltage >= 0.9) {
+    if (third_voltage >= 1.5) {
+      Serial.println("laser 3 broken");
       update(3);
-      choosing = false;
     }
 
     int first_bins = analogRead(A7);
     float first_voltage = (first_bins / 4096.0) * 3.3;
-    if (first_voltage >= 0.9) {
+    if (first_voltage >= 1.5) {
+      Serial.println("laser 1 broken");
       update(1);
     }
 
     int second_bins = analogRead(A6);
     float second_voltage = (second_bins / 4096.0) * 3.3;
-    if (second_voltage >= 0.9) {
+    if (second_voltage >= 1.5) {
+      Serial.println("laser 2 broken");
       update(2);
     }
   }
@@ -98,29 +100,46 @@ void update(int input) {
   switch(input){
     case 1: {  //scroll left
      if (millis() - scrolling_timer >= scrolling_threshold) {
+      old_song = selected_song;
       song_selection.update_song_index(false);
-      song_selection.display_song_selection(&tft);
+      selected_song = song_selection.get_curr_song();
+      if (old_song.compare(selected_song) != 0) {
+        Serial.println("drawing 1");
+        song_selection.display_song_selection(&tft);
+      }     
       scrolling_timer = millis();
      }
      break;
     }
     case 2: { //scroll right
       if (millis() - scrolling_timer >= scrolling_threshold) {
+        old_song = selected_song;
         song_selection.update_song_index(true);
-        song_selection.display_song_selection(&tft);
+        selected_song = song_selection.get_curr_song();
+        if (old_song.compare(selected_song) != 0) {
+          Serial.println("drawing 2");
+          song_selection.display_song_selection(&tft);
+        }
         scrolling_timer = millis();
       }
       break;
     }
    case 3: { //selected song
     selected_song = song_selection.get_curr_song();
-    tft.fillScreen(RA8875_BLACK);
+    Serial.println("Drawing another damn rectangle");
+    tft.fillRect(0, 0, 800, 300, RA8875_BLACK);
+    tft.textTransparent(RA8875_CYAN);
+    tft.textMode();
     tft.textSetCursor(10, 20);
+    Serial.println("about to write the third one");
     tft.textWrite("Nice choice!");
     char display_text[100] = "You selected ";
     strcat(display_text, selected_song.c_str());
     tft.textSetCursor(10, 40);
     tft.textWrite(display_text);
+    tft.textSetCursor(10, 60);
+    tft.textWrite("Break the first laser to continue.");
+    choosing = false;
     break;
    }
   }
