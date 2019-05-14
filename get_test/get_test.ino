@@ -140,7 +140,7 @@ void setup() {
   digitalWrite(d_LED_pin, 0);
   digitalWrite(f_LED_pin, 0);
 
-  //tft.fillRect(0, 380, 800, 100, RA8875_WHITE);
+  tft.fillRect(0, 380, 800, 100, RA8875_WHITE);
   //tft.drawString("Score: ", 0, 350, RA8875_BLACK); //print out score
 
   getSong();
@@ -166,7 +166,7 @@ void setup() {
   myDFPlayer.EQ(DFPLAYER_EQ_NORMAL);
   myDFPlayer.outputDevice(DFPLAYER_DEVICE_SD);
   int delayms = 100;
-  myDFPlayer.play(6);  //Play the first mp3
+  myDFPlayer.play(1);  //Play the first mp3
   timer = millis();
 }
 
@@ -262,13 +262,13 @@ void loop() {
     f_inc = false;
     //f_hand_out_timer = millis();
   }
-  update_all_hands();
-  Serial.println("Score: ");
-  Serial.println(score);
+//  update_all_hands();
+//  Serial.println("Score: ");
+//  Serial.println(score);
   while (millis() - loop_timer <= 20);
 }
 
-void update_all_hands() {
+//void update_all_hands() {
 //  int a_bins = analogRead(A7);
 //  float a_voltage = (a_bins/4096.0)*3.3;
 //  if (a_voltage >= 0.9 && (!a_hand)) {
@@ -407,43 +407,8 @@ void update_all_hands() {
 //    f_hand = true;
 //  } else
 //    f_hand = false;
-//  if (((fabs(actual_f_in - f_hand_in_timer) <= 100) && f_hand) && !f_inc) {
-//      int time_diff = (fabs(actual_f_in - f_hand_in_timer));
-//      if (time_diff <= 10){
-//        tft.setTextColor(RA8875_BLUE);
-//        tft.drawString("Perfect", 650, 190, 2);
-//        Serial.println("Perfect");
-//        score += 5;
-//      }
-//      else if (time_diff <= 25){
-//        tft.setTextColor(RA8875_BLUE);
-//        tft.drawString("Great", 650, 190, 2);
-//        Serial.println("Great");
-//        score += 3;
-//      }
-//      else if (time_diff <= 50){
-//        tft.setTextColor(RA8875_BLUE);
-//        tft.drawString("Good", 650, 190, 2);
-//        Serial.println("Good");
-//        score += 2;
-//      }
-//      else if (time_diff <= 100){
-//        tft.setTextColor(RA8875_BLUE);
-//        tft.drawString("Okay", 650, 190, 2);
-//        Serial.println("Okay");
-//        score += 1;
-//      }
-//      f_inc = true;
-//      Serial.print("Score: ");
-//      Serial.println(score);
-//      memset(score_string, 0, sizeof(score_string));
-//      memset(score_to_str, 0, sizeof(score_to_str));
-//      score_string = "Score: ";
-//      sprintf(score_to_str, "%d", score);
-//      strcat(score_string, score_to_str);
-//      tft.drawString(score_string, 400, 350, 2);
-//  } 
-}
+
+
 
 void string_parser(string str) {
   int array_index = 0;
@@ -547,7 +512,7 @@ void do_http_request(char* host, char* request, char* response, uint16_t respons
 }
 
 void getSong() {
-  sprintf(request_buffer, "GET http://608dev.net/sandbox/sc/jgonik/laserharpguitarhero/get_song.py?song=Seven_Nation_Army HTTP/1.1\r\n");
+  sprintf(request_buffer, "GET http://608dev.net/sandbox/sc/jgonik/laserharpguitarhero/get_song.py?song=Twinkle_Twinkle HTTP/1.1\r\n");
   strcat(request_buffer, "Host: 608dev.net\r\n");
   strcat(request_buffer, "\r\n");
   do_http_request("608dev.net", request_buffer, response_buffer, OUT_BUFFER_SIZE, RESPONSE_TIMEOUT, true);

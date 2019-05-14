@@ -2,6 +2,7 @@
 //#include "HomePage.h"
 #include "LaserString.h"
 #include "RectNote.h"
+#include "Leaderboard.h"
 
 #include <string>
 #include <string.h>
@@ -20,7 +21,9 @@
 #define SONG_SELECT_STATE 2
 #define SONG_GET_STATE 3
 #define GAME_PLAY_STATE 4
-#define LEADERBOARD_STATE 5
+#define SCORE_DISPLAY_STATE 5
+#define GET_LEADERBOARD_STATE 6
+#define DISPLAY_LEADERBOARD_STATE 7
 
 Game::Game(Adafruit_RA8875* input_tft, DFRobotDFPlayerMini* input_mp3_player):
     a_string(a_LED_pin, a_analog_pin),
@@ -32,8 +35,7 @@ Game::Game(Adafruit_RA8875* input_tft, DFRobotDFPlayerMini* input_mp3_player):
     //initializes score and game state
     tft = input_tft;
     mp3_player = input_mp3_player;
-
-    num_a = 0;
+    
     a_start = 0;
     a_end = 0;
     s_start = 0;
@@ -44,7 +46,7 @@ Game::Game(Adafruit_RA8875* input_tft, DFRobotDFPlayerMini* input_mp3_player):
     f_end = 0;
 
     playing = false;
-    user = "";
+    user = "it_me";
     song_name = "Seven_Nation_Army";
     artist_name = "";
     song = 6;  //number in SD card
@@ -98,21 +100,21 @@ void Game::gamePlay(int elapsed, char* request_buffer, char* response_buffer)
         float duration_arr[500] = {0};
 
         //parse the data and get note times
-        
         parseSongData(response_buffer, note_arr, note_time_arr, duration_arr);
         extractTimes(note_arr, note_time_arr, duration_arr);
-        //num_a = note_time_arr[0];
 
         (*tft).fillRect(0, 380, 800, 100, RA8875_WHITE);
         state = GAME_PLAY_STATE;
     } else if (state == GAME_PLAY_STATE)
     {
+        //start playing song if just begun
         if (!playing)
         {
             playing = true;
             (*mp3_player).play(song);
         }
-        num_a = a_rects[a_end].getStart();
+
+        //add new rectangles that should appear on screen
         if (fabs((a_rects[a_end].getStart() * 1000) - elapsed) <= 3000)
             a_end++;
         if (fabs((s_rects[s_end].getStart() * 1000) - elapsed) <= 3000)
@@ -122,6 +124,7 @@ void Game::gamePlay(int elapsed, char* request_buffer, char* response_buffer)
         if (fabs((f_rects[f_end].getStart() * 1000) - elapsed) <= 3000)
             f_end++;
 
+        //move rectangles down screen (displays from start, furthest along, to end, most recent)
         for (int i = a_start; i < a_end; i++)
             a_rects[i].update(380, tft);
         for (int i = s_start; i < s_end; i++)
@@ -132,58 +135,116 @@ void Game::gamePlay(int elapsed, char* request_buffer, char* response_buffer)
             f_rects[i].update(380, tft);
         (*tft).fillRect(0, 380, 800, 100, RA8875_WHITE);
 
-        if (a_rects[a_start].toPress()) {
+        //set LEDs, ready timing for scoring
+        if (a_rects[a_start].toPress())
+        {
             a_string.LEDControl(true);
-            //a_hand_in_timer = millis();
+            a_string.setRefTime(millis());
         }
-        if (s_rects[s_start].toPress()) {
+        if (s_rects[s_start].toPress())
+        {
             s_string.LEDControl(true);
-            //s_hand_in_timer = millis();
+            s_string.setRefTime(millis());
         }
-        if (d_rects[d_start].toPress()) {
+        if (d_rects[d_start].toPress())
+        {
             d_string.LEDControl(true);
-            //d_hand_in_timer = millis();
+            d_string.setRefTime(millis());
         }
-        if (f_rects[f_start].toPress()) {
+        if (f_rects[f_start].toPress())
+        {
             f_string.LEDControl(true);
-            //f_hand_in_timer = millis();
+            f_string.setRefTime(millis());
         }
 
+        //turn of LEDs if necessary, eliminate rectangles from being displayed
         if (a_rects[a_start].passed())
         {
             a_string.LEDControl(false);
             a_start++;
-            // a_inc = false;
-            //a_hand_out_timer = millis();
+            a_string.toScoreNote();
         }
         if (s_rects[s_start].passed())
         {
             s_string.LEDControl(false);
             s_start++;
-            // s_inc = false;
-            //s_hand_out_timer = millis();
+            s_string.toScoreNote();
         }
         if (d_rects[d_start].passed())
         {
             d_string.LEDControl(false);
             d_start++;
-            // d_inc = false;
-            //d_hand_out_timer = millis();
+            d_string.toScoreNote();
         }
         if (f_rects[f_start].passed())
         {
             f_string.LEDControl(false);
             f_start++;
-            // f_inc = false;
-            //f_hand_out_timer = millis();
+            f_string.toScoreNote();
         }
-        //update_all_hands();
+        
+        //gather user action in the game and assign scores to those actions
+        a_string.userAction();
+        s_string.userAction();
+        d_string.userAction();
+        f_string.userAction();
 
-        //state = LEADERBOARD_STATE;
-    } else if (state == LEADERBOARD_STATE)
+        score += a_string.scoreAction(millis());
+        score += s_string.scoreAction(millis());
+        score += d_string.scoreAction(millis());
+        score += f_string.scoreAction(millis());
+
+        //displays "good", "perfect", "great", "OK", "miss" depending on speed/accuracy of user
+        a_string.displayFeedback(millis(), tft, 100);
+        s_string.displayFeedback(millis(), tft, 300);
+        d_string.displayFeedback(millis(), tft, 500);
+        f_string.displayFeedback(millis(), tft, 700);
+
+        //display the score
+        char score_str[50] = "Score: ";
+        char score_num[15];
+        sprintf(score_num, "%d", score);
+        strcat(score_str, score_num);
+        tft->textTransparent(RA8875_BLACK);
+        tft->textSetCursor(390, 440);
+        tft->textWrite(score_str);
+        
+        if (elapsed > (song_len * 1000))
+        {
+            mp3_player->pause();
+            leaderboard.setSongName(song_name);
+            tft->fillScreen(RA8875_BLACK);
+            state = SCORE_DISPLAY_STATE;
+        }
+    } else if (state == SCORE_DISPLAY_STATE)
     {
-        state = HOME_STATE;
-    }
+        leaderboard.postToLeaderboard(request_buffer, score, user);
+        int action = leaderboard.displayScore(tft, &a_string, &s_string, score);
+        if (action == 1)
+        {
+            tft->fillScreen(RA8875_BLACK);
+            reset();
+            state = HOME_STATE;
+        } else if (action == 2)
+        {
+            tft->fillScreen(RA8875_BLACK);
+            state = GET_LEADERBOARD_STATE;
+        }
+    } else if (state == GET_LEADERBOARD_STATE)
+    {
+        leaderboard.getLeaderboard(request_buffer);
+        state = DISPLAY_LEADERBOARD_STATE;
+    } else if (state == DISPLAY_LEADERBOARD_STATE)
+    {
+        leaderboard.parseLeaderboard(response_buffer);
+        int action = leaderboard.displayLeaderboard(tft, &a_string);
+        if (action == 1)
+        {
+            tft->fillScreen(RA8875_BLACK);
+            reset();
+            state = HOME_STATE;
+        }
+    } 
 }
 
 int Game::getState()
@@ -191,16 +252,10 @@ int Game::getState()
     return state;
 }
 
-float Game::getAStart()
+int Game::getScore()
 {
-  return a_rects[a_end].getStart();
+    return score;
 }
-
-float Game::getNumARects()
-{
-  return num_a;
-}
-
 
 void Game::getSongData(char* request_buffer)
 {
@@ -268,9 +323,8 @@ void Game::extractTimes(char* note_arr, float* note_time_arr, float* duration_ar
             else
                 dur = int(dur / 25);
             *(a_index++) = RectNote(start_time, end_time, dur, 150, 50, RA8875_GREEN);
-            num_a++;
-            // a_arr[aindex++] = note_time_arr[i];
-            // a_arr[aindex++] = note_time_arr[i] + duration_arr[i];
+            if (end_time > song_len)
+                song_len = end_time;
         }
         if (note_arr[i] == 's') 
         {
@@ -282,8 +336,8 @@ void Game::extractTimes(char* note_arr, float* note_time_arr, float* duration_ar
             else
                 dur = int(dur / 25);
             *(s_index++) = RectNote(start_time, end_time, dur, 150, 250, RA8875_RED);
-            // s_arr[sindex++] = note_time_arr[i];
-            // s_arr[sindex++] = note_time_arr[i] + duration_arr[i];
+            if (end_time > song_len)
+                song_len = end_time;
         }
         if (note_arr[i] == 'd') 
         {
@@ -295,8 +349,8 @@ void Game::extractTimes(char* note_arr, float* note_time_arr, float* duration_ar
             else
                 dur = int(dur / 25);
             *(d_index++) = RectNote(start_time, end_time, dur, 150, 450, RA8875_YELLOW);
-            // d_arr[dindex++] = note_time_arr[i];
-            // d_arr[dindex++] = note_time_arr[i] + duration_arr[i];
+            if (end_time > song_len)
+                song_len = end_time;
         }
         if (note_arr[i] == 'f') 
         {
@@ -308,8 +362,36 @@ void Game::extractTimes(char* note_arr, float* note_time_arr, float* duration_ar
             else
                 dur = int(dur / 25);
             *(f_index++) = RectNote(start_time, end_time, dur, 150, 650, RA8875_BLUE);
-            // f_arr[findex++] = note_time_arr[i];
-            // f_arr[findex++] = note_time_arr[i] + duration_arr[i];
+            if (end_time > song_len)
+                song_len = end_time;
         }
     }
+    song_len += 2;
+}
+
+void Game::reset()
+{
+    memset(a_rects, 0, sizeof(a_rects));
+    memset(s_rects, 0, sizeof(s_rects));
+    memset(d_rects, 0, sizeof(d_rects));
+    memset(f_rects, 0, sizeof(f_rects));
+    
+    a_start = 0;
+    a_end = 0;
+    s_start = 0;
+    s_end = 0;
+    d_start = 0;
+    d_end = 0;
+    f_start = 0;
+    f_end = 0;
+
+    playing = false;
+    user = "it_me";
+    song_name = "Seven_Nation_Army";
+    artist_name = "";
+    song = 6;  //number in SD card
+    song_len = 0;
+
+    score = 0;
+    state = 0;
 }
