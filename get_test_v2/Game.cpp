@@ -1,8 +1,10 @@
 #include "Game.h"
-//#include "HomePage.h"
+#include "Home.h"
 #include "LaserString.h"
 #include "RectNote.h"
 #include "Leaderboard.h"
+#include "UsernameGetter.h"
+#include "SongSelection.h"
 
 #include <string>
 #include <string.h>
@@ -46,12 +48,14 @@ Game::Game(Adafruit_RA8875* input_tft, DFRobotDFPlayerMini* input_mp3_player):
     f_end = 0;
 
     playing = false;
-    user = "it_me";
-    song_name = "Seven_Nation_Army";
+    //song_name = "Seven_Nation_Army";
     artist_name = "";
     song = 6;  //number in SD card
     song_len = 0;
 
+    //Display home screen page
+    home_screen.display_entry(tft);
+    
     score = 0;
     state = 0;
 }
@@ -67,21 +71,51 @@ void Game::setUpLED()
 void Game::gamePlay(int elapsed, char* request_buffer, char* response_buffer)
 {
     //state machine going through total game play
-    if (state == HOME_STATE)
+    if (state == HOME_STATE)          //starting state = home page / title screen
     {
-        //starting state = home page / title screen
-        //HomePage::display();
-        Home home_screen(&tft);
-        if ()
-        state = USER_SELECT_STATE;
-    } else if (state == USER_SELECT_STATE)
+        if (a_string.broken())        //move on to username entry only if first laser is broken
+        {
+            state = USER_SELECT_STATE;
+            tft->textTransparent(RA8875_WHITE);
+            tft->textSetCursor(100, 10);
+            tft->textWrite("Hit the left/right laser to enter your name!");
+        }
+    } else if (state == USER_SELECT_STATE)    //enter user name page by toggling lasers
     {
-        //enter user name page
-        //user = UserSelect::getName();
-        state = SONG_SELECT_STATE;
-    } else if (state == SONG_SELECT_STATE)
-    {
+        if ( f_string.broken() )    //selected username
+        {
+            tft->fillScreen(RA8875_BLACK);
+            tft->textSetCursor(10,20);
+            tft->textTransparent(RA8875_WHITE);
+            tft->textWrite("Nice pick,");
+            tft->textSetCursor(10,40);
+            tft->textWrite(username);
+            user = username;
+            state = SONG_SELECT_STATE;
+        } 
+        else if ( d_string.broken() )   //select character
+            ug.update_name(3, username);
+        else if ( s_string.broken() )   //toggle right
+            ug.update_name(2, username);
+        else if ( a_string.broken() )   //toggle left
+            ug.update_name(1, username);
+        if (strcmp(username, building_username) != 0) //only draw if changed!
+        {  
+            tft->fillScreen(RA8875_BLACK);
+            tft->textTransparent(RA8875_WHITE);
+            tft->textSetCursor(0, 0);
+            tft->textWrite(username);
+        }
+        memset(building_username, 0, sizeof(building_username));
+        strcat(building_username, username); 
+    } else if (state == SONG_SELECT_STATE)    //user selects song they want from song list
+    {                                         //taken from server (database)
         //get the name, artist, song number
+        getSongSelection(request_buffer);
+        string response = response_buffer;
+        song_selection.parse_song_selection(response);  //populates songs, artisits, durations arrays
+        song_selection.display_song_selection(tft);     //user can now use left/right laser to choose song
+        song_name = song_selection.get_curr_song();
         // song_name = get song;
         // artist_name = get artist;
         // song = get song number;
@@ -264,6 +298,11 @@ void Game::getSongData(char* request_buffer)
     sprintf(request_buffer, "GET http://608dev.net/sandbox/sc/jgonik/laserharpguitarhero/get_song.py?song=%s HTTP/1.1\r\n", title);
     strcat(request_buffer, "Host: 608dev.net\r\n");
     strcat(request_buffer, "\r\n");
+}
+
+void Game::getSongList(char* request_buffer)
+{
+    song_selection.get_song_selection(request_buffer);
 }
 
 void Game::parseSongData(char* response_buffer, char* note_arr, float* note_time_arr, float* duration_arr)

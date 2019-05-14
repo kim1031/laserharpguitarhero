@@ -3,6 +3,8 @@
 #include "Leaderboard.h"
 #include "Game.h"
 #include "Home.h"
+#include "UsernameGetter.h"
+#include "SongSelection.h"
 
 #include <SPI.h>
 #include <string>
