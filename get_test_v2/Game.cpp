@@ -93,6 +93,8 @@ void Game::gamePlay(int elapsed, char* request_buffer, char* response_buffer)
             tft->textWrite(username);
             user = username;
             state = SONG_SELECT_STATE;
+            int waiting_timer = millis();
+            while(millis() - waiting_timer <= 1000);
         } 
         else if ( d_string.broken() )   //select character
             ug.update_name(3, username);
@@ -112,21 +114,27 @@ void Game::gamePlay(int elapsed, char* request_buffer, char* response_buffer)
     } else if (state == SONG_SELECT_STATE)    //user selects song they want from song list
     {                                         //taken from server (database)
         //get the name, artist, song number
-        getSongSelection(request_buffer);
-        string response = response_buffer;
+        song_selection.get_song_selection(request_buffer);
+        std::string response = response_buffer;
         song_selection.parse_song_selection(response);  //populates songs, artisits, durations arrays
         song_selection.display_song_selection(tft);     //user can now use left/right laser to choose song
-        song_name = song_selection.get_curr_song();
-        // song_name = get song;
-        // artist_name = get artist;
-        // song = get song number;
-        // if select finished
-        // {
-        //     getSongData(request_buffer);
-        //     state = SONG_GET_STATE;
-        // }
-        getSongData(request_buffer);
-        state = SONG_GET_STATE;
+
+        if(d_string.broken()) {
+          song_selection.update_screen(3);
+          song_name = song_selection.get_curr_song();
+          int waiting_timer = millis();
+          while(millis() - waiting_timer <= 1000);
+          getSongData(request_buffer);
+          state = SONG_GET_STATE;
+        }
+
+        if(a_string.broken()) {
+          song_selection.update_screen(1);
+        }
+
+        if(s_string.broken()) {
+          song_selection.update_screen(2);
+        }
     } else if (state == SONG_GET_STATE)
     {
         //get all data necessary for game play for song
