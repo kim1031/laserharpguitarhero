@@ -2,33 +2,37 @@
 
                         **Laser Harp Guitar Hero**
                                  Team 77
+            Julia Gonik, Tiffany Huang, Hyunji Kim, and Joie Le
 
 
 Overview
 ==============================================================
 
-The overall goal of our project was to create a modified version of the game, Guitar Hero. Instead of pressing buttons on a guitar-shaped game controller, we made a harp with lasers simulating strings such that you 'pluck' a laser to play a note and win points, as shown below. By 'plucking' lasers, users will be able to input their name, choose songs to play, and play the game itself. Once the song ends, scores for the song will be stored in a database (with entries of user, song, and score). The user can access leaderboards on the ESP32 filtering by song. Songs and their corresponding notes will also be stored in a separate table in the database.
+<!-- The overall goal of our project was to create a modified version of the game, Guitar Hero. Instead of pressing buttons on a guitar-shaped game controller, we made a harp with lasers simulating strings such that you 'pluck' a laser to play a note and win points, as shown below. By 'plucking' lasers, users will be able to input their name, choose songs to play, and play the game itself. Once the song ends, scores for the song will be stored in a database (with entries of user, song, and score). The user can access leaderboards on the ESP32 filtering by song. Songs and their corresponding notes will also be stored in a separate table in the database. -->
+One of our favorite childhood games is Guitar Hero. One day, while reminiscing about the carefree joys of youth, we decided that there was no better way to pay homage to a classic video game like Guitar Hero than to recreate it with an EECS embedded systems twist. Thus, Laser Harp Guitar Hero was born. Instead of pressing buttons and strumming on a contrived, cliche guitar-shaped game controller, users break lasers in order to "pluck" the laser harp and play notes. Players choose from a plethora of songs, including classic Guitar Hero songs in addition to some of our present-day favorites. The user earns a score based on how well they pluck the notes at the appropriate times, and the system keeps track of the user's name and scores in a server-side database that contains leaderboards for each song. Challenge your friends and determine the true laser harp master!
 
 !!!!!include a video or photo. 
 
 System Design
 ==============================================================
 
-New Hardware
+Hardware
 --------------------------------------------------------------
-- ESP32 Dev Board + base system from lab
-- Micro USB Cable
-- TFT Display
-- Driver Board for Display
-- Speaker
-- MP3 Player
-- Micro SD Card
-- LEDs
-- Lasers
-- Phototransistors
-- Resistors
-- Blocks of wood
-- Acrylic
+- 1 ESP32 Microcontroller
+- 1 Breadboard
+- 1 Micro USB Cable
+- 1 Adafruit 5.0" 40-pin TFT Display: 800x480 pixels
+- 1 RA8875 Driver Board for 40-pin TFT Touch Displays
+- 1 Adafruit 3" Diameter Speaker (4 Ohm 3 Watt)
+- 1 DFPlayer Mini MP3 Player
+- 1 Micro SD Card
+- 4 LEDs (1 green, 1 red, 1 yellow, and 1 blue)
+- 4 Lasers
+- 4 Phototransistors
+- 8 4.7 kΩ Resistors
+- 4 12" blocks of wood
+- 1 12" x 12" block of acrylic
+- Wires of various lengths
 
 The 5.0" 40-pin TFT Display along with the driver board for 40-pin TFT Touch Display was used to allow the users to better see which notes to play. The Speaker, MP3 Player, and Micro SD Card was used to play the music. Lasers, phototransistors, and resistors were used to simulate the laser string for the harp. Rest of the material, LEDs, a power board, blocks of wood, and acrylic was used to make the frame for the harp and to make the game more user friendly.
 
