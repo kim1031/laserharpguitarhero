@@ -68,7 +68,6 @@ void setup() {
   tft.PWM1out(255);
   tft.fillScreen(RA8875_BLACK);
   tft.textMode();
- // tft.cursorBlink(32);
   tft.textTransparent(RA8875_CYAN);
   tft.textSetCursor(0, 0);
 
