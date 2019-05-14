@@ -110,3 +110,13 @@ void LaserString::displayFeedback(int time_ms, Adafruit_RA8875* tft, int text_lo
         tft->textWrite(feedback_tag.c_str());
     }
 }
+
+void LaserString::reset()
+{
+    this->scored = true;
+    this->hand_in = false;
+    this->ref_hand_in_time = 0;
+    this->actual_hand_in_time = 0;
+    this->feedback_tag = "";
+    this->feedback_time = 0;
+}

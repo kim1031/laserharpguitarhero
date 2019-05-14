@@ -106,7 +106,7 @@ void loop() {
     }
     elapsed = millis() - timer;
   }
-  if (game.getState() == 1)
+  if (game.getState() < 4)
     not_set = true;
   game.gamePlay(elapsed, request_buffer, response_buffer);
 

@@ -32,6 +32,7 @@ class LaserString
         int getRef();
         int scoreAction(int time_ms);  //text_loc = horizontal location of text, under rectangle notes of corresponding string
         void displayFeedback(int time_ms, Adafruit_RA8875* tft, int text_loc);
+        void reset();
 };
 
 #endif

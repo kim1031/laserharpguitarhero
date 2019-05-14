@@ -18,6 +18,7 @@
 #include <SPI.h>
 #include <DFRobotDFPlayerMini.h>
 
+#define BUFFER_STATE -1
 #define HOME_STATE 0
 #define USER_SELECT_STATE 1
 #define SONG_SELECT_STATE 2
@@ -139,6 +140,9 @@ void Game::gamePlay(int elapsed, char* request_buffer, char* response_buffer)
 
         (*tft).fillRect(0, 380, 800, 100, RA8875_WHITE);
         state = GAME_PLAY_STATE;
+    } else if (state == BUFFER_STATE)
+    {
+        state = GAME_PLAY_STATE;
     } else if (state == GAME_PLAY_STATE)
     {
         //start playing song if just begun
@@ -253,16 +257,27 @@ void Game::gamePlay(int elapsed, char* request_buffer, char* response_buffer)
     } else if (state == SCORE_DISPLAY_STATE)
     {
         leaderboard.postToLeaderboard(request_buffer, score, user);
-        int action = leaderboard.displayScore(tft, &a_string, &s_string, score);
+        int action = leaderboard.displayScore(tft, &a_string, &s_string, &d_string, &f_string, score);
         if (action == 1)
+        {
+            tft->fillScreen(RA8875_BLACK);
+            same_song();
+            getSongData(request_buffer);
+            state = SONG_GET_STATE;
+        } else if (action == 2)
+        {
+            tft->fillScreen(RA8875_BLACK);
+            new_round_same_user();
+            state = SONG_GET_STATE;
+        } else if (action == 3)
+        {
+            tft->fillScreen(RA8875_BLACK);
+            state = GET_LEADERBOARD_STATE;
+        } else if (action == 4)
         {
             tft->fillScreen(RA8875_BLACK);
             reset();
             state = HOME_STATE;
-        } else if (action == 2)
-        {
-            tft->fillScreen(RA8875_BLACK);
-            state = GET_LEADERBOARD_STATE;
         }
     } else if (state == GET_LEADERBOARD_STATE)
     {
@@ -271,8 +286,19 @@ void Game::gamePlay(int elapsed, char* request_buffer, char* response_buffer)
     } else if (state == DISPLAY_LEADERBOARD_STATE)
     {
         leaderboard.parseLeaderboard(response_buffer);
-        int action = leaderboard.displayLeaderboard(tft, &a_string);
+        int action = leaderboard.displayLeaderboard(tft, &a_string, &s_string, &d_string);
         if (action == 1)
+        {
+            tft->fillScreen(RA8875_BLACK);
+            same_song();
+            getSongData(request_buffer);
+            state = SONG_GET_STATE;
+        } else if (action == 2)
+        {
+            tft->fillScreen(RA8875_BLACK);
+            new_round_same_user();
+            state = SONG_GET_STATE;
+        } else if (action == 3)
         {
             tft->fillScreen(RA8875_BLACK);
             reset();
@@ -408,8 +434,13 @@ void Game::extractTimes(char* note_arr, float* note_time_arr, float* duration_ar
     song_len += 2;
 }
 
-void Game::reset()
+void Game::same_song()
 {
+    a_string.reset();
+    s_string.reset();
+    d_string.reset();
+    f_string.reset();
+
     memset(a_rects, 0, sizeof(a_rects));
     memset(s_rects, 0, sizeof(s_rects));
     memset(d_rects, 0, sizeof(d_rects));
@@ -425,12 +456,69 @@ void Game::reset()
     f_end = 0;
 
     playing = false;
-    user = "it_me";
-    song_name = "Seven_Nation_Army";
+
+    score = 0;
+}
+
+
+void Game::new_round_same_user()
+{
+    a_string.reset();
+    s_string.reset();
+    d_string.reset();
+    f_string.reset();
+    
+    memset(a_rects, 0, sizeof(a_rects));
+    memset(s_rects, 0, sizeof(s_rects));
+    memset(d_rects, 0, sizeof(d_rects));
+    memset(f_rects, 0, sizeof(f_rects));
+    
+    a_start = 0;
+    a_end = 0;
+    s_start = 0;
+    s_end = 0;
+    d_start = 0;
+    d_end = 0;
+    f_start = 0;
+    f_end = 0;
+
+    playing = false;
+    song_name = "";
     artist_name = "";
-    song = 6;  //number in SD card
+    song = 0;  //number in SD card
     song_len = 0;
 
     score = 0;
-    state = 0;
+}
+
+
+void Game::reset()
+{
+    a_string.reset();
+    s_string.reset();
+    d_string.reset();
+    f_string.reset();
+    
+    memset(a_rects, 0, sizeof(a_rects));
+    memset(s_rects, 0, sizeof(s_rects));
+    memset(d_rects, 0, sizeof(d_rects));
+    memset(f_rects, 0, sizeof(f_rects));
+    
+    a_start = 0;
+    a_end = 0;
+    s_start = 0;
+    s_end = 0;
+    d_start = 0;
+    d_end = 0;
+    f_start = 0;
+    f_end = 0;
+
+    playing = false;
+    user = "";
+    song_name = "";
+    artist_name = "";
+    song = 0;  //number in SD card
+    song_len = 0;
+
+    score = 0;
 }

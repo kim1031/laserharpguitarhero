@@ -69,26 +69,34 @@ void Leaderboard::parseLeaderboard(char* response_buffer) {
     array_size = array_index;
 }
 
-int Leaderboard::displayScore(Adafruit_RA8875* tft, LaserString* string_1, LaserString* string_2, int score) {
+int Leaderboard::displayScore(Adafruit_RA8875* tft, LaserString* string_1, LaserString* string_2, LaserString* string_3, LaserString* string_4, int score) {
     char score_message[150];
     sprintf(score_message, "Great job! Your score is %d.", score);
     tft->textTransparent(RA8875_CYAN);
     tft->textSetCursor(0, 10);
     tft->textWrite(score_message);
 
-    char message[200] = "Use first laser to return to home. Use second laser to view leaderboards for this song!";
+    char message[200] = "Use first laser to play this song again. Use second laser to play a different song.";
     tft->textSetCursor(0, 50);
+    tft->textWrite(message);
+    memset(message, 0, sizeof(message));
+    strcpy(message, "Use third laser to view leaderboards. Use fourth laser to play as a different user!");
+    tft->textSetCursor(0, 70);
     tft->textWrite(message);
 
     if (string_1->broken())
         return 1;
     else if (string_2->broken())
         return 2;
+    else if (string_3->broken())
+        return 3;
+    else if (string_4->broken())
+        return 4;
     else
         return 0;
 }
 
-int Leaderboard::displayLeaderboard(Adafruit_RA8875* tft, LaserString* string_1) {
+int Leaderboard::displayLeaderboard(Adafruit_RA8875* tft, LaserString* string_1, LaserString* string_2, LaserString* string_3) {
     char title[100] = "Leaderboards: ";
     strcat(title, song_name.c_str());
     tft->textTransparent(RA8875_CYAN);
@@ -114,12 +122,20 @@ int Leaderboard::displayLeaderboard(Adafruit_RA8875* tft, LaserString* string_1)
         place_count++;
     }
 
-    char message[200] = "Use first laser to return to home. Thanks for playing!";
+    char message[200] = "Use first laser to play this song again. Use second laser to play a different song.";
     tft->textSetCursor(0, 300);
+    tft->textWrite(message);
+    memset(message, 0, sizeof(message));
+    strcpy(message, "Use third laser to play as a different user!");
+    tft->textSetCursor(0, 320);
     tft->textWrite(message);
 
     if (string_1->broken())
         return 1;
+    else if (string_2->broken())
+        return 2;
+    else if (string_3->broken())
+        return 3;
     else
         return 0;
 }

@@ -89,6 +89,8 @@ class Game
         void getSongList(char* request_buffer);
         void parseSongData(char* response_buffer, char* note_arr, float* note_time_arr, float* duration_arr);
         void extractTimes(char* note_arr, float* note_time_arr, float* duration_arr);
+        void same_song();
+        void new_round_same_user();
         void reset();
 };
 
