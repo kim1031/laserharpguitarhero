@@ -3,6 +3,7 @@
 
 #include "LaserString.h"
 #include "RectNote.h"
+#include "Leaderboard.h"
 
 #include <string>
 #include <string.h>
@@ -31,6 +32,8 @@ class Game
     private:
         int score;
         int state;
+
+        Leaderboard leaderboard;
         
         LaserString a_string;
         LaserString s_string;

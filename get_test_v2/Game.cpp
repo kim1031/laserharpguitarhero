@@ -2,6 +2,7 @@
 //#include "HomePage.h"
 #include "LaserString.h"
 #include "RectNote.h"
+#include "Leaderboard.h"
 
 #include <string>
 #include <string.h>
@@ -20,7 +21,10 @@
 #define SONG_SELECT_STATE 2
 #define SONG_GET_STATE 3
 #define GAME_PLAY_STATE 4
-#define LEADERBOARD_STATE 5
+#define SCORE_DISPLAY_STATE 5
+#define GET_LEADERBOARD_STATE 6
+#define DISPLAY_LEADERBOARD_STATE 7
+#define LEADERBOARD_WAIT_STATE 8
 
 Game::Game(Adafruit_RA8875* input_tft, DFRobotDFPlayerMini* input_mp3_player):
     a_string(a_LED_pin, a_analog_pin),
@@ -43,7 +47,7 @@ Game::Game(Adafruit_RA8875* input_tft, DFRobotDFPlayerMini* input_mp3_player):
     f_end = 0;
 
     playing = false;
-    user = "";
+    user = "it_me";
     song_name = "Seven_Nation_Army";
     artist_name = "";
     song = 6;  //number in SD card
@@ -204,12 +208,28 @@ void Game::gamePlay(int elapsed, char* request_buffer, char* response_buffer)
         if (elapsed > (song_len * 1000))
         {
             mp3_player->pause();
-            state = LEADERBOARD_STATE;
+            leaderboard.setSongName(song_name);
+            tft->fillScreen(RA8875_BLACK);
+            state = SCORE_DISPLAY_STATE;
         }
-    } else if (state == LEADERBOARD_STATE)
+    } else if (state == SCORE_DISPLAY_STATE)
     {
-        //state = HOME_STATE;
-    }
+        leaderboard.postToLeaderboard(request_buffer, score, user);
+        state = GET_LEADERBOARD_STATE;
+    } else if (state == GET_LEADERBOARD_STATE)
+    {
+        leaderboard.getLeaderboard(request_buffer);
+        state = DISPLAY_LEADERBOARD_STATE;
+    } else if (state == DISPLAY_LEADERBOARD_STATE)
+    {
+        leaderboard.parseLeaderboard(response_buffer);
+        leaderboard.displayLeaderboard(tft);
+        //state = LEADERBOARD_WAIT_STATE;
+    } 
+//    else if (state == LEADERBOARD_WAIT_STATE)
+//    {
+//        tft.fillScreen(RA8875_BLACK);
+//    }
 }
 
 int Game::getState()
