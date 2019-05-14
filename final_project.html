@@ -4,24 +4,22 @@
                                  Team 77
 
 
-Introducing Laser Harp Guitar Hero, Guitar Hero without a Guitar (PLEASE CHANGE)
-
-
-Getting Started
+Overview
 ==============================================================
 
-Itaque earum rerum hic tenetur a sapiente delectus, ut aut reiciendis
-voluptatibus maiores alias consequatur aut perferendis doloribus
-asperiores repellat.
+The overall goal of our project was to create a modified version of the game, Guitar Hero. Instead of pressing buttons on a guitar-shaped game controller, we made a harp with lasers simulating strings such that you 'pluck' a laser to play a note and win points, as shown below. By 'plucking' lasers, users will be able to input their name, choose songs to play, and play the game itself. Once the song ends, scores for the song will be stored in a database (with entries of user, song, and score). The user can access leaderboards on the ESP32 filtering by song. Songs and their corresponding notes will also be stored in a separate table in the database.
 
-Hardware
+!!!!!include a video or photo. 
+
+System Design
+==============================================================
+
+New Hardware
 --------------------------------------------------------------
-- ESP32 Dev Board
-- 3 mini breadboards with backpiece
+- ESP32 Dev Board + base system from lab
 - Micro USB Cable
 - TFT Display
 - Driver Board for Display
-- Kit of wires
 - Speaker
 - MP3 Player
 - Micro SD Card
@@ -29,40 +27,27 @@ Hardware
 - Lasers
 - Phototransistors
 - Resistors
-- Power board (from lab)
 - Blocks of wood
 - Acrylic
+
+The 5.0" 40-pin TFT Display along with the driver board for 40-pin TFT Touch Display was used to allow the users to better see which notes to play. The Speaker, MP3 Player, and Micro SD Card was used to play the music. Lasers, phototransistors, and resistors were used to simulate the laser string for the harp. Rest of the material, LEDs, a power board, blocks of wood, and acrylic was used to make the frame for the harp and to make the game more user friendly.
 
 Wiring Schematic
 --------------------------------------------------------------
 
-everything below is just for template purposes.
+
+State Machine Block Diagram
+--------------------------------------------------------------
 
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
-minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-aliquip ex ea commodo consequat. Duis aute irure dolor in
-reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-pariatur. 
-
- Maine | Iowa | Colorado 
--------|------|----------
-   1   |  4   |   10
-  ME   |  IA  |   CO
- Blue  | Red  | Brown
-[Table [states]: Caption with label.]
+Functional Block Diagram
+--------------------------------------------------------------
 
 
-### Exporters
+Harp Code
+==============================================================
 
-Excepteur sint occaecat cupidatat non proident, sunt in
-culpa qui officia deserunt mollit anim id est laborum:
-
-- Incididunt
-- Bonus Unum
-- Quibusdam
-
+example for how to write code nicely
 ```````````````````````````````````````````````
 count_lines () {
   local f=$1  
@@ -72,82 +57,40 @@ count_lines () {
 }
 ```````````````````````````````````````````````
 
+[Link to nowhere](nowhere). -- link all python files this way
 
-Procedural
+
+Harp Frame
+==============================================================
+To create a rectangular frame, 4 blocks of wood was used. On the top and bottom pieces of wood, 4 pairs of holes were drilled spaced evenly such that each pair of holes would align vertically with each other. On the top holes, lasers were put in and photoresistors were put in on the bottom. LED holes were made perpendicular to the holes made for lasers on the top piece of wood such that once the LEDs are put in, the user sitting at the front will be able to see them.
+
+To allow the user to have view of the screen and mount the speaker, a piece of acrylic was used. From a rectangular piece of acrylic, two pieces, a rectangle big enough to show the screen and a circle to fit the speaker was cut out to create a design shown as below:
+
+A 3D printed screen holder was used to secure the screen to acrylic. The design of the screen holder is as shown below:
+
+
+Decision Making and Challenges
+==============================================================
+
+Hardware Design
+--------------------------------------------------------------
+Since numerous functionalities in the game depend on being able to detect whether a laser is broken or not, it was crucial that the laser pointed exactly at its corresponding photoresistor and stayed that way even if we moved. After trying to make holes straight and exactly the size of a laser as well as trying to use tape to hold the laser and phototransistor together, we ultimately decided to adjust the parts, initialize hold it in place with tape, and also used hot glue to further stabilize such conformation.
+
+The Wiring
+--------------------------------------------------------------
+Having to connect so many wires to the breadboard specifically for the LEDs, lasers, and phototransistors, the wiring often became very messy and it was difficult to find out whether the wiring was done incorrectly or if a wire had been accidently taken out, not to mention the numerous times in which the wires broke. 
+
+In order to prevent such difficulties, we color-coded wires and twisted pairs of wires that go to the same piece. Wires for similar pieces were then also grouped together using tape and zip ties. For lasers, white wires went to power and black wires went to ground. For each 'string,' we attributed different colors, green, red, yellow, and blue, which we represented with LEDs. Wires for the phototransistors were hence set such that white wires always go to power and the wire that goes to the ESP32 is the same as the color it is assigned. Finally, for the LEDs, black wires were used to go to power and accordingly colored wires went to the ESP32. 
+
+Screen and Speaker
 --------------------------------------------------------------
 
-At vero eos et accusamus et iusto odio dignissimos ducimus qui
-blanditiis praesentium voluptatum deleniti atque corrupti quos dolores
-et quas molestias excepturi sint occaecati cupiditate non provident,
-similique sunt in culpa qui officia deserunt mollitia animi, id est
-laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita
-distinctio. 
-
-**************************************************************
-*                                                            
-* .---.       .-.        .-.       .-.                       
-* | A +----->| 1 +<---->| 2 |<----+ 4 +------------------.   
-* '---'       '-'        '+'       '-'                    |  
-*                         |         ^                     |  
-*                         v         |                     v  
-*                        .-.      .-+-.        .-.      .-+-.
-*                       | 3 +---->| B |<----->| 5 +---->| C |
-*                        '-'      '---'        '-'      '---'
-**************************************************************
-
-Nam libero tempore, cum `soluta` nobis est eligendi optio
-cumque nihil impedit quo minus id quod maxime placeat facere possimus,
-omnis voluptas assumenda est, omnis dolor repellendus. Temporibus
-autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe
-eveniet ut et voluptates repudiandae sint et molestiae non
-recusandae. 
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-a long preformatted code block a long preformatted code block a long preformatted code block a long preformatted code block a long preformatted code block
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-
-Modules
+Energy Management
 ==============================================================
 
-Nam libero tempore, cum soluta nobis est eligendi optio
-cumque nihil impedit quo minus id quod maxime placeat facere possimus,
-omnis voluptas assumenda est, omnis dolor repellendus.
 
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ rust
-fn main() {
-    let x = 5u32;
-
-    let y = {
-        let x_squared = x * x;
-        let x_cube = x_squared * x;
-
-        // This expression will be assigned to `y`
-        x_cube + x_squared + x
-    };
-
-    let z = {
-        // The semicolon suppresses this expression and `()` is assigned to `z`
-        2 * x;
-    };
-
-    println!("x is {:?}", x);
-    println!("y is {:?}", y);
-    println!("z is {:?}", z);
-}
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-<!--
-![`a long code caption a long code caption`](robot.jpg) ![`a long code caption`](robot.jpg) ![`a long code caption`](robot.jpg) ![`a long code caption`](robot.jpg)
-![`a long code caption a long code caption`](robot.jpg) ![`a long code caption`](robot.jpg) ![`a long code caption`](robot.jpg) ![`a long code caption`](robot.jpg)
--->
-
-See Also
-==============================================================
-
-[Link to nowhere](nowhere).
 
 
  
