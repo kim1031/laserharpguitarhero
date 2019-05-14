@@ -4,6 +4,9 @@
 #include "LaserString.h"
 #include "RectNote.h"
 #include "Leaderboard.h"
+#include "UsernameGetter.h"
+#include "Home.h"
+#include "SongSelection.h"
 
 #include <string>
 #include <string.h>
@@ -30,6 +33,8 @@
 class Game
 {
     private:
+        Home home_screen;
+        
         int score;
         int state;
 
@@ -60,7 +65,12 @@ class Game
         bool playing;
         int song;
         float song_len;
+        bool first_loop;
 
+        UsernameGetter ug;
+
+        SongSelection song_selection;
+        
         Adafruit_RA8875* tft;
         DFRobotDFPlayerMini* mp3_player;
 
@@ -73,8 +83,11 @@ class Game
         void gamePlay(int elapsed, char* request_buffer, char* reponse_buffer);
         int getState();
         int getScore();
+        char username[20];
+        char building_username[20];
     private:
         void getSongData(char* request_buffer);
+        void getSongList(char* request_buffer);
         void parseSongData(char* response_buffer, char* note_arr, float* note_time_arr, float* duration_arr);
         void extractTimes(char* note_arr, float* note_time_arr, float* duration_arr);
         void same_song();
