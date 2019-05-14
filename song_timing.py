@@ -8,7 +8,7 @@ beatmaps_db = "beatmaps.db"
 local_song_db = "song_nums.db"
 
 def doIt(song, artist):
-    song_file = "Songs/" + song + ".mp3"
+    song_file = "Songs/Jessie's Girl.mp3"
     song_table = song.replace(" ", "_")
     song_table = song_table.replace("'", "")
     song_table = song_table.replace(",", "")

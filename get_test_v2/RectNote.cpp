@@ -80,11 +80,6 @@ bool RectNote::passed()
   return out_of_bounds;
 }
 
-int RectNote::getY()
-{
-  return y;
-}
-
 float RectNote::getStart()
 {
   return start_time;
