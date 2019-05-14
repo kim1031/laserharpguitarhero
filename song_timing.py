@@ -106,5 +106,5 @@ def add_new_song_num(song_name):
     conn.close()
 
 if __name__ == "__main__":
-    doIt("Jessie's Girl", "Rick Springfield")
+    doIt("Jessies Girl", "Rick Springfield")
     add_new_song_num("Jessies_Girl")
