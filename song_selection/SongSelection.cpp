@@ -13,6 +13,7 @@ SongSelection::SongSelection() {
   this->curr_index = 0;
   this->array_size = 0;
   this->old_index = 1;
+  this->scrolling_timer = millis();
 }
 
 void SongSelection::get_song_selection(char* request_buffer) {
@@ -61,21 +62,6 @@ void SongSelection::parse_song_selection(std::string str) { //pass in response b
     array_index++;
   }
   array_size = array_index;
-//  for (int i = 0; i < array_size; i++) {
-//    Serial.println(songs[i].c_str());
-//  }
-//  Serial.println();
-//  for (int i = 0; i < array_size; i++) {
-//    Serial.println(artists[i].c_str());
-//  }
-//  Serial.println();
-//  char duration_str[30];
-//  for (int i = 0; i < array_size; i++) {
-//    memset(duration_str, 0, sizeof(duration_str));
-//    sprintf(duration_str, "%f", durations[i]);
-//    Serial.println(duration_str);
-//    
-//  }
 }
 
 void SongSelection::update_song_index(bool forward) {
@@ -117,6 +103,51 @@ void SongSelection::display_song_selection(Adafruit_RA8875* tft) {
 
 std::string SongSelection::get_curr_song() {
   return songs[curr_index];
+}
+
+void update_screen(int input, Adafruit_RA8875* tft) {
+  switch(input){
+    case 1: {  //scroll left
+     if (millis() - scrolling_timer >= scrolling_threshold) {
+      old_song = selected_song;
+      update_song_index(false);
+      selected_song = get_curr_song();
+      if (old_song.compare(selected_song) != 0) {
+        display_song_selection(tft);
+      }     
+      scrolling_timer = millis();
+     }
+     break;
+    }
+    case 2: { //scroll right
+      if (millis() - scrolling_timer >= scrolling_threshold) {
+        old_song = selected_song;
+        update_song_index(true);
+        selected_song = get_curr_song();
+        if (old_song.compare(selected_song) != 0) {
+          display_song_selection(tft);
+        }
+        scrolling_timer = millis();
+      }
+      break;
+    }
+   case 3: { //selected song
+    selected_song = get_curr_song();
+    tft->fillRect(0, 0, 800, 300, RA8875_BLACK);
+    tft->textTransparent(RA8875_CYAN);
+    tft->textMode();
+    tft->textSetCursor(10, 20);
+    tft->textWrite("Nice choice!");
+    char display_text[100] = "You selected ";
+    strcat(display_text, selected_song.c_str());
+    tft->textSetCursor(10, 40);
+    tft->textWrite(display_text);
+    tft->textSetCursor(10, 60);
+    tft->textWrite("Break the first laser to continue.");
+    //choosing = false;
+    break;
+   }
+  }
 }
 
 void SongSelection::display_final(Adafruit_RA8875* tft) {
