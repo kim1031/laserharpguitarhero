@@ -107,4 +107,4 @@ def add_new_song_num(song_name):
 
 if __name__ == "__main__":
     doIt("Jessies Girl", "Rick Springfield")
-   # add_new_song_num("Jessies_Girl")
+    add_new_song_num("Jessies_Girl")
