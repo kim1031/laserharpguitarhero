@@ -104,6 +104,8 @@ void loop() {
     }
     elapsed = millis() - timer;
   }
+  if (game.getState() == 1)
+    not_set = true;
   game.gamePlay(elapsed, request_buffer, response_buffer);
 
   if (strcmp(request_buffer, old_request_buffer) != 0)

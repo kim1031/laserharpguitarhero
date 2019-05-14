@@ -1,5 +1,7 @@
 #include "Leaderboard.h"
 
+#include "LaserString.h"
+
 #include "Arduino.h"
 #include <gfxfont.h>
 #include <Adafruit_GFX.h>
@@ -67,15 +69,30 @@ void Leaderboard::parseLeaderboard(char* response_buffer) {
     array_size = array_index;
 }
 
-//void Leaderboard::displayScore(Adafruit_RA8875* tft) {
-//    char score_message[150] = "Great job!\r\nYour score is:
-//}
+int Leaderboard::displayScore(Adafruit_RA8875* tft, LaserString* string_1, LaserString* string_2, int score) {
+    char score_message[150];
+    sprintf(score_message, "Great job! Your score is %d.", score);
+    tft->textTransparent(RA8875_CYAN);
+    tft->textSetCursor(0, 10);
+    tft->textWrite(score_message);
 
-void Leaderboard::displayLeaderboard(Adafruit_RA8875* tft) {
+    char message[200] = "Use first laser to return to home. Use second laser to view leaderboards for this song!";
+    tft->textSetCursor(0, 50);
+    tft->textWrite(message);
+
+    if (string_1->broken())
+        return 1;
+    else if (string_2->broken())
+        return 2;
+    else
+        return 0;
+}
+
+int Leaderboard::displayLeaderboard(Adafruit_RA8875* tft, LaserString* string_1) {
     char title[100] = "Leaderboards: ";
     strcat(title, song_name.c_str());
     tft->textTransparent(RA8875_CYAN);
-    tft->textSetCursor(0, 0);
+    tft->textSetCursor(0, 10);
     tft->textWrite(title);
     int place_count = 1;
     char result_str[100];
@@ -91,9 +108,18 @@ void Leaderboard::displayLeaderboard(Adafruit_RA8875* tft) {
         sprintf(score_str, "%d", scores[index]);
         strcat(result_str, score_str);
         strcat(result_str, " points");
-        cursor_y = (1+index)*20;
+        cursor_y = (1+index)*20 + 10;
         tft->textSetCursor(10, cursor_y);
         tft->textWrite(result_str);
         place_count++;
     }
+
+    char message[200] = "Use first laser to return to home. Thanks for playing!";
+    tft->textSetCursor(0, 300);
+    tft->textWrite(message);
+
+    if (string_1->broken())
+        return 1;
+    else
+        return 0;
 }

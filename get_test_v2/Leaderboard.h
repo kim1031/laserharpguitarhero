@@ -1,6 +1,8 @@
 #ifndef Leaderboard_h
 #define Leaderboard_h
 
+#include "LaserString.h"
+
 #include "Arduino.h"
 #include <gfxfont.h>
 #include <Adafruit_GFX.h>
@@ -24,8 +26,8 @@ class Leaderboard {
         void postToLeaderboard(char* request_buffer, int score, std::string user);
         void parseLeaderboard(char* response_buffer); //pass in response buffer
         void getLeaderboard(char* request_buffer);
-        //void displayScore(Adafruit_RA8875* tft);
-        void displayLeaderboard(Adafruit_RA8875* tft);
+        int displayScore(Adafruit_RA8875* tft, LaserString* string_1, LaserString* string_2, int score);
+        int displayLeaderboard(Adafruit_RA8875* tft, LaserString* string_1);
 };
 
 #endif
