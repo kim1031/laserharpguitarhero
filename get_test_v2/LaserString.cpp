@@ -34,6 +34,13 @@ void LaserString::LEDControl(bool on)
         digitalWrite(LED_pin, 0);
 }
 
+bool LaserString::broken()
+{
+    int bins = analogRead(analog_pin);
+    float voltage = (bins / 4096.0) * 3.3;
+    return (voltage >= 1.5);
+}
+
 void LaserString::setRefTime(int time_ms)
 {
     ref_hand_in_time = time_ms;

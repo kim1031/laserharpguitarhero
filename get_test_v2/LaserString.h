@@ -25,6 +25,7 @@ class LaserString
         LaserString(int LED_pin, int analog_pin);
         void beginLights();
         void LEDControl(bool on);
+        bool broken();
         void setRefTime(int time_ms);
         void toScoreNote();
         void userAction();

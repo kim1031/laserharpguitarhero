@@ -2,6 +2,7 @@
 //#include "HomePage.h"
 #include "LaserString.h"
 #include "RectNote.h"
+#include "Leaderboard.h"
 
 #include <string>
 #include <string.h>
@@ -20,7 +21,9 @@
 #define SONG_SELECT_STATE 2
 #define SONG_GET_STATE 3
 #define GAME_PLAY_STATE 4
-#define LEADERBOARD_STATE 5
+#define SCORE_DISPLAY_STATE 5
+#define GET_LEADERBOARD_STATE 6
+#define DISPLAY_LEADERBOARD_STATE 7
 
 Game::Game(Adafruit_RA8875* input_tft, DFRobotDFPlayerMini* input_mp3_player):
     a_string(a_LED_pin, a_analog_pin),
@@ -43,7 +46,7 @@ Game::Game(Adafruit_RA8875* input_tft, DFRobotDFPlayerMini* input_mp3_player):
     f_end = 0;
 
     playing = false;
-    user = "";
+    user = "it_me";
     song_name = "Seven_Nation_Army";
     artist_name = "";
     song = 6;  //number in SD card
@@ -178,6 +181,7 @@ void Game::gamePlay(int elapsed, char* request_buffer, char* response_buffer)
             f_string.toScoreNote();
         }
         
+        //gather user action in the game and assign scores to those actions
         a_string.userAction();
         s_string.userAction();
         d_string.userAction();
@@ -188,11 +192,13 @@ void Game::gamePlay(int elapsed, char* request_buffer, char* response_buffer)
         score += d_string.scoreAction(millis());
         score += f_string.scoreAction(millis());
 
+        //displays "good", "perfect", "great", "OK", "miss" depending on speed/accuracy of user
         a_string.displayFeedback(millis(), tft, 100);
         s_string.displayFeedback(millis(), tft, 300);
         d_string.displayFeedback(millis(), tft, 500);
         f_string.displayFeedback(millis(), tft, 700);
 
+        //display the score
         char score_str[50] = "Score: ";
         char score_num[15];
         sprintf(score_num, "%d", score);
@@ -204,12 +210,39 @@ void Game::gamePlay(int elapsed, char* request_buffer, char* response_buffer)
         if (elapsed > (song_len * 1000))
         {
             mp3_player->pause();
-            state = LEADERBOARD_STATE;
+            leaderboard.setSongName(song_name);
+            tft->fillScreen(RA8875_BLACK);
+            state = SCORE_DISPLAY_STATE;
         }
-    } else if (state == LEADERBOARD_STATE)
+    } else if (state == SCORE_DISPLAY_STATE)
     {
-        //state = HOME_STATE;
-    }
+        leaderboard.postToLeaderboard(request_buffer, score, user);
+        int action = leaderboard.displayScore(tft, &a_string, &s_string, score);
+        if (action == 1)
+        {
+            tft->fillScreen(RA8875_BLACK);
+            reset();
+            state = HOME_STATE;
+        } else if (action == 2)
+        {
+            tft->fillScreen(RA8875_BLACK);
+            state = GET_LEADERBOARD_STATE;
+        }
+    } else if (state == GET_LEADERBOARD_STATE)
+    {
+        leaderboard.getLeaderboard(request_buffer);
+        state = DISPLAY_LEADERBOARD_STATE;
+    } else if (state == DISPLAY_LEADERBOARD_STATE)
+    {
+        leaderboard.parseLeaderboard(response_buffer);
+        int action = leaderboard.displayLeaderboard(tft, &a_string);
+        if (action == 1)
+        {
+            tft->fillScreen(RA8875_BLACK);
+            reset();
+            state = HOME_STATE;
+        }
+    } 
 }
 
 int Game::getState()
@@ -332,4 +365,31 @@ void Game::extractTimes(char* note_arr, float* note_time_arr, float* duration_ar
         }
     }
     song_len += 2;
+}
+
+void Game::reset()
+{
+    memset(a_rects, 0, sizeof(a_rects));
+    memset(s_rects, 0, sizeof(s_rects));
+    memset(d_rects, 0, sizeof(d_rects));
+    memset(f_rects, 0, sizeof(f_rects));
+    
+    a_start = 0;
+    a_end = 0;
+    s_start = 0;
+    s_end = 0;
+    d_start = 0;
+    d_end = 0;
+    f_start = 0;
+    f_end = 0;
+
+    playing = false;
+    user = "it_me";
+    song_name = "Seven_Nation_Army";
+    artist_name = "";
+    song = 6;  //number in SD card
+    song_len = 0;
+
+    score = 0;
+    state = 0;
 }

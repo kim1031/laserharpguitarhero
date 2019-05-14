@@ -1,5 +1,6 @@
 #include "RectNote.h"
 #include "LaserString.h"
+#include "Leaderboard.h"
 #include "Game.h"
 
 #include <SPI.h>
@@ -93,7 +94,7 @@ void setup() {
 
 void loop() {
   loop_timer = millis();
-  
+  Serial.println(game.getState());
   if (game.getState() == 4)
   {
     if (not_set)
@@ -103,6 +104,8 @@ void loop() {
     }
     elapsed = millis() - timer;
   }
+  if (game.getState() == 1)
+    not_set = true;
   game.gamePlay(elapsed, request_buffer, response_buffer);
 
   if (strcmp(request_buffer, old_request_buffer) != 0)

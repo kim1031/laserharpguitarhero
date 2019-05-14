@@ -3,6 +3,7 @@
 
 #include "LaserString.h"
 #include "RectNote.h"
+#include "Leaderboard.h"
 
 #include <string>
 #include <string.h>
@@ -31,6 +32,8 @@ class Game
     private:
         int score;
         int state;
+
+        Leaderboard leaderboard;
         
         LaserString a_string;
         LaserString s_string;
@@ -74,6 +77,7 @@ class Game
         void getSongData(char* request_buffer);
         void parseSongData(char* response_buffer, char* note_arr, float* note_time_arr, float* duration_arr);
         void extractTimes(char* note_arr, float* note_time_arr, float* duration_arr);
+        void reset();
 };
 
 #endif
