@@ -3,6 +3,11 @@ import sqlite3
 leaderboards_db = '__HOME__/laserharpguitarhero/leaderboards.db'
 
 def request_handler(request):
+    '''
+        Returns get request when trying to view / post to leaderboard. 
+        If a POST request, we insert the score, song, and username to table.
+        If a GET request, we filter by the played song, and list top 10 descending order.
+    '''
     conn = sqlite3.connect(leaderboards_db)
     c = conn.cursor()
     if request['method'] == 'POST':

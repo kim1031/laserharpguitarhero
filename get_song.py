@@ -3,6 +3,9 @@ song_db = '__HOME__/laserharpguitarhero/beatmaps.db'
 
 
 def request_handler(request):
+    '''
+        Returns all notes from the song. 
+    '''
     if request['method'] == "GET":
         try:
             conn = sqlite3.connect(song_db)

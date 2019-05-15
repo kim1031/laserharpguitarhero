@@ -8,6 +8,12 @@ beatmaps_db = "beatmaps.db"
 local_song_db = "song_nums.db"
 
 def doIt(song, artist):
+    '''
+        Plays chosen song using playsound. At the same time, user will enter in 
+        A, S, D, F keys which will be recorded (start time, end time, duration).
+        These act as notes for game play. A table is created for each song, 
+        populated with notes.
+    '''
     song_file = "Songs/" + song + ".mp3"
     song_table = song.replace(" ", "_")
     song_table = song_table.replace("'", "")
@@ -106,6 +112,9 @@ def add_new_song_num(song_name):
     conn.close()
 
 def delete_stuff():
+    '''
+        Delete song from songlist table, in cases where we want to redo songs.
+    '''
     conn = sqlite3.connect(beatmaps_db)
     c = conn.cursor()
     c.execute('''DELETE FROM songlist WHERE title == "Jessie's Girl";''')
