@@ -26,13 +26,12 @@ class SongSelection {
     
 
   public:
-    SongSelection(); //does this need parameters? we'll see lol
+    SongSelection();
     void parse_song_selection(std::string str);
     void get_song_selection(char* request_buffer);
     void display_song_selection(Adafruit_RA8875* tft);
-    void update_song_index(bool forward); // just increase index by one 
+    void update_song_index(bool forward);
     std::string get_curr_song();
-    void display_final(Adafruit_RA8875* tft);
     void update_screen(int input, Adafruit_RA8875* tft);
 };
 

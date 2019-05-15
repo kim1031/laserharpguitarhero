@@ -1,3 +1,7 @@
+/*
+ * This is just code that we used to test whether or not we set up our screen correctly. We also used it when testing our RectNote library that is responsible for displaying the falling rectangles that represent notes
+ */
+
 #include <gfxfont.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SPITFT.h>
@@ -18,11 +22,14 @@ void setup() {
     Serial.println("not found");
     while(1);
   }
+
+  //set up display
   tft.displayOn(true);
   tft.GPIOX(true);
   tft.PWM1config(true, RA8875_PWM_CLK_DIV1024);
   tft.PWM1out(255);
 
+  //fill screen with black and draw some circles to make sure screen is working!
   tft.fillScreen(RA8875_BLACK);
   tft.setRotation(0);
   tft.drawCircle(750, 80, 30, RA8875_MAGENTA);
@@ -34,7 +41,7 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-  //the_note.update(500, &tft);
+  //the_note.update(500, &tft); //testing RectNote functions
   //while (millis() - timer < 25);
   //timer = millis();
 }

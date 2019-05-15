@@ -1,16 +1,12 @@
+/*
+ * This is just code that we used to test our lasers and phototransistors. We used it to determine an appropriate threshold voltage for when a laser should be considered broken vs. unbroken.
+ */
+
 #include <SPI.h>
 #include <TFT_eSPI.h>
 
-//TFT_eSPI tft = TFT_eSPI();
-
 void setup() {
   Serial.begin(115200); // Set up serial port
-  /*tft.init();  //init screen
-  tft.setRotation(2); //adjust rotation
-  tft.setTextSize(1); //default font size
-  tft.fillScreen(TFT_WHITE); //fill background
-  tft.setTextColor(TFT_BLACK, TFT_WHITE); //set color for font
-  */
 }
 
 void loop() {

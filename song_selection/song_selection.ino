@@ -1,3 +1,7 @@
+/*
+ * This is just driver code that we used for testing our Song Selection library! The actual code that controls song selection when playing the game can be found in the Game class :)
+ */
+
 #include <SPI.h>
 #include <string>
 #include <WiFi.h>
@@ -10,6 +14,7 @@ using namespace std;
 #include <Adafruit_RA8875.h>
 #include "SongSelection.h"
 
+//defining pins for screen
 #define RA8875_INT 16
 #define RA8875_CS  15
 #define RA8875_RST 21 
@@ -126,12 +131,10 @@ void update(int input) {
     }
    case 3: { //selected song
     selected_song = song_selection.get_curr_song();
-    Serial.println("Drawing another damn rectangle");
     tft.fillRect(0, 0, 800, 300, RA8875_BLACK);
     tft.textTransparent(RA8875_CYAN);
     tft.textMode();
     tft.textSetCursor(10, 20);
-    Serial.println("about to write the third one");
     tft.textWrite("Nice choice!");
     char display_text[100] = "You selected ";
     strcat(display_text, selected_song.c_str());
