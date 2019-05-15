@@ -1,3 +1,7 @@
+/*
+ * This is just driver code that we used to test our Leaderboards library when we were developing it! To see the actual leaderboards in action, check out the Game class :)
+ */
+
 #include <SPI.h>
 #include <string>
 #include <WiFi.h>
@@ -53,7 +57,6 @@ void setup() {
   tft.cursorBlink(32);
   tft.textTransparent(RA8875_CYAN);
   tft.textSetCursor(0, 0);
-  //how to set text size wtf
 
   string song_string = "Paint_It_Black";
   Leaderboard board(song_string);
@@ -70,7 +73,6 @@ void loop()
   
 }
 
-//move these later
 uint8_t char_append(char* buff, char c, uint16_t buff_size) {
   int len = strlen(buff);
   if (len > buff_size) return false;

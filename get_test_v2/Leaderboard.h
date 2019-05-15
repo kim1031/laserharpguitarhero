@@ -11,7 +11,6 @@
 #include <Adafruit_RA8875.h>
 #include <SPI.h>
 #include <string>
-//using namespace std;
 
 class Leaderboard {
     private:

@@ -12,8 +12,6 @@
 
 Leaderboard::Leaderboard(std::string song_name) {
     this->song_name = song_name;
-    // this->scores = {0};
-    // this->users = {0};
     this->array_size = 0;
 }
 

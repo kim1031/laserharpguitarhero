@@ -19,20 +19,19 @@ class SongSelection {
     int curr_index;
     int old_index;
     int scrolling_timer;
-    const int scrolling_threshold = 750; //ms
+    int scrolling_threshold = 750; //ms
     std::string old_song;
-    std::string selected_song;
+    string selected_song;
     
     
 
   public:
-    SongSelection(); //does this need parameters? we'll see lol
+    SongSelection();
     void parse_song_selection(std::string str);
     void get_song_selection(char* request_buffer);
     void display_song_selection(Adafruit_RA8875* tft);
-    void update_song_index(bool forward); // just increase index by one 
+    void update_song_index(bool forward);
     std::string get_curr_song();
-    int get_song_num();
     void update_screen(int input, Adafruit_RA8875* tft);
 };
 
