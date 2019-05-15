@@ -4,7 +4,7 @@ leaderboards_db = '__HOME__/laserharpguitarhero/leaderboards.db'
 
 def request_handler(request):
     '''
-        Returns get request when trying to view / post to leaderboard. 
+        Handles requests when trying to view / post to leaderboard. 
         If a POST request, we insert the score, song, and username to table.
         If a GET request, we filter by the played song, and list top 10 descending order.
     '''

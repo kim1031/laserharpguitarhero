@@ -16,8 +16,39 @@ Below is a video of our group demonstrating the game. How fun!
 
 System Design
 ==============================================================
+Below is an overview of the design of our system. The vast majority of our project code was written for the ESP32 because that is where most of the game logic is handled. The python server code was mostly used for storing persistent data in databases, including note information for songs and user's scores for the leaderboards. In addition, we also wrote helper functions in Python that allowed us to easily create new note mappings for songs using our computers' keyboards instead of having to hard-code notes in some other way.
+
+Software
+--------------------------------------------------------------
+
+<big>**Server-Side and Helper Code**</big>
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+leaderboards.py
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+This code lives on the server and handles get requests for obtaining leaderboard information and post requests for adding new information to the leaderboards database. This is all handled in the appropriately named request_handler function. First, we create a connection to our leaderboards database. Then,if the scores_table does not already exist, we create it. This table has three columns: a score column, a song name column, and a username column. We then take the values from the body of the post request and insert them into their respective columns. In paticular, the body of the post request should have three keys: 'score', 'song', and 'user'. We then close our connection to the database, and the post request is complete. If the request was instead a get request, we follow a similar process. First, we extract the name of the song that we want the leaderboards. This name should come from the query argument 'song'. Then, we get all of the rows in the database with that song name and order them in descending order by score. This is so that it will be easier to display the top scores in order on the ESP32 display. In addition, we only want the top ten scores, so we limit our results to ten rows. Then, we create a string called 'outs' that will hold the output that we want to send back to the ESP32. After that, we iterate over all the rows that we retrieved from the database and add them to the outs string with the following format: "[score,username]". Thus, if your username is joules and you got a score of 18, the format would be "[18,joules]". Multiple scores are represented as follows: "[55,user1][17,user3][3,user2]." Finally, we close our connection to the database and return this string to the ESP32 for parsing.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+get_song.py
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+get_songlist.py
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+song_timing.py
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+<big>**ESP32 Libraries and Classes**</big>
+
+
 
 Hardware
+--------------------------------------------------------------
+
+Parts List
 ==============================================================
 - 1 ESP32 Microcontroller
 - 1 Breadboard
@@ -51,14 +82,22 @@ State Machine Block Diagram
 --------------------------------------------------------------
 ![Figure [state machine]: State machine diagram of our game](./images/state_machine.png width="800px")
 
-1. Start: A simple state that just provides a title screen for the game. When the user breaks the first (leftmost) laser, we move onto the "Enter Username" state.
-2. Enter Username: Users select their username using the first three lasers. The first laser scrolls backwards through the alphabet while the second laser scrolls forwards through the alphabet. The third laser is used to select a letter. The user breaks the fourth (rightmost) laser to confirm their name and move to the "Choose Song" state. 
-3. Choose Song: Users select the song they want to play using the first two lasers. The first laser scrolls backwards through the song list, while the second laser scrolls forward through the song list. Information about each song is displayed, including the name of the song, the song's artist, and its duration in seconds. The user breaks the third laser to select a song and move onto the "Play" state.
-4. Play: This is the state where the actual game occurs. First, the notes for the selected song are retrieved from the server via a get request. Next, the notes are displayed on the screen as colored rectangles, and the user must break the appropriate laser when each rectangular note reaches the bottom of the screen. The user earns points based on how accurately they break the lasers. Once all of the song's notes have been played, the game moves to the "Show Score" state. 
-5. Show Score: The user's score is stored in the leaderboards database via a post request. In addition, the score is printed to the screen along with further instructions. When the first laser is broken, the song is replayed and we move to the "Play Again" state. When the second laser is broken, the user can select another song to play with the same username, and we move to the "New Song" state. When the third laser is broken, the user can view leaderboards for that particular song, and we move to the "Leaderboard" state. When the fourth laser is broken, the user starts a new game with a new username, and we move to the "Start" state. 
-6. Play Again: We keep the same song and user info and automatically move to the "Play" state.
-7. New Song: We keep the same username but clear the song information and automatically move to the "Choose Song" state.
-8. Leaderboard: We retrieve the leaderboard information for the specified song via a get request to our server-side database and display it on the screen. When the first laser is broken, the user plays the same song again and we move to the "Play Again" state. When the second laser is broken, the user selects another song to play with the same username, and we move to the "New Song" state. Finally, when the third laser is broken, the user starts a new game with a new username, and we move to the "Start" state.
+**1. Start:** A simple state that just provides a title screen for the game. When the user breaks the first (leftmost) laser, we move onto the "Enter Username" state.
+
+**2. Enter Username:** Users select their username using the first three lasers. The first laser scrolls backwards through the alphabet while the second laser scrolls forwards through the alphabet. The third laser is used to select a letter. The user breaks the fourth (rightmost) laser to confirm their name and move to the "Choose Song" state. 
+
+**3. Choose Song:** Users select the song they want to play using the first two lasers. The first laser scrolls backwards through the song list, while the second laser scrolls forward through the song list. Information about each song is displayed, including the name of the song, the song's artist, and its duration in seconds. The user breaks the third laser to select a song and move onto the "Play" state.
+
+**4. Play:** This is the state where the actual game occurs. First, the notes for the selected song are retrieved from the server via a get request. Next, the notes are displayed on the screen as colored rectangles, and the user must break the appropriate laser when each rectangular note reaches the bottom of the screen. The user earns points based on how accurately they break the lasers. Once all of the song's notes have been played, the game moves to the "Show Score" state. 
+
+**5. Show Score:** The user's score is stored in the leaderboards database via a post request. In addition, the score is printed to the screen along with further instructions. When the first laser is broken, the song is replayed and we move to the "Play Again" state. When the second laser is broken, the user can select another song to play with the same username, and we move to the "New Song" state. When the third laser is broken, the user can view leaderboards for that particular song, and we move to the "Leaderboard" state. When the fourth laser is broken, the user starts a new game with a new username, and we move to the "Start" state. 
+
+**6. Play Again:** We keep the same song and user info and automatically move to the "Play" state.
+
+**7. New Song:** We keep the same username but clear the song information and automatically move to the "Choose Song" state.
+
+**8. Leaderboard:** We retrieve the leaderboard information for the specified song via a get request to our server-side database and display it on the screen. When the first laser is broken, the user plays the same song again and we move to the "Play Again" state. When the second laser is broken, the user selects another song to play with the same username, and we move to the "New Song" state. Finally, when the third laser is broken, the user starts a new game with a new username, and we move to the "Start" state.
+
 Functional Block Diagram
 --------------------------------------------------------------
 
