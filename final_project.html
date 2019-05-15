@@ -1,23 +1,24 @@
      <meta charset="utf-8" emacsmode="-*- markdown -*-"><link rel="stylesheet" href="https://casual-effects.com/markdeep/latest/slate.css?">
 
                         **Laser Harp Guitar Hero**
+              Julia Gonik, Tiffany Huang, Hyunji Kim, and Joie Le
                                  Team 77
-            Julia Gonik, Tiffany Huang, Hyunji Kim, and Joie Le
+            
 
 
 Overview
 ==============================================================
 
-<!-- The overall goal of our project was to create a modified version of the game, Guitar Hero. Instead of pressing buttons on a guitar-shaped game controller, we made a harp with lasers simulating strings such that you 'pluck' a laser to play a note and win points, as shown below. By 'plucking' lasers, users will be able to input their name, choose songs to play, and play the game itself. Once the song ends, scores for the song will be stored in a database (with entries of user, song, and score). The user can access leaderboards on the ESP32 filtering by song. Songs and their corresponding notes will also be stored in a separate table in the database. -->
-One of our favorite childhood games is Guitar Hero. One day, while reminiscing about the carefree joys of youth, we decided that there was no better way to pay homage to a classic video game like Guitar Hero than to recreate it with an EECS embedded systems twist. Thus, Laser Harp Guitar Hero was born. Instead of pressing buttons and strumming on a contrived, cliche guitar-shaped game controller, users break lasers in order to "pluck" the laser harp and play notes. Players choose from a plethora of songs, including classic Guitar Hero songs in addition to some of our present-day favorites. The user earns a score based on how well they pluck the notes at the appropriate times, and the system keeps track of the user's name and scores in a server-side database that contains leaderboards for each song. Challenge your friends and determine the true laser harp master!
+One of our favorite childhood games is Guitar Hero. One day, whilst reminiscing about the carefree joys of youth, we decided that there was no better way to pay homage to a classic video game like Guitar Hero than to recreate it with an EECS embedded systems twist. Thus, Laser Harp Guitar Hero was born. Instead of pressing buttons and strumming on a contrived, cliche guitar-shaped game controller, users break lasers in order to "pluck" the laser harp and play notes. Players choose from a plethora of songs, including classic Guitar Hero tunes in addition to some of our present-day favorites. The user earns a score based on how well they pluck the notes at the appropriate times, and the system keeps track of the user's name and scores in a server-side database that contains leaderboards for each song. Challenge your friends and determine the true laser harp master!
 
+Below is a video of our group demonstrating the game. How fun!
 !!!!!include a video or photo. 
 
 System Design
 ==============================================================
 
 Hardware
---------------------------------------------------------------
+==============================================================
 - 1 ESP32 Microcontroller
 - 1 Breadboard
 - 1 Micro USB Cable
@@ -31,10 +32,16 @@ Hardware
 - 4 Phototransistors
 - 8 4.7 kΩ Resistors
 - 4 12" blocks of wood
-- 1 12" x 12" block of acrylic
+- 1 12" x 12" piece of acrylic
 - Wires of various lengths
+- 8 Screws
+- 4 Nuts
+- Electrical tape
+- Hot glue
+- Shrink wrap
+- Zip ties
 
-The 5.0" 40-pin TFT Display along with the driver board for 40-pin TFT Touch Display was used to allow the users to better see which notes to play. The Speaker, MP3 Player, and Micro SD Card was used to play the music. Lasers, phototransistors, and resistors were used to simulate the laser string for the harp. Rest of the material, LEDs, a power board, blocks of wood, and acrylic was used to make the frame for the harp and to make the game more user friendly.
+The 5.0" 40-pin TFT Display and the driver board display the whole graphic user interface for our game. The speaker, MP3 player, and micro SD Card are required to play music. Lasers and phototransistors serve as the strings of the harp. The LEDs help signal a user to break a particular laser at the appropriate time. In addition, both the phototransistors and LEDs require resistors for proper wiring. Finally, we used the wood, acrylic, screws, and nuts to make the laser harp's frame.
 
 Wiring Schematic
 --------------------------------------------------------------
@@ -45,6 +52,9 @@ State Machine Block Diagram
 
 
 Functional Block Diagram
+--------------------------------------------------------------
+
+System Overview
 --------------------------------------------------------------
 
 
@@ -76,9 +86,9 @@ A 3D printed screen holder was used to secure the screen to acrylic. The design 
 Decision Making and Challenges
 ==============================================================
 
-Hardware Design
+Alignment of Lasers and Phototransistors
 --------------------------------------------------------------
-Since numerous functionalities in the game depend on being able to detect whether a laser is broken or not, it was crucial that the laser pointed exactly at its corresponding photoresistor and stayed that way even if we moved. After trying to make holes straight and exactly the size of a laser as well as trying to use tape to hold the laser and phototransistor together, we ultimately decided to adjust the parts, initialize hold it in place with tape, and also used hot glue to further stabilize such conformation.
+Our game relies heavily on being able to detect whether or not a laser is broken. For instance, the player must break the laser at the correc time in order to gain points while playing the song. We also use broken lasers as a means of navigating from one page to the other and even selecting a username. Thus, it is crucial that the detection of broken lasers is very accurate. In order to achieve this accuracy, we had to make sure that each laser is pointed exactly at its corresponding phototransistor and that it stayed that way even when we moved the laser harp or the harp was bumped or jostled. We first considered this issue when building the laser harp frame. Firstly, when drilling the holes in the wood for where the lasers and phototransistors would be placed, we tried our very best to make sure that the holes were aligned vertically on top of each other. This was a bit challenging since none of us had much experience with woodwork or power tools, but Tiffany and her MakerLodge training were key. Next, we tried to drill the holes so their diameters were as close as possible to the diameters of the lasers and phototransistors in order to ensure a snug fit. This was also quite difficult because drillbits only come in predetermined sizes, so the holes were a bit too large. In order to attempt to stabilize the lasers and phototransistors, we first tried simply wrapping them in electrical tape in order to increase their diameters so that they fit more snugly inside the holes. However, this didn't work very well because the lasers would still shift over time and could easily be jostled out of position. Thus, we decided to use a combination of this taping method in addition to hot glue. Once the lasers were taped and placed in a position that we liked, we hot glued the top of the wire that stuck out of the hole onto the wooden frame. This still wasn't completely perfect, and some of the lasers had to be adjusted at times, but it worked very reliably for our purposes. For the phototransistors, we decided to forgo the electrical tape and solely use hot glue to secure them since their diameters were already pretty small, so you would have to use a lot of tape to make them fit securely in the holes. We first tested to make sure that phototransistors' measured voltage still changed reliably even when hot glue was placed on top of them. We found that the hot glue had no significant effect on the phototransistors' performance, so we went ahead with our plan. First, we turned on the lasers so we could see where the phototransistors should be placed. Then, we placed hot glue on each phototransistor and secured them to our liking. We also glued the wires that stuck out of the wooden frame into place as well. Thus, our lasers and phototransistors were beautifully aligned and secured!
 
 The Wiring
 --------------------------------------------------------------
@@ -86,7 +96,10 @@ Having to connect so many wires to the breadboard specifically for the LEDs, las
 
 In order to prevent such difficulties, we color-coded wires and twisted pairs of wires that go to the same piece. Wires for similar pieces were then also grouped together using tape and zip ties. For lasers, white wires went to power and black wires went to ground. For each 'string,' we attributed different colors, green, red, yellow, and blue, which we represented with LEDs. Wires for the phototransistors were hence set such that white wires always go to power and the wire that goes to the ESP32 is the same as the color it is assigned. Finally, for the LEDs, black wires were used to go to power and accordingly colored wires went to the ESP32. 
 
-Screen and Speaker
+MP3 Player
+--------------------------------------------------------------
+
+Screen
 --------------------------------------------------------------
 
 
