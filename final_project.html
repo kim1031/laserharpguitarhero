@@ -49,16 +49,16 @@ Wiring Schematic
 
 State Machine Block Diagram
 --------------------------------------------------------------
-![Figure [state machine]: State machine diagram of our laser harp guitar hero](./images/state_machine.png width="800px")
+![Figure [state machine]: State machine diagram of our game](./images/state_machine.png width="800px")
 
-1. Start: The user and song information are set to be empty. It shows the home screen introducing Laser Harp Guitar Hero and stays in such state until the first laser (leftmost laser) is broken, in which case we move onto the "Enter Username" state.
-2. Enter Username: Using the first three lasers, users can 'type' in their username. Once the fourth laser (rightmost laser) is broken, we move onto the "Choose Song" state.
-3. Choose Song: Once again, by using the first two lasers, users can choose the song they want to play. Once the third laser is broken, we move onto the "Play" state.
-4. Play: The notes for the song requested is retreived. We stay in this state until the notes recorded for song retrieved finishes playing. Then, we move onto "Show Score" stage.
-5. Show Score: We store the user's score in the respective database and print the user's score on screen. When one of the first three lasers are broken, we move onto respective states.
-6. Play Again: We keep the same song and user info and move automatically into the "Play" state.
-7. New Song: We keep the user but clear the song information and move automatically into the "Choose Song" state.
-8. Leaderboard: We retrieve the leaderboard information for the specified song and display it on screen. Based on which laser is broken, move to "Choose Song" or "Start" stage.
+1. Start: A simple state that just provides a title screen for the game. When the user breaks the first (leftmost) laser, we move onto the "Enter Username" state.
+2. Enter Username: Users select their username using the first three lasers. The first laser scrolls backwards through the alphabet while the second laser scrolls forwards through the alphabet. The third laser is used to select a letter. The user breaks the fourth (rightmost) laser to confirm their name and move to the "Choose Song" state. 
+3. Choose Song: Users select the song they want to play using the first two lasers. The first laser scrolls backwards through the song list, while the second laser scrolls forward through the song list. Information about each song is displayed, including the name of the song, the song's artist, and its duration in seconds. The user breaks the third laser to select a song and move onto the "Play" state.
+4. Play: This is the state where the actual game occurs. First, the notes for the selected song are retrieved from the server via a get request. Next, the notes are displayed on the screen as colored rectangles, and the user must break the appropriate laser when each rectangular note reaches the bottom of the screen. The user earns points based on how accurately they break the lasers. Once all of the song's notes have been played, the game moves to the "Show Score" state. 
+5. Show Score: The user's score is stored in the leaderboards database via a post request. In addition, the score is printed to the screen along with further instructions. When the first laser is broken, the song is replayed and we move to the "Play Again" state. When the second laser is broken, the user can select another song to play with the same username, and we move to the "New Song" state. When the third laser is broken, the user can view leaderboards for that particular song, and we move to the "Leaderboard" state. When the fourth laser is broken, the user starts a new game with a new username, and we move to the "Start" state. 
+6. Play Again: We keep the same song and user info and automatically move to the "Play" state.
+7. New Song: We keep the same username but clear the song information and automatically move to the "Choose Song" state.
+8. Leaderboard: We retrieve the leaderboard information for the specified song via a get request to our server-side database and display it on the screen. When the first laser is broken, the user plays the same song again and we move to the "Play Again" state. When the second laser is broken, the user selects another song to play with the same username, and we move to the "New Song" state. Finally, when the third laser is broken, the user starts a new game with a new username, and we move to the "Start" state.
 Functional Block Diagram
 --------------------------------------------------------------
 
