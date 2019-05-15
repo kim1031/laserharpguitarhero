@@ -12,11 +12,12 @@ Overview
 One of our favorite childhood games is Guitar Hero. One day, whilst reminiscing about the carefree joys of youth, we decided that there was no better way to pay homage to a classic video game like Guitar Hero than to recreate it with an EECS embedded systems twist. Thus, Laser Harp Guitar Hero was born. Instead of pressing buttons and strumming on a contrived, cliche guitar-shaped game controller, users break lasers in order to "pluck" the laser harp and play notes. Players choose from a plethora of songs, including classic Guitar Hero tunes in addition to some of our present-day favorites. The user earns a score based on how well they pluck the notes at the appropriate times, and the system keeps track of the user's name and scores in a server-side database that contains leaderboards for each song. Challenge your friends and determine the true laser harp master!
 
 Below is a video of our group demonstrating the game. How fun!
-!!!!!include a video or photo. 
+
+![A demo video! Watch Julia struggle!](https://youtu.be/lB0uD_ifc4c)
 
 System Design
 ==============================================================
-Below is an overview of the design of our system. The vast majority of our project code was written for the ESP32 because that is where most of the game logic is handled. The python server code was mostly used for storing persistent data in databases, including note information for songs and user's scores for the leaderboards. In addition, we also wrote helper functions in Python that allowed us to easily create new note mappings for songs using our computers' keyboards instead of having to hard-code notes in some other way.
+Below is an overview of the design of our system. The vast majority of our project code was written for the ESP32 because that is where most of the game logic is handled. The python server code was mostly used for storing persistent data in databases, including note information for songs and user's scores for the leaderboards. In addition, we also wrote helper functions in Python that allowed us to easily create new note mappings for songs using our computers' keyboards instead of having to figure out note timings manually, which would be tedious.
 
 Software
 --------------------------------------------------------------
@@ -25,20 +26,22 @@ Software
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 leaderboards.py
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-This code lives on the server and handles get requests for obtaining leaderboard information and post requests for adding new information to the leaderboards database. This is all handled in the appropriately named request_handler function. First, we create a connection to our leaderboards database. Then,if the scores_table does not already exist, we create it. This table has three columns: a score column, a song name column, and a username column. We then take the values from the body of the post request and insert them into their respective columns. In paticular, the body of the post request should have three keys: 'score', 'song', and 'user'. We then close our connection to the database, and the post request is complete. If the request was instead a get request, we follow a similar process. First, we extract the name of the song that we want the leaderboards. This name should come from the query argument 'song'. Then, we get all of the rows in the database with that song name and order them in descending order by score. This is so that it will be easier to display the top scores in order on the ESP32 display. In addition, we only want the top ten scores, so we limit our results to ten rows. Then, we create a string called 'outs' that will hold the output that we want to send back to the ESP32. After that, we iterate over all the rows that we retrieved from the database and add them to the outs string with the following format: "[score,username]". Thus, if your username is joules and you got a score of 18, the format would be "[18,joules]". Multiple scores are represented as follows: "[55,user1][17,user3][3,user2]." Finally, we close our connection to the database and return this string to the ESP32 for parsing.
+This code lives on the server and handles get requests for obtaining leaderboard information and post requests for adding new information to the leaderboards database. This is all handled in the appropriately named request_handler function. First, we create a connection to our leaderboards database. Then,if the scores_table does not already exist, we create it. This table has three columns: a score column, a song name column, and a username column. We then take the values from the body of the post request and insert them into their respective columns. In paticular, the body of the post request should have three keys: 'score', 'song', and 'user'. We then close our connection to the database, and the post request is complete. If the request was instead a get request, we follow a similar process. First, we extract the name of the song that we want the leaderboards. This name should come from the query argument 'song'. Then, we get all of the rows in the database with that song name and order them in descending order by score. This is so that it will be easier to display the top scores in order on the ESP32 display. In addition, we only want the top ten scores, so we limit our results to ten rows. Then, we create a string called 'outs' that will hold the output that we want to send back to the ESP32. After that, we iterate over all the rows that we retrieved from the database and add them to the outs string with the following format: "[score,username]". Thus, if your username is joules and you got a score of 18, the format would be "[18,joules]". Multiple scores are represented as follows: "[55,user1] [17,user3] [3,user2]." Finally, we close our connection to the database and return this string to the ESP32 for parsing.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 get_song.py
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+This code is also on the server. It handles get requests that are sent when the user has selected a song and the ESP32 now needs to retrieve the note mapping for that song. This functionality occurs in the request_handler function. First, we check that the request is a get request, since this code is only designed to return values from our database rather than post any new values to the server. After that, we connect to our songs database and retrieve the name of the song from the request. In particular, the name of the song is found in a query argument called 'song'. Next, we get all of the values from the table with the same name as the song in our database. This database contains information about all of the notes that are played during a song. It stores which of the four notes is played, the time it started playing, and its duration. See song_timing.py for more information about how we obtain and store this information. Then, we close the connection to the database and return our results as a string to the ESP32 for parsing.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 get_songlist.py
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+This file lives on the server and works to handle get requests for information about all of the songs that we have created notes for. Particularly, when a get request is made to this file, it returns a list containing the song name, artist name, and song duration for each song in the database. All of this logic is handled in the request_handler function. First, we establish a connection to our database. Then, we select all of the values from the table called songlist. This table has 3 columns: a column for the song name, a column for the artist name, and a column for the song duration. After fetching all of the rows from this table, we close our connection to the database and return the table information to the ESP32 as a string for further parsing and use.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 song_timing.py
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
+*TO-DO*
 
 
 <big>**ESP32 Libraries and Classes**</big>
@@ -158,5 +161,5 @@ Energy Management
 
 
  
-<style class="fallback">body{visibility:hidden}</style><script>markdeepOptions={tocStyle:'long'};</script>
+<style class="fallback">body{visibility:hidden}</style><script>markdeepOptions={tocStyle:'none'};</script>
 <!-- Markdeep: --><script src="https://casual-effects.com/markdeep/latest/markdeep.min.js?" charset="utf-8"></script>
