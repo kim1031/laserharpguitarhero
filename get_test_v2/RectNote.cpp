@@ -20,7 +20,7 @@ RectNote::RectNote(float start_time, float end_time, int dur, int wid, int x, ui
     this->end_time = end_time;
     this->duration = dur;
     this->width = wid;
-    this->length = 0; //temporary, will increase until length = duration
+    this->length = 0;             //temporary, will increase until length = duration
     this->x = x;
     this->y = 0;
     this->press = false;
@@ -38,7 +38,7 @@ void RectNote::updateLength(int screen_bottom)
     if (y + duration >= screen_bottom) 
     {
         length = screen_bottom - y;
-        press = true;
+        press = true;                   //note should be broken
     }
 }
 

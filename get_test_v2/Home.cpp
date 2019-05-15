@@ -8,18 +8,17 @@
 #include <SPI.h>
 #include <string>
 
-Home::Home()
+Home::Home()    //empty Home constructor
 {
     
 }
 
-void Home::display_entry(Adafruit_RA8875* tft) 
+void Home::display_entry(Adafruit_RA8875* tft)  //displays a welcome message
 {
-    //tft->fillScreen(RA8875_BLACK);
     tft->textMode();
     tft->textSetCursor(150, 200);
     tft->textTransparent(RA8875_WHITE);
     tft->textWrite("Laser Harp Guitar Hero");
     tft->textSetCursor(150, 250);
-    tft->textWrite("Hit the leftmost laser to start");
+    tft->textWrite("hit the leftmost laser to start");
 }
