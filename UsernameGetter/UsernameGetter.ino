@@ -15,6 +15,7 @@ using namespace std;
 
 Adafruit_RA8875 tft = Adafruit_RA8875(RA8875_CS, RA8875_RST);
 UsernameGetter ug;
+
 char response[100];
 char old_response[100];
 bool choosing; 
@@ -33,7 +34,6 @@ void setup() {
   tft.fillScreen(RA8875_BLACK);
   tft.textMode();
   tft.cursorBlink(32);
-  //tft.textEnlarge(1); 
   tft.textTransparent(RA8875_WHITE);
   tft.textSetCursor(100, 10);
   tft.textWrite("Hit the left/right laser to enter your name!");
@@ -77,20 +77,15 @@ void loop() {
       Serial.println("2nd laser broken");
       ug.update_name(2, response);
     }
-    if (choosing) {
-      if (strcmp(response, old_response) != 0) {  //only draw if changed!
+    if (choosing) 
+    {
+      if (strcmp(response, old_response) != 0) //only draw if changed!
+      {  
         tft.fillScreen(RA8875_BLACK);
         tft.textTransparent(RA8875_WHITE);
         tft.textSetCursor(0, 0);
-        Serial.print("WATCH OUT FOR THE RESPONSE!!!!!!!!!!!!!!!");
-        Serial.println(response);
         tft.textWrite(response);
       }
-      Serial.print("Response: ");
-      Serial.println(response);
-      Serial.println("Old response: ");
-      Serial.println(old_response);
-      
       memset(old_response, 0, sizeof(old_response));
       strcat(old_response, response); 
     }

@@ -77,17 +77,9 @@ void Game::gamePlay(int elapsed, char* request_buffer, char* response_buffer)
     {
         home_screen.display_entry(tft);
         if (a_string.broken())        //move on to username entry only if first laser is broken
-        {
             state = USER_SELECT_STATE;
-        }
     } else if (state == USER_SELECT_STATE)    //enter user name page by toggling lasers
     {
-        Serial.print("username ");
-        Serial.println(username);
-        Serial.print("user ");
-        Serial.println(user.c_str());
-        Serial.print("building user name ");
-        Serial.println(building_username);
         tft->textTransparent(RA8875_WHITE);
         tft->textSetCursor(100, 10);
         tft->textWrite("Hit the first/second laser to toggle characters.");
@@ -95,7 +87,7 @@ void Game::gamePlay(int elapsed, char* request_buffer, char* response_buffer)
         tft->textWrite("Hit the third laser to select a character.");
         tft->textSetCursor(100, 50);
         tft->textWrite("Hit the fourth laser to confirm your name.");
-        if ( f_string.broken() )    //selected username
+        if ( f_string.broken() )    //final username if 4th string broken
         {
             tft->fillScreen(RA8875_BLACK);
             tft->textSetCursor(0,0);

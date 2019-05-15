@@ -10,15 +10,15 @@
 UsernameGetter::UsernameGetter()
 {
   this->char_index = 1;
-  this->scrolling_timer = millis();
-  this->choosing_timer = millis();
+  this->scrolling_timer = millis();     //make sure scroll is at reasonable speed
+  this->choosing_timer = millis();      //make sure choosing letter has buffer period
 }
 
 void UsernameGetter::update_name(int input, char* output)
-{
+{   // update what should be displayed to screen based off laser input
   switch (input)
   {
-    case 2:  //scroll right
+    case 2:  //scroll right 2nd laser broken
     {
         if ( millis() - scrolling_timer >= scrolling_threshold)
         {
@@ -31,7 +31,7 @@ void UsernameGetter::update_name(int input, char* output)
         strncat(output, alphabet + char_index, 1);
         break;
     }
-    case 1: //scroll left
+    case 1: //scroll left 1st laser broken
     {
         if ( millis() - scrolling_timer >= scrolling_threshold)
         {
@@ -44,7 +44,7 @@ void UsernameGetter::update_name(int input, char* output)
         strncat(output, alphabet + char_index, 1);
         break;
     }
-    case 3: //add letter to username
+    case 3: //append letter to username 3rd laser broken
     {
         if ( millis() - choosing_timer >= choosing_threshold)
         {
@@ -55,13 +55,16 @@ void UsernameGetter::update_name(int input, char* output)
         }
         break;
     }
+    //4th laser broken would lead to next state
   }
 }
 
-void UsernameGetter::set_char_index(int num) {
+void UsernameGetter::set_char_index(int num)  //set starting index to parameter
+{
   char_index = num;
 }
 
-void UsernameGetter::clear_query() {
+void UsernameGetter::clear_query()            //clear query_string when restarting game
+{
   memset(query_string, 0, sizeof(query_string));
 }
