@@ -1,3 +1,9 @@
+/*
+ * Class which represents a "string" of our laser harp, including the LED that represents it 
+ * and the phototransistor which takes in input about when the string is "plucked" or broken.
+ * Also handles scoring of user actions.
+ */
+ 
 #include "LaserString.h"
 
 #include "Arduino.h"
@@ -10,24 +16,28 @@
 
 LaserString::LaserString(int LED_pin, int analog_pin)
 {
+    //sets up both the pin controlling the LED and the pin controlling the photoresistor
+    //also initializes attributes important to other functionality.
     this->LED_pin = LED_pin;
     this->analog_pin = analog_pin;
-    this->scored = true;
+    this->scored = true; //whether user action has been scored or not yet
     this->hand_in = false;
-    this->ref_hand_in_time = 0;
-    this->actual_hand_in_time = 0;
+    this->ref_hand_in_time = 0; //reference time is when the string should be broken according to the beatmap
+    this->actual_hand_in_time = 0; //records when the laser actually does get broken in real life
     this->feedback_tag = "";
     this->feedback_time = 0;
 }
 
 void LaserString::beginLights()
 {
+    //makes LED usable/able to turn on upon command
     pinMode(LED_pin, OUTPUT);
     digitalWrite(LED_pin, 0);
 }
 
 void LaserString::LEDControl(bool on)
 {
+    //turns LED on and off
     if (on)
         digitalWrite(LED_pin, 1);
     else if (!on)
@@ -36,6 +46,7 @@ void LaserString::LEDControl(bool on)
 
 bool LaserString::broken()
 {
+    //checks whether the string has been broken
     int bins = analogRead(analog_pin);
     float voltage = (bins / 4096.0) * 3.3;
     return (voltage >= 1.5);
@@ -51,13 +62,14 @@ int LaserString::getRef()
     return actual_hand_in_time;
 }
 
-void LaserString::toScoreNote()
+void LaserString::toScoreNote() 
 {
     scored = false;
 }
 
 void LaserString::userAction()
 {
+    //read in and record user action
     int bins = analogRead(analog_pin);
     float voltage = (bins / 4096.0) * 3.3;
     if (voltage >= 1.5 && !hand_in)
@@ -70,8 +82,11 @@ void LaserString::userAction()
 
 int LaserString::scoreAction(int time_ms)
 {
+    //if the current user action available hasn't yet been scored, score it
     int time_diff = fabs(actual_hand_in_time - ref_hand_in_time);
     int add_score = 0;
+    
+    //calculates how much score boost a user gets based on accuracy
     if (!scored)
     {
         feedback_time = time_ms;
@@ -103,6 +118,7 @@ int LaserString::scoreAction(int time_ms)
 
 void LaserString::displayFeedback(int time_ms, Adafruit_RA8875* tft, int text_loc)
 {
+    //display feedback about the user's accuracy for half a second
     tft->textTransparent(RA8875_RED);
     if (time_ms - feedback_time <= 500)
     {
@@ -113,6 +129,7 @@ void LaserString::displayFeedback(int time_ms, Adafruit_RA8875* tft, int text_lo
 
 void LaserString::reset()
 {
+    //reset all aspects related to scoring
     this->scored = true;
     this->hand_in = false;
     this->ref_hand_in_time = 0;

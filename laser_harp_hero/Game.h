@@ -75,11 +75,8 @@ class Game
         DFRobotDFPlayerMini* mp3_player;
 
     public:
-        //Game();
         Game(Adafruit_RA8875* input_tft, DFRobotDFPlayerMini* input_mp3_player);
         void setUpLED();
-        //void setUp(Adafruit_RA8875* input_tft, DFRobotDFPlayerMini* input_mp3_player);
-        //int getSongNum();
         void gamePlay(int elapsed, char* request_buffer, char* reponse_buffer);
         int getState();
         int getScore();

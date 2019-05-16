@@ -102,18 +102,9 @@ def map_notes_to_song(song, artist):
     conn.commit() 
     conn.close() 
 
-def add_new_song_num(song_name):
-    conn = sqlite3.connect(local_song_db)
-    c = conn.cursor()
-    length = c.execute('''SELECT COUNT(*) FROM song_numbers''').fetchone()[0]
-    new_index = length+1
-    c.execute('''INSERT INTO song_numbers VALUES (?,?);''', (song_name, new_index))
-    conn.commit()
-    conn.close()
-
-def delete_stuff():
+def delete_song():
     '''
-        Delete song from songlist table, in cases where we want to redo songs.
+        Delete song from songlist table, in cases where we want to redo songs or remove a song altogether.
     '''
     conn = sqlite3.connect(beatmaps_db)
     c = conn.cursor()
@@ -123,4 +114,3 @@ def delete_stuff():
 
 if __name__ == "__main__":
     map_notes_to_song("Whyd You Only Call Me When Youre High", "Arctic Monkeys")
-    # add_new_song_num("Jessies_Girl")

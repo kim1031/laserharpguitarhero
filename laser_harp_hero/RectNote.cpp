@@ -1,3 +1,7 @@
+/*
+ * Class which controls the display of notes to be pressed by user in gameplay.
+ */
+
 #include "RectNote.h"
 
 #include "Arduino.h"
@@ -16,8 +20,9 @@ RectNote::RectNote()
 
 RectNote::RectNote(float start_time, float end_time, int dur, int wid, int x, uint16_t color)
 {
-    this->start_time = start_time;
+    this->start_time = start_time;  //start time and end time relative to timestamp in song
     this->end_time = end_time;
+    //parameters of the note to control how it should be displayed on the screen to signal the user
     this->duration = dur;
     this->width = wid;
     this->length = 0;             //temporary, will increase until length = duration
@@ -30,11 +35,11 @@ RectNote::RectNote(float start_time, float end_time, int dur, int wid, int x, ui
 
 void RectNote::updateLength(int screen_bottom)
 {   
-    //grow the bar until it hits correct length
+    //grow the bar until it hits correct length (at top of display)
     if (y == 0 && length < duration)
         length += 3;
 
-    //set length of the bar depending on how much can fit in screen
+    //set length of the bar depending on how much can fit in screen (at bottom of display)
     if (y + duration >= screen_bottom) 
     {
         length = screen_bottom - y;
@@ -44,12 +49,14 @@ void RectNote::updateLength(int screen_bottom)
 
 void RectNote::updateYCoord(int screen_bottom)
 {
+    //create sense that note is moving down the screen
     if (length >= duration || (y > 0 && y <= screen_bottom))
         y += 3;
 }
 
 void RectNote::drawRect(Adafruit_RA8875* tft, bool old)
 {
+    //draw the rectangle ont he screen
     if (old)
         tft->fillRect(x, y, width, 3, RA8875_BLACK);
     else
@@ -58,6 +65,8 @@ void RectNote::drawRect(Adafruit_RA8875* tft, bool old)
 
 void RectNote::update(int screen_bottom, Adafruit_RA8875* tft)
 {
+    //update all aspects of the rectangle including location on screen, size
+    //draw the rectangle
     drawRect(tft, true);
     updateYCoord(screen_bottom);
     updateLength(screen_bottom);
@@ -66,16 +75,16 @@ void RectNote::update(int screen_bottom, Adafruit_RA8875* tft)
     if (y > screen_bottom)
     {
       out_of_bounds = true;
-      press = false;
+      press = false;  //laser should stop being broken when the note ends (leaves the screen)
     }
 }
 
-bool RectNote::toPress()
+bool RectNote::toPress()  //whether to press the laser for this note
 {
   return press; 
 }
 
-bool RectNote::passed()
+bool RectNote::passed()  //whether this note has ended
 {
   return out_of_bounds;
 }
