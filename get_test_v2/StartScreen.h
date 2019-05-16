@@ -1,5 +1,5 @@
-#ifndef Home_h
-#define Home_h
+#ifndef StartScreen_h
+#define StartScreen_h
 
 #include "Arduino.h"
 #include <gfxfont.h>
@@ -9,12 +9,12 @@
 #include <Adafruit_RA8875.h>
 #include <SPI.h>
 
-class Home
+class StartScreen
 {
   private:
       
   public:
-      Home();
+      StartScreen();
       void display_entry(Adafruit_RA8875* tft);
 };
 

@@ -41,7 +41,15 @@ This file lives on the server and works to handle get requests for information a
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 song_timing.py
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*TO-DO*
+PLEASE DOUBLE CHECK
+
+This file is the basis for the note-mapping. On a high level, when this file is executed, a chosen song chosen is played, and the person will hit the `a`, `s`, `d`, or `f` keys to indicate that this note should be broken during the Laser Harp Guitar Hero game. These keys can also be held. Pressing the space bar will end the song. In-depth discussion of each function is described below:
+     - `def map_notes_to_song(song, artist)`
+          - Takes in the name of the song and artist
+          - Uses the song anme to creates a table in the database. We replace spaces with `_` and remove quotation marks and commas from the song name to make interactions between the ESP and server easier.
+          - The table has the columns `(key text, start real, duration real)`, where key is one of the four notes, start is the start time as a float, and duration is how long the note is held for.
+          
+
 
 
 <big>**ESP32 Libraries and Classes**</big>
@@ -60,9 +68,16 @@ get_test_v2.ino
 should change the name of this file lol
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Home Library
+StartScreen Library
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*TO-DO*
+This library displays a welcome message to the user, acting as a home page for the game.
+
+- `StartScreen::StartScreen()`
+     - An empty constructor 
+- `void StartScreen::display_entry(Adafruit_RA8875* tft)`
+     - Passes in the display to be written on and writes the following text:
+          - "Laser Harp Guitar Hero"
+          - "hit the leftmost laser to start "
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 LaserString Library
@@ -148,7 +163,20 @@ The `SongSelection` library is responsible for getting data about songs from the
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 UsernameGetter Library
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*TO-DO*
+The UsernameGetter library implements the functionality for choosing a username by breaking lasers. The following functions describe the implementation:
+
+- `UsernameGetter::UsernameGetter()`
+     -The UsernameGetter class constructor has no parameters, but initializes several private variables. `alphabet` is a constant char array of the letters in the alphabet plus a blank space in the front. `query_string` holds the text that the user is building. 'char_index' refers to the position in `alphabet` that the player is currently in. `scrolling_timer` keeps track of how long it has been since the user last scrolled. The constant `scrolling_threshold` is set to 500 ms. `choosing_threshold` keeps track of how long it has been since the user has chosen a character. The constant `choosing_threshold` is set to 750ms.
+- `void UsernameGetter::update_name(int input, char* output)`
+     - A public function that updates `output`, the text shown to the user, based off input. Input 1 corresponds to scroll left, input 2 scroll right, input 3 choose letter. Each of these numbers matches up with the laser (i.e. left laser is one...). The fourth laser will set the state to the next state within the Game class.
+     - Within each case, the user can only scroll left/right at a minimum of every 500 ms. The same holds true for choosing a letter but at 750 ms.
+     - Once the user chooses a letter, `char_index` is set back to 0.
+- `void UsernameGetter::set_char_index(int num)`
+     - A public function that will set the `char_index` variable to the input `num`. 
+     - Once a user wants to restart the game, we want to reset the index back to the starting point.
+- `void UsernameGetter::clear_query()`
+     - A public function that will clear out `query_string` with `memset`. 
+     - Once a user wants to restart the game, we want to make sure the username displayed on the screen is not the prior user's.
 
 Hardware
 --------------------------------------------------------------

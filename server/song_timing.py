@@ -7,7 +7,7 @@ from  song_nums import update_db
 beatmaps_db = "beatmaps.db"
 local_song_db = "song_nums.db"
 
-def doIt(song, artist):
+def map_notes_to_song(song, artist):
     '''
         Plays chosen song using playsound. At the same time, user will enter in 
         A, S, D, F keys which will be recorded (start time, end time, duration).
@@ -122,5 +122,5 @@ def delete_stuff():
     conn.close()
 
 if __name__ == "__main__":
-    doIt("Whyd You Only Call Me When Youre High", "Arctic Monkeys")
+    map_notes_to_song("Whyd You Only Call Me When Youre High", "Arctic Monkeys")
     # add_new_song_num("Jessies_Girl")

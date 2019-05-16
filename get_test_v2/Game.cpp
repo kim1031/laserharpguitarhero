@@ -1,5 +1,5 @@
 #include "Game.h"
-#include "Home.h"
+#include "StartScreen.h"
 #include "LaserString.h"
 #include "RectNote.h"
 #include "Leaderboard.h"
@@ -54,9 +54,6 @@ Game::Game(Adafruit_RA8875* input_tft, DFRobotDFPlayerMini* input_mp3_player):
     song = 1;  //number in SD card
     song_len = 0;
     first_loop = true;
-
-    //Display home screen page
-    
     
     score = 0;
     state = 0;

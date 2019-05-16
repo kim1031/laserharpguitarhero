@@ -1,4 +1,4 @@
-#include "Home.h"
+#include "StartScreen.h"
 #include "Arduino.h"
 #include <gfxfont.h>
 #include <Adafruit_GFX.h>
@@ -8,12 +8,12 @@
 #include <SPI.h>
 #include <string>
 
-Home::Home()    //empty Home constructor
+StartScreen::StartScreen()    //empty Home constructor
 {
     
 }
 
-void Home::display_entry(Adafruit_RA8875* tft)  //displays a welcome message
+void StartScreen::display_entry(Adafruit_RA8875* tft)  //displays a welcome message
 {
     tft->textMode();
     tft->textSetCursor(150, 200);

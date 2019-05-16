@@ -5,7 +5,7 @@
 #include "RectNote.h"
 #include "Leaderboard.h"
 #include "UsernameGetter.h"
-#include "Home.h"
+#include "StartScreen.h"
 #include "SongSelection.h"
 
 #include <string>
@@ -33,7 +33,7 @@
 class Game
 {
     private:
-        Home home_screen;
+        StartScreen home_screen;
         
         int score;
         int state;

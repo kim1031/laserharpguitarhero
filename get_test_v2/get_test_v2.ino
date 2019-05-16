@@ -2,7 +2,7 @@
 #include "LaserString.h"
 #include "Leaderboard.h"
 #include "Game.h"
-#include "Home.h"
+#include "StartScreen.h"
 #include "UsernameGetter.h"
 #include "SongSelection.h"
 
