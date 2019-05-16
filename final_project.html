@@ -221,15 +221,15 @@ The ESP 32 is connected to the following components: screen, MP3 player, lasers,
 
 **Images of the actual wiring:**
 
-![Figure [Wiring]: The back of our laser harp in all its glory.](./images/back_of_board.JPG width="400px")
+![Figure [Wiring]: The back of our laser harp in all its glory.](./images/back_of_board.JPG width="600px")
 
-![Figure [Wiring]: A closer look at the breadboard](./images/breadboard_close_up.JPG width="400px")
+![Figure [Wiring]: A closer look at the breadboard](./images/breadboard_close_up.JPG width="600px")
 
-![Figure [Wiring]: The ESP32 steals the show. Note that the red-orange wires in the front of the image connect the speaker to the MP3 player](./images/esp_close_up.JPG width="400px")
+![Figure [Wiring]: The ESP32 steals the show. Note that the re-orange wires in the front of the image connect the speaker to the MP3 player](./images/esp_close_up.JPG width="600px")
 
-![Figure [Wiring]: The wiring for a small but mighty MP3 player.](./images/mp3_player.JPG width="400px")
+![Figure [Wiring]: The wiring for a small but mighty MP3 player.](./images/mp3_player.JPG width="600px")
 
-![Figure [Wiring]: The screen wiring featuring some handy male-to-female adapters.](./images/screen_wiring.JPG width="400px")
+![Figure [Wiring]: The screen wiring featuring some handy male-to-female adapters.](./images/screen_wiring.JPG width="600px")
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -317,9 +317,11 @@ Our game relies heavily on being able to detect whether or not a laser is broken
 
 The Wiring
 --------------------------------------------------------------
-Having to connect so many wires to the breadboard specifically for the LEDs, lasers, and phototransistors, the wiring often became very messy and it was difficult to find out whether the wiring was done incorrectly or if a wire had been accidently taken out, not to mention the numerous times in which the wires broke. 
+Since we had to connect so many wires to the breadboard for the LEDs, lasers, phototransistors, speaker, and screen, the wiring often became very messy very quickly. It was difficult to examine the wiring while debugging and determine whether if the wiring was done incorrectly or if the problem was somewhere in our code. In addition, due to the sheer number of wires and the way they initially stuck out at odd angles, wires inevitably popped out of the board on occasion, leaving us wondering why the code was suddenly not working, only to realize that it was actually a missing wire connection after some fruitless debugging. In addition, the wires provided in the labkits often broke after extended use, and some baby chunks of wires even got lost somewhere in the depths of our breadboard, never to be seen again. Hyunji's breadboard was the only one that did not claim any chunks of wires as victims. 
 
-In order to prevent such difficulties, we color-coded wires and twisted pairs of wires that go to the same piece. Wires for similar pieces were then also grouped together using tape and zip ties. For lasers, white wires went to power and black wires went to ground. For each "string," we attributed different colors, green, red, yellow, and blue, which we represented with LEDs. Wires for the phototransistors were hence set such that white wires always go to ground and the wire that goes to the ESP32, the resistor, and power is the same as the color it is assigned. Finally, for the LEDs, black wires were used to go to ground and accordingly colored wires went to the resistor and ESP32, which provided power. 
+In order to solve these challenges, we color-coded our wires and twisted the pairs of wires that belong to each laser, phototransistor, and LED. Wires for the same type of hardware were then grouped together using tape and zip ties. For lasers, white wires went to power and black wires went to ground. For each LED, a wire that is the same color as the LED went to a resistor connected to power via an input pin on the ESP32, and a black wire went to ground. For the phototransistors, white wires go to ground and wires with the same color as the phototransistor's corresponding note and LED went to a resistor connected to power via a voltage divider.
+
+In addition, we started using the spools of wire available in the lab to create the wiring for our breadboard instead of using the wires from the labkit. As a result, we were able to create wires that were exactly the right length we needed and significantly neaten the wiring on our breadboard. We also were able to stop worrying about the wires breaking and getting lost in our breadboards.
 
 MP3 Player
 --------------------------------------------------------------
