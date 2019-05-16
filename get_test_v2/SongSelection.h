@@ -17,7 +17,6 @@ class SongSelection {
     float durations[30];
     int array_size;
     int curr_index;
-    int old_index;
     int scrolling_timer;
     int scrolling_threshold = 750; //ms
     std::string old_song;

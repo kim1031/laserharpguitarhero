@@ -26,17 +26,17 @@ Software
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 leaderboards.py
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-This code lives on the server and handles get requests for obtaining leaderboard information and post requests for adding new information to the leaderboards database. This is all handled in the appropriately named request_handler function. First, we create a connection to our leaderboards database. Then,if the scores_table does not already exist, we create it. This table has three columns: a score column, a song name column, and a username column. We then take the values from the body of the post request and insert them into their respective columns. In paticular, the body of the post request should have three keys: 'score', 'song', and 'user'. We then close our connection to the database, and the post request is complete. If the request was instead a get request, we follow a similar process. First, we extract the name of the song that we want the leaderboards. This name should come from the query argument 'song'. Then, we get all of the rows in the database with that song name and order them in descending order by score. This is so that it will be easier to display the top scores in order on the ESP32 display. In addition, we only want the top ten scores, so we limit our results to ten rows. Then, we create a string called 'outs' that will hold the output that we want to send back to the ESP32. After that, we iterate over all the rows that we retrieved from the database and add them to the outs string with the following format: "[score,username]". Thus, if your username is joules and you got a score of 18, the format would be "[18,joules]". Multiple scores are represented as follows: "[55,user1] [17,user3] [3,user2]." Finally, we close our connection to the database and return this string to the ESP32 for parsing.
+This code lives on the server and handles get requests for obtaining leaderboard information and post requests for adding new information to the leaderboards database. This is all handled in the appropriately named `request_handler` function. First, we create a connection to our leaderboards database. Then,if the scores_table does not already exist, we create it. This table has three columns: a score column, a song name column, and a username column. We then take the values from the body of the post request and insert them into their respective columns. In paticular, the body of the post request should have three keys: 'score', 'song', and 'user'. We then close our connection to the database, and the post request is complete. If the request was instead a get request, we follow a similar process. First, we extract the name of the song that we want the leaderboards. This name should come from the query argument 'song'. Then, we get all of the rows in the database with that song name and order them in descending order by score. This is so that it will be easier to display the top scores in order on the ESP32 display. In addition, we only want the top ten scores, so we limit our results to ten rows. Then, we create a string called 'outs' that will hold the output that we want to send back to the ESP32. After that, we iterate over all the rows that we retrieved from the database and add them to the outs string with the following format: `"[score,username]"`. Thus, if your username is joules and you got a score of 18, the format would be `"[18,joules]"`. Multiple scores are represented as follows: `"[55,user1] [17,user3] [3,user2]."` Finally, we close our connection to the database and return this string to the ESP32 for parsing.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 get_song.py
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-This code is also on the server. It handles get requests that are sent when the user has selected a song and the ESP32 now needs to retrieve the note mapping for that song. This functionality occurs in the request_handler function. First, we check that the request is a get request, since this code is only designed to return values from our database rather than post any new values to the server. After that, we connect to our songs database and retrieve the name of the song from the request. In particular, the name of the song is found in a query argument called 'song'. Next, we get all of the values from the table with the same name as the song in our database. This database contains information about all of the notes that are played during a song. It stores which of the four notes is played, the time it started playing, and its duration. See song_timing.py for more information about how we obtain and store this information. Then, we close the connection to the database and return our results as a string to the ESP32 for parsing.
+This code is also on the server. It handles get requests that are sent when the user has selected a song and the ESP32 now needs to retrieve the note mapping for that song. This functionality occurs in the `request_handler` function. First, we check that the request is a get request, since this code is only designed to return values from our database rather than post any new values to the server. After that, we connect to our songs database and retrieve the name of the song from the request. In particular, the name of the song is found in a query argument called 'song'. Next, we get all of the values from the table with the same name as the song in our database. This database contains information about all of the notes that are played during a song. It stores which of the four notes is played, the time it started playing, and its duration. See `song_timing.py` for more information about how we obtain and store this information. Then, we close the connection to the database and return our results as a string to the ESP32 for parsing.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 get_songlist.py
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-This file lives on the server and works to handle get requests for information about all of the songs that we have created notes for. Particularly, when a get request is made to this file, it returns a list containing the song name, artist name, and song duration for each song in the database. All of this logic is handled in the request_handler function. First, we establish a connection to our database. Then, we select all of the values from the table called songlist. This table has 3 columns: a column for the song name, a column for the artist name, and a column for the song duration. After fetching all of the rows from this table, we close our connection to the database and return the table information to the ESP32 as a string for further parsing and use.
+This file lives on the server and works to handle get requests for information about all of the songs that we have created notes for. Particularly, when a get request is made to this file, it returns a list containing the song name, artist name, and song duration for each song in the database. All of this logic is handled in the `request_handler` function. First, we establish a connection to our database. Then, we select all of the values from the table called songlist. This table has 3 columns: a column for the song name, a column for the artist name, and a column for the song duration. After fetching all of the rows from this table, we close our connection to the database and return the table information to the ESP32 as a string for further parsing and use.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 song_timing.py
@@ -46,7 +46,109 @@ song_timing.py
 
 <big>**ESP32 Libraries and Classes**</big>
 
+We wanted to modularize our code in order to make it neater and easier to work with. This also eliminates the need for repetitive code that is both unnecessary and hard to debug. Thus, we split the main functionalities of our game into distinct classes and libraries that each represent one of the game's core features.
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Game Library
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*TO-DO*
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+get_test_v2.ino
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*TO-DO*
+should change the name of this file lol
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Home Library
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*TO-DO*
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+LaserString Library
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*TO-DO*
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Leaderboard Library
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+This library is responsible for getting the leaderboard data from the server, parsing the server's response, and displaying the leaderboard information to the TFT screen. It does so using several functions:
+
+- `Leaderboard::Leaderboard()`
+     - The Leaderboard class constructor. It takes in no arguments, but it has several private field variables: an array of scores represented as integers called `scores`, an array of usernames represented as strings called `users`, a string represented the song's name called `song_name`, and an integer `array_size` representing the size of the `scores` and `users` arrays. `song_name` is first initialized to an empty string and `array_size` is first set to zero.
+- `void Leaderboard::setSongName(std::string song_name)`
+     - A simple function that sets the `song_name` private field variable to the parameter that is passed in.
+- `void Leaderboard::postToLeaderboard(char* request_buffer, int score, std::string user)`
+     - Formats the request buffer for a post request to add a new score for the song represented by `song_name` to the server-side database. It takes in a pointer to a `char` array `request_buffer`, an integer `score`, and a string `user`. 
+     - The function first creates the body of the post request using the parameters in addition to the `song_name` field variable. There are three keys that need to be included in the body of the post request: score, user, and song.
+     - Then, it builds the request_buffer of the post request in the same way that we did during labs and exercises. 
+     - Note that the function modifies the request_buffer `char` array and thus does not need to return anything.
+- `void Leaderboard::getLeaderboard(char* request_buffer)`
+     - Formats the request buffer to make a get request for the leaderboard that is represented by the `song_name` field variable. It takes in a single parameter: a pointer to a `char` array called `request_buffer`. The function modifies this `request_buffer` by adding `song_name` to the appropriate URL. It does not return anything since `request_buffer` is directly modified.
+- `void Leaderboard::parseLeaderboard(char* response_buffer)`
+     - Parses the `response_buffer` from the get request performed using the `request_buffer` from the previous method. The results are stored in the `users` array and the `score` array, which are private fields of the class.
+     - First, the function converts the `char` array `response_buffer` to a C++ string `response` in order to make it easier to parse.
+     - We also initialize an integer `array_index` that keeps track of the current index in the `scores` and `users` array that we are modifying.
+     - Then, we begin to parse the string and continue to do so while the size of the string is greater than zero. First, we look for the index of the first comma, which signifies the end of the score. We then take the substring of `response` that represents this score, convert it to an integer, and then add it to the next open position in the `scores` array. Next, the string is spliced to remove the score that we just added.
+     - After that, we find the next closing square bracket ("]"), which signifies the end of the user. We then take the substring of `response` that represents the user and add it to the next open position in the `users` array. After that, we splice the string to remove the user that we just added and increment `array_index` by one. The process continues while the string is not empty.
+     - Finally, the `array_size` field variable is set to the final value of `array_index` after the while loop terminates.
+- `int Leaderboard::displayScore(Adafruit_RA8875* tft, LaserString* string_1, LaserString* string_2, LaserString* string_3, LaserString* string_4, int score)`
+     - This function displays the user's score immediately after the game is over. It takes in a pointer to the TFT screen object, four pointers to `LaserString` objects that represent each of the lasers, and an integer `score`. 
+     - First, it displays the user's score using the TFT's built-in display methods. Note that since we are using a different, larger screen than we did for the labs, these methods are slightly different than the ones we used for labs and exercises.
+     - Next, it displays instructions to the user on how to navigate away from this screen. For instance, the user can press the first laser to replay the song, the second laser to choose a new song, the third laser to view the Leaderboards for the song, and the fourth laser to restart the game with a new username.
+     - The function then checks if any of the lasers were broken using methods of the `LaserString` objects in order to handle the appropriate state transitions. See the description of the `LaserString` library for more details regarding these functions.
+     - The function returns the number of the laser that was broken, or zero if none of the lasers were broken yet.
+- `int Leaderboard::displayLeaderboard(Adafruit_RA8875* tft, LaserString* string_1, LaserString* string_2, LaserString* string_3)`
+     - This function is responsible for displaying the leaderboard contents on the TFT screen. It takes in a pointer to a tft screen object in addition to pointers to `LaserString` objects representing the first three lasers.
+     - It first displays the title of the screen, which consists of "Leaderboards: " followed by the song name. 
+     - Then, it iterates through the values stored in the `scores` and `users` arrays and displays them on the screen, making sure to put each one on a new line. Note that the values are already stored in the proper order of first place to last place because of the way that scores are stored in and returned from the database.
+     - After that, the function displays instructions for the user. If they break the first laser, they replay the song, if they break the second laser, they choose a new song, and if they break the third laser, they go back to the home page and start again with a new username.
+     - The function then checks if each of these lasers is broken using functions from the `LaserString` class. See the description of this class for more details.
+     - The function returns the number of the laser that is broken as an integer, or zero if none of the lasers has been broken yet.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+RectNote Library
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*TO-DO*
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+SongSelection Library
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The `SongSelection` library is responsible for getting data about songs from the server, parsing that data, and displaying it to the TFT display so that users can select the song that they want to play. It does so using the various functions described below:
+
+- `SongSelection::SongSelection()`
+     - The SongSelection class constructor. It takes no arguments, but it has several private field variables: an array of strings called `songs` that represents the available songs that the user can choose from, an array of arists called `artists` that represents the singers or bands that perform each song, an array of durations called, you guessed it, `durations` that stores the lengths of the songs, an integer called `array_size` that stores the length of the aforementioned arrays, an integer called `scrolling_timer` that keeps track of how long it has been since the user last scrolled, an integer called `scrolling_threshold` that is set to 750 and represents the time a user must wait before scrolling again, a string called `old_song` that keeps track of the previous song, and finally a string called `selected_song` that keeps track of the current song.
+     - Initially, `curr_index` is set to zero, `array_size` is set to zero, and `scrolling_timer` is set to `millis()`. 
+- `void SongSelection::get_song_selection(char* request_buffer)`
+     - This function builds a request buffer that will be used to get the song list from the server. It takes in a single argument: a pointer to a `char` array `request_buffer` that will be modified to represent our get request.
+     - The function concatenates the appropriate URL to the request buffer. Note that nothing is returned because `request_buffer` is directly modified.
+- `void SongSelection::parse_song_selection(std::string str)`
+     - This function parses the response from the get request in the previous method so that it is stored in the array fields discussed in the constructor. It takes in a single parameter: `str`, which is a string version of the response buffer from the aforementioned get request.
+     - We initialize `array_index` to zero. This variable represents the current index in the array that we are modifying.
+     - First, we will continue parsing while the length of the string is greater than zero. We find the first apostrophe because it represents the start of the name. Similarly, we find the next apostrophe because it represents the end of the name. We then take the substring of the response representing the song name and add it to the next open index in the `songs` array.
+     - Similarly, we find the next apostrophe, which signifies the end of the artist's name. We then take the substring of the response that represents the name and add it to the next open spot in the `artists` array.
+     - Next, we find the index of the next closing parentheses, which signifies the end of the duration. We take the substring representing the duration, convert it to a float, and then add it to our `durations` array at the next open position.
+     - Finally, we increment the `array_index` by one for the next iteration. We continue until the length of the string is zero.
+     - The `array_size` field is set to last value of `array_index`. 
+- `void SongSelection::update_song_index(bool forward)`
+     - This function modifies the `curr_index` field variable. It takes in a single parameter: `forward`, which is a boolean. It is `true` if we should scroll forward in the songs list, and `false` if we should scroll backwards.
+     - First, we increment `curr_index` if `forward` is true, and otherwise decrement it.
+     - Then, we make sure that `curr_index` is not out of bounds. If it is greater than or equal to `array_size`, we set it to zero because the function scrolls circularly. Similarly, if it is less than 0, we set it to the last valid index in the array.
+- `void SongSelection::display_song_selection(Adafruit_RA8875* tft)`
+     -This function displays information about the current song on the TFT display. It takes in a pointer to the tft object. 
+     -It accesses the `songs` array, `artists` array, and `durations` array at `curr_index` in order to extract the current values. It then uses the tft object's methods to display these values to the screen.
+- `std::string SongSelection::get_curr_song()`
+     - A simple getter function that returns the name of the current song. It does so by returning the value of the `songs` array at `curr_index`.
+- `void update_screen(int input, Adafruit_RA8875* tft)`
+     - This function updates the TFT screen when the user breaks a laser to scroll through song options. It takes an integer `input`, which represents the number of the laser that was broken, in addition to a pointer to a tft object. 
+     - Firstly, if it has been at least `scrolling_threshold` milliseconds from the last time the user scrolled, the function sets `old_song` to the value of `selected_song`. It then cllas `update_song_index(false)` to scroll backwards and updates the value of `selected_song` using `get_curr_song()`. Then, if the old and new songs aren't the same, it calls `display_song_selection(tft)` to display the new song information to the screen. It then resets `scrolling_timer` to `millis()`
+     - A similar process is followed if the second laser is broken in order to scroll forward through the songs. The only difference is that this time, 'update_song_index` is called with `true` in order to go forwards instead of backwards. 
+     - If `input` is three, the third laser has broken, which means that the user selected a song. `selected_song` is set to the current song, and then the function displays confirmation that the user selected this song to the TFT screen.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+UsernameGetter Library
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*TO-DO*
 
 Hardware
 --------------------------------------------------------------
@@ -78,11 +180,11 @@ Parts List
 The 5.0" 40-pin TFT Display and the driver board display the whole graphic user interface for our game. The speaker, MP3 player, and micro SD Card are required to play music. Lasers and phototransistors serve as the strings of the harp. The LEDs help signal a user to break a particular laser at the appropriate time. In addition, both the phototransistors and LEDs require resistors for proper wiring. Finally, we used the wood, acrylic, screws, and nuts to make the laser harp's frame.
 
 Wiring Schematic
---------------------------------------------------------------
-
+==============================================================
+*TO-DO*
 
 State Machine Block Diagram
---------------------------------------------------------------
+==============================================================
 ![Figure [state machine]: State machine diagram of our game](./images/state_machine.png width="800px")
 
 **1. Start:** A simple state that just provides a title screen for the game. When the user breaks the first (leftmost) laser, we move onto the "Enter Username" state.
@@ -102,7 +204,7 @@ State Machine Block Diagram
 **8. Leaderboard:** We retrieve the leaderboard information for the specified song via a get request to our server-side database and display it on the screen. When the first laser is broken, the user plays the same song again and we move to the "Play Again" state. When the second laser is broken, the user selects another song to play with the same username, and we move to the "New Song" state. Finally, when the third laser is broken, the user starts a new game with a new username, and we move to the "Start" state.
 
 Functional Block Diagram
---------------------------------------------------------------
+==============================================================
 
 System Overview
 --------------------------------------------------------------
