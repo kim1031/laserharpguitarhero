@@ -89,7 +89,7 @@ int Leaderboard::displayScore(Adafruit_RA8875* tft, LaserString* string_1, Laser
     tft->textSetCursor(0, 70);
     tft->textWrite(message);
 
-    //checks if strings are broken in order to handle state transitions
+    //checks which strings are broken in order to handle state transitions
     if (string_1->broken())
         return 1;
     else if (string_2->broken())
@@ -140,7 +140,7 @@ int Leaderboard::displayLeaderboard(Adafruit_RA8875* tft, LaserString* string_1,
     tft->textSetCursor(0, 320);
     tft->textWrite(message);
 
-    //determine if lasers are broken in order to handle state transitions
+    //determine which lasers are broken in order to handle state transitions
     if (string_1->broken())
         return 1;
     else if (string_2->broken())

@@ -1,4 +1,4 @@
- #include "RectNote.h"
+#include "RectNote.h"
 #include "LaserString.h"
 #include "Leaderboard.h"
 #include "Game.h"
@@ -42,10 +42,11 @@ bool not_set = true;
 int loop_timer;
 int elapsed = 0;
 
-Game game(&tft, &myDFPlayer);
+Game game(&tft, &myDFPlayer);  //initialize game object which will control gameplay
 
 void setup() {
   Serial.begin(115200);
+  //set up wifi to access server
   WiFi.begin(network,password);
   uint8_t count = 0;;
   while (WiFi.status() != WL_CONNECTED && count < 12) {
@@ -61,6 +62,7 @@ void setup() {
     ESP.restart();
   }
 
+  //set up display screen
   if (!tft.begin(RA8875_800x480)) {
     Serial.println("not found");
     while (1);
@@ -74,6 +76,7 @@ void setup() {
   tft.textTransparent(RA8875_CYAN);
   tft.textSetCursor(0, 0);
 
+  //set up mp3 player
   mySoftwareSerial.begin(9600, SERIAL_8N1, 32, 33);  // speed, type, RX, TX
   Serial.println(F("DFRobot DFPlayer Mini Demo"));
   Serial.println(F("Initializing DFPlayer ... (May take 3~5 seconds)"));
@@ -91,25 +94,28 @@ void setup() {
   myDFPlayer.EQ(DFPLAYER_EQ_NORMAL);
   myDFPlayer.outputDevice(DFPLAYER_DEVICE_SD);
   
+  //make sure LEDs are ready to be used
   game.setUpLED();
 }
 
 void loop() {
   loop_timer = millis();
   Serial.println(game.getState());
-  if (game.getState() == 4)
+  if (game.getState() == 4) //only begin updating the elapsed time when in the Game Play State
   {
     if (not_set)
     {
       timer = millis();
       not_set = false;
     }
-    elapsed = millis() - timer;
+    elapsed = millis() - timer; //how much of the song's gameplay length has elapsed
   }
-  if (game.getState() < 4)
+  if (game.getState() < 4) //be ready to calculate elapsed with respect to a new reference before entering Game Play State 4
     not_set = true;
+  //loop through the game, updating states when necessary and interacting with user input
   game.gamePlay(elapsed, request_buffer, response_buffer);
 
+  //perform an http request each time a new one comes in
   if (strcmp(request_buffer, old_request_buffer) != 0)
   {
     do_http_request("608dev.net", request_buffer, response_buffer, OUT_BUFFER_SIZE, RESPONSE_TIMEOUT, true);

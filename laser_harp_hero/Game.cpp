@@ -1,3 +1,8 @@
+/*
+ * Class that puts together all aspects of the game, from username input to song selection to actual gameplay operations and displaying of leaderboards.
+ * Wraps together the functionality of the other libraries created in order to create a fully-fledged game from start to finish.
+ */
+
 #include "Game.h"
 #include "StartScreen.h"
 #include "LaserString.h"
@@ -18,7 +23,6 @@
 #include <SPI.h>
 #include <DFRobotDFPlayerMini.h>
 
-#define BUFFER_STATE -1
 #define HOME_STATE 0
 #define USER_SELECT_STATE 1
 #define SONG_SELECT_STATE 2
@@ -35,10 +39,13 @@ Game::Game(Adafruit_RA8875* input_tft, DFRobotDFPlayerMini* input_mp3_player):
     f_string(f_LED_pin, f_analog_pin)
 {
     //sets up all LED pins, phototransistor pins
+    //LED pins and phototransistors wrapped up as LaserString objects
+    //info about beatmaps and info about notes to hit wrapped into RectNote objects (already initalized, array of RectNotes for each string)
     //initializes score and game state
     tft = input_tft;
     mp3_player = input_mp3_player;
     
+    //represents the current range of RectNotes to be displayed on the screen
     a_start = 0;
     a_end = 0;
     s_start = 0;
@@ -49,7 +56,6 @@ Game::Game(Adafruit_RA8875* input_tft, DFRobotDFPlayerMini* input_mp3_player):
     f_end = 0;
 
     playing = false;
-    //song_name = "Seven_Nation_Army";
     artist_name = "";
     song = 1;  //number in SD card
     song_len = 0;
@@ -61,6 +67,7 @@ Game::Game(Adafruit_RA8875* input_tft, DFRobotDFPlayerMini* input_mp3_player):
 
 void Game::setUpLED()
 {
+    //set modes and initial outputs (off) of each LED pin
     a_string.beginLights();
     s_string.beginLights();
     d_string.beginLights();
@@ -152,23 +159,21 @@ void Game::gamePlay(int elapsed, char* request_buffer, char* response_buffer)
         if(s_string.broken()) {
           song_selection.update_screen(2, tft);
         }
-    } else if (state == SONG_GET_STATE)
+    } else if (state == SONG_GET_STATE) //makes song data usable for gameplay
     {
         //get all data necessary for game play for song
-        char note_arr[500] = {0};
-        float note_time_arr[500] = {0};
-        float duration_arr[500] = {0};
+        char note_arr[500] = {0}; //lasers to be hit
+        float note_time_arr[500] = {0}; //times to hit lasers
+        float duration_arr[500] = {0}; //durations to hit lasers for
 
         //parse the data and get note times
         parseSongData(response_buffer, note_arr, note_time_arr, duration_arr);
         extractTimes(note_arr, note_time_arr, duration_arr);
 
+        //initialize the screen of actual gameplay
         (*tft).fillRect(0, 380, 800, 100, RA8875_WHITE);
         state = GAME_PLAY_STATE;
-    } else if (state == BUFFER_STATE)
-    {
-        state = GAME_PLAY_STATE;
-    } else if (state == GAME_PLAY_STATE)
+    } else if (state == GAME_PLAY_STATE)  //runs through and updates display/user input/scoring for gameplay
     {
         //start playing song if just begun
         if (!playing)
@@ -252,6 +257,7 @@ void Game::gamePlay(int elapsed, char* request_buffer, char* response_buffer)
         d_string.userAction();
         f_string.userAction();
 
+        //will compare score against the most recent call for press (when RectNote reaches white bar)
         score += a_string.scoreAction(millis());
         score += s_string.scoreAction(millis());
         score += d_string.scoreAction(millis());
@@ -272,6 +278,7 @@ void Game::gamePlay(int elapsed, char* request_buffer, char* response_buffer)
         tft->textSetCursor(390, 440);
         tft->textWrite(score_str);
         
+        //move on if the song's gameplay duration has passed
         if (elapsed > (song_len * 1000))
         {
             mp3_player->pause();
@@ -281,25 +288,28 @@ void Game::gamePlay(int elapsed, char* request_buffer, char* response_buffer)
         }
     } else if (state == SCORE_DISPLAY_STATE)
     {
-        leaderboard.postToLeaderboard(request_buffer, score, user);
+        leaderboard.postToLeaderboard(request_buffer, score, user); //send up score to server
+        
+        //display score, along with options for next steps for user
         int action = leaderboard.displayScore(tft, &a_string, &s_string, &d_string, &f_string, score);
-        if (action == 1)
+        //receive user input (action) about they want to do next
+        if (action == 1)  //first laser hit, play the same song again
         {
             tft->fillScreen(RA8875_BLACK);
             same_song();
             getSongData(request_buffer);
             state = SONG_GET_STATE;
-        } else if (action == 2)
+        } else if (action == 2) //second laser hit, select a new song under the same username
         {
             tft->fillScreen(RA8875_BLACK);
             new_round_same_user();
             state = SONG_SELECT_STATE;
-        } else if (action == 3)
+        } else if (action == 3) //third laser hit, display the leaderboards for the song just played
         {
             tft->fillScreen(RA8875_BLACK);
             state = GET_LEADERBOARD_STATE;
             first_loop = true;
-        } else if (action == 4)
+        } else if (action == 4) //fourth laser hit, reset the entire game
         {
             tft->fillScreen(RA8875_BLACK);
             reset();
@@ -307,27 +317,28 @@ void Game::gamePlay(int elapsed, char* request_buffer, char* response_buffer)
             memset(building_username, 0, sizeof(building_username));
             state = HOME_STATE;
         }
-    } else if (state == GET_LEADERBOARD_STATE)
+    } else if (state == GET_LEADERBOARD_STATE)  //create the http request to pull the leaderboard from the server
     {
         leaderboard.getLeaderboard(request_buffer);
         state = DISPLAY_LEADERBOARD_STATE;
     } else if (state == DISPLAY_LEADERBOARD_STATE)
     {
-        leaderboard.parseLeaderboard(response_buffer);
+        leaderboard.parseLeaderboard(response_buffer); //parses the data from the server
+        //display leaderboard along with next step options for the user
         int action = leaderboard.displayLeaderboard(tft, &a_string, &s_string, &d_string);
-        if (action == 1)
+        if (action == 1) //first laser hit, play the same song again
         {
             tft->fillScreen(RA8875_BLACK);
             same_song();
             getSongData(request_buffer);
             state = SONG_GET_STATE;
-        } else if (action == 2)
+        } else if (action == 2)  //second laser hit, select a new song under the same username
         {
             tft->fillScreen(RA8875_BLACK);
             new_round_same_user();
             //first_loop = true;
             state = SONG_SELECT_STATE;
-        } else if (action == 3)
+        } else if (action == 3) //third laser hit, reset the entire game
         {
             tft->fillScreen(RA8875_BLACK);
             reset();
@@ -352,7 +363,7 @@ int Game::getScore()
     return score;
 }
 
-void Game::getSongData(char* request_buffer)
+void Game::getSongData(char* request_buffer)  //creates the request buffer sent up to the server to retrieve data about song beatmaps for gameplay
 {
     char title[100] = {0};
     strcpy(title, song_name.c_str());
@@ -361,17 +372,19 @@ void Game::getSongData(char* request_buffer)
     strcat(request_buffer, "\r\n");
 }
 
-void Game::getSongList(char* request_buffer)
+void Game::getSongList(char* request_buffer)  //creates the request buffer sent up to the server to retrieve data about all possible song options to play
 {
     song_selection.get_song_selection(request_buffer);
 }
 
-void Game::parseSongData(char* response_buffer, char* note_arr, float* note_time_arr, float* duration_arr)
+void Game::parseSongData(char* response_buffer, char* note_arr, float* note_time_arr, float* duration_arr) //take data for a song and parse to retrieve specific beatmap info
 {
     int array_index = 0;
     std::string data_to_process = std::string(response_buffer);
+    //separates each item in the response into corresponding laser hit, time hit, duration hit
     while (data_to_process.size() > 0)
     {
+        //notes which laser to hit
         int note_index = data_to_process.find("'");
         if (note_index != -1)
             note_arr[array_index] = data_to_process.at(note_index + 1);
@@ -382,6 +395,7 @@ void Game::parseSongData(char* response_buffer, char* note_arr, float* note_time
         else
             break;
 
+        //notes the time when the laser should begin to be broken
         int time_end = data_to_process.find(",");
         if (time_end != -1) 
             note_time_arr[array_index] = atof(data_to_process.substr(0, time_end).c_str());
@@ -392,6 +406,7 @@ void Game::parseSongData(char* response_buffer, char* note_arr, float* note_time
         else
             break;
 
+        //notes the duration of time that the laser should be broken
         int duration_end = data_to_process.find(")");
         if (duration_end != -1) 
             duration_arr[array_index] = atof(data_to_process.substr(0, duration_end).c_str());
@@ -403,6 +418,8 @@ void Game::parseSongData(char* response_buffer, char* note_arr, float* note_time
 
 void Game::extractTimes(char* note_arr, float* note_time_arr, float* duration_arr) 
 {
+    //extract info that was parsed out and organize and consolidate into RectNote objects
+    //RectNote objects are used to convey to the user when to break certain lasers
     RectNote* a_index = a_rects;
     RectNote* s_index = s_rects;
     RectNote* d_index = d_rects;
@@ -413,6 +430,9 @@ void Game::extractTimes(char* note_arr, float* note_time_arr, float* duration_ar
     int dur;
     for (int i = 0; i < strlen(note_arr); i++)
     {
+        //for each note hit, separate into specific laser they represent
+        //create a RectNote object set by the parameters of that note (timing and duration)
+        //add RectNote to array appropriate to whatever laser string it falls under
         if (note_arr[i] == 'a') 
         {
             start_time = note_time_arr[i];
@@ -471,6 +491,7 @@ void Game::extractTimes(char* note_arr, float* note_time_arr, float* duration_ar
 
 void Game::same_song()
 {
+    //resets all aspects of the game except the song to be played and the user who's playing
     a_string.reset();
     s_string.reset();
     d_string.reset();
@@ -498,6 +519,7 @@ void Game::same_song()
 
 void Game::new_round_same_user()
 {
+    //resets all aspects of the game except the user whose playing
     a_string.reset();
     s_string.reset();
     d_string.reset();
@@ -529,6 +551,7 @@ void Game::new_round_same_user()
 
 void Game::reset()
 {
+    //resets all aspects of the game including user and song
     a_string.reset();
     s_string.reset();
     d_string.reset();
