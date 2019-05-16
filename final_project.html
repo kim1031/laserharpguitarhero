@@ -1,9 +1,9 @@
-     <meta charset="utf-8" emacsmode="-*- markdown -*-"><link rel="stylesheet" href="https://casual-effects.com/markdeep/latest/slate.css?">
+<meta charset="utf-8" emacsmode="-*- markdown -*-"><link rel="stylesheet" href="https://casual-effects.com/markdeep/latest/slate.css?">
 
-                        **Laser Harp Guitar Hero**
-              Julia Gonik, Tiffany Huang, Hyunji Kim, and Joie Le
-                                 Team 77
-            
+**Laser Harp Guitar Hero**
+Julia Gonik, Tiffany Huang, Hyunji Kim, and Joie Le
+         Team 77
+
 
 
 Overview
@@ -44,11 +44,11 @@ song_timing.py
 PLEASE DOUBLE CHECK
 
 This file is the basis for the note-mapping. On a high level, when this file is executed, a chosen song chosen is played, and the person will hit the `a`, `s`, `d`, or `f` keys to indicate that this note should be broken during the Laser Harp Guitar Hero game. These keys can also be held. Pressing the space bar will end the song. In-depth discussion of each function is described below:
-     - `def map_notes_to_song(song, artist)`
-          - Takes in the name of the song and artist
-          - Uses the song anme to creates a table in the database. We replace spaces with `_` and remove quotation marks and commas from the song name to make interactions between the ESP and server easier.
-          - The table has the columns `(key text, start real, duration real)`, where key is one of the four notes, start is the start time as a float, and duration is how long the note is held for.
-          
+- `def map_notes_to_song(song, artist)`
+- Takes in the name of the song and artist
+- Uses the song anme to creates a table in the database. We replace spaces with `_` and remove quotation marks and commas from the song name to make interactions between the ESP and server easier.
+- The table has the columns `(key text, start real, duration real)`, where key is one of the four notes, start is the start time as a float, and duration is how long the note is held for.
+
 
 
 <big>**ESP32 Libraries and Classes**</big>
@@ -72,11 +72,11 @@ StartScreen Library
 This library displays a welcome message to the user, acting as a home page for the game.
 
 - `StartScreen::StartScreen()`
-     - An empty constructor 
+- An empty constructor 
 - `void StartScreen::display_entry(Adafruit_RA8875* tft)`
-     - Passes in the display to be written on and writes the following text:
-          - "Laser Harp Guitar Hero"
-          - "hit the leftmost laser to start "
+- Passes in the display to be written on and writes the following text:
+- "Laser Harp Guitar Hero"
+- "hit the leftmost laser to start "
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 LaserString Library
@@ -89,36 +89,36 @@ Leaderboard Library
 This library is responsible for getting the leaderboard data from the server, parsing the server's response, and displaying the leaderboard information to the TFT screen. It does so using several functions:
 
 - `Leaderboard::Leaderboard()`
-     - The Leaderboard class constructor. It takes in no arguments, but it has several private field variables: an array of scores represented as integers called `scores`, an array of usernames represented as strings called `users`, a string represented the song's name called `song_name`, and an integer `array_size` representing the size of the `scores` and `users` arrays. `song_name` is first initialized to an empty string and `array_size` is first set to zero.
+- The Leaderboard class constructor. It takes in no arguments, but it has several private field variables: an array of scores represented as integers called `scores`, an array of usernames represented as strings called `users`, a string represented the song's name called `song_name`, and an integer `array_size` representing the size of the `scores` and `users` arrays. `song_name` is first initialized to an empty string and `array_size` is first set to zero.
 - `void Leaderboard::setSongName(std::string song_name)`
-     - A simple function that sets the `song_name` private field variable to the parameter that is passed in.
+- A simple function that sets the `song_name` private field variable to the parameter that is passed in.
 - `void Leaderboard::postToLeaderboard(char* request_buffer, int score, std::string user)`
-     - Formats the request buffer for a post request to add a new score for the song represented by `song_name` to the server-side database. It takes in a pointer to a `char` array `request_buffer`, an integer `score`, and a string `user`. 
-     - The function first creates the body of the post request using the parameters in addition to the `song_name` field variable. There are three keys that need to be included in the body of the post request: score, user, and song.
-     - Then, it builds the request_buffer of the post request in the same way that we did during labs and exercises. 
-     - Note that the function modifies the request_buffer `char` array and thus does not need to return anything.
+- Formats the request buffer for a post request to add a new score for the song represented by `song_name` to the server-side database. It takes in a pointer to a `char` array `request_buffer`, an integer `score`, and a string `user`. 
+- The function first creates the body of the post request using the parameters in addition to the `song_name` field variable. There are three keys that need to be included in the body of the post request: score, user, and song.
+- Then, it builds the request_buffer of the post request in the same way that we did during labs and exercises. 
+- Note that the function modifies the request_buffer `char` array and thus does not need to return anything.
 - `void Leaderboard::getLeaderboard(char* request_buffer)`
-     - Formats the request buffer to make a get request for the leaderboard that is represented by the `song_name` field variable. It takes in a single parameter: a pointer to a `char` array called `request_buffer`. The function modifies this `request_buffer` by adding `song_name` to the appropriate URL. It does not return anything since `request_buffer` is directly modified.
+- Formats the request buffer to make a get request for the leaderboard that is represented by the `song_name` field variable. It takes in a single parameter: a pointer to a `char` array called `request_buffer`. The function modifies this `request_buffer` by adding `song_name` to the appropriate URL. It does not return anything since `request_buffer` is directly modified.
 - `void Leaderboard::parseLeaderboard(char* response_buffer)`
-     - Parses the `response_buffer` from the get request performed using the `request_buffer` from the previous method. The results are stored in the `users` array and the `score` array, which are private fields of the class.
-     - First, the function converts the `char` array `response_buffer` to a C++ string `response` in order to make it easier to parse.
-     - We also initialize an integer `array_index` that keeps track of the current index in the `scores` and `users` array that we are modifying.
-     - Then, we begin to parse the string and continue to do so while the size of the string is greater than zero. First, we look for the index of the first comma, which signifies the end of the score. We then take the substring of `response` that represents this score, convert it to an integer, and then add it to the next open position in the `scores` array. Next, the string is spliced to remove the score that we just added.
-     - After that, we find the next closing square bracket ("]"), which signifies the end of the user. We then take the substring of `response` that represents the user and add it to the next open position in the `users` array. After that, we splice the string to remove the user that we just added and increment `array_index` by one. The process continues while the string is not empty.
-     - Finally, the `array_size` field variable is set to the final value of `array_index` after the while loop terminates.
+- Parses the `response_buffer` from the get request performed using the `request_buffer` from the previous method. The results are stored in the `users` array and the `score` array, which are private fields of the class.
+- First, the function converts the `char` array `response_buffer` to a C++ string `response` in order to make it easier to parse.
+- We also initialize an integer `array_index` that keeps track of the current index in the `scores` and `users` array that we are modifying.
+- Then, we begin to parse the string and continue to do so while the size of the string is greater than zero. First, we look for the index of the first comma, which signifies the end of the score. We then take the substring of `response` that represents this score, convert it to an integer, and then add it to the next open position in the `scores` array. Next, the string is spliced to remove the score that we just added.
+- After that, we find the next closing square bracket ("]"), which signifies the end of the user. We then take the substring of `response` that represents the user and add it to the next open position in the `users` array. After that, we splice the string to remove the user that we just added and increment `array_index` by one. The process continues while the string is not empty.
+- Finally, the `array_size` field variable is set to the final value of `array_index` after the while loop terminates.
 - `int Leaderboard::displayScore(Adafruit_RA8875* tft, LaserString* string_1, LaserString* string_2, LaserString* string_3, LaserString* string_4, int score)`
-     - This function displays the user's score immediately after the game is over. It takes in a pointer to the TFT screen object, four pointers to `LaserString` objects that represent each of the lasers, and an integer `score`. 
-     - First, it displays the user's score using the TFT's built-in display methods. Note that since we are using a different, larger screen than we did for the labs, these methods are slightly different than the ones we used for labs and exercises.
-     - Next, it displays instructions to the user on how to navigate away from this screen. For instance, the user can press the first laser to replay the song, the second laser to choose a new song, the third laser to view the Leaderboards for the song, and the fourth laser to restart the game with a new username.
-     - The function then checks if any of the lasers were broken using methods of the `LaserString` objects in order to handle the appropriate state transitions. See the description of the `LaserString` library for more details regarding these functions.
-     - The function returns the number of the laser that was broken, or zero if none of the lasers were broken yet.
+- This function displays the user's score immediately after the game is over. It takes in a pointer to the TFT screen object, four pointers to `LaserString` objects that represent each of the lasers, and an integer `score`. 
+- First, it displays the user's score using the TFT's built-in display methods. Note that since we are using a different, larger screen than we did for the labs, these methods are slightly different than the ones we used for labs and exercises.
+- Next, it displays instructions to the user on how to navigate away from this screen. For instance, the user can press the first laser to replay the song, the second laser to choose a new song, the third laser to view the Leaderboards for the song, and the fourth laser to restart the game with a new username.
+- The function then checks if any of the lasers were broken using methods of the `LaserString` objects in order to handle the appropriate state transitions. See the description of the `LaserString` library for more details regarding these functions.
+- The function returns the number of the laser that was broken, or zero if none of the lasers were broken yet.
 - `int Leaderboard::displayLeaderboard(Adafruit_RA8875* tft, LaserString* string_1, LaserString* string_2, LaserString* string_3)`
-     - This function is responsible for displaying the leaderboard contents on the TFT screen. It takes in a pointer to a tft screen object in addition to pointers to `LaserString` objects representing the first three lasers.
-     - It first displays the title of the screen, which consists of "Leaderboards: " followed by the song name. 
-     - Then, it iterates through the values stored in the `scores` and `users` arrays and displays them on the screen, making sure to put each one on a new line. Note that the values are already stored in the proper order of first place to last place because of the way that scores are stored in and returned from the database.
-     - After that, the function displays instructions for the user. If they break the first laser, they replay the song, if they break the second laser, they choose a new song, and if they break the third laser, they go back to the home page and start again with a new username.
-     - The function then checks if each of these lasers is broken using functions from the `LaserString` class. See the description of this class for more details.
-     - The function returns the number of the laser that is broken as an integer, or zero if none of the lasers has been broken yet.
+- This function is responsible for displaying the leaderboard contents on the TFT screen. It takes in a pointer to a tft screen object in addition to pointers to `LaserString` objects representing the first three lasers.
+- It first displays the title of the screen, which consists of "Leaderboards: " followed by the song name. 
+- Then, it iterates through the values stored in the `scores` and `users` arrays and displays them on the screen, making sure to put each one on a new line. Note that the values are already stored in the proper order of first place to last place because of the way that scores are stored in and returned from the database.
+- After that, the function displays instructions for the user. If they break the first laser, they replay the song, if they break the second laser, they choose a new song, and if they break the third laser, they go back to the home page and start again with a new username.
+- The function then checks if each of these lasers is broken using functions from the `LaserString` class. See the description of this class for more details.
+- The function returns the number of the laser that is broken as an integer, or zero if none of the lasers has been broken yet.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 RectNote Library
@@ -131,33 +131,33 @@ SongSelection Library
 The `SongSelection` library is responsible for getting data about songs from the server, parsing that data, and displaying it to the TFT display so that users can select the song that they want to play. It does so using the various functions described below:
 
 - `SongSelection::SongSelection()`
-     - The SongSelection class constructor. It takes no arguments, but it has several private field variables: an array of strings called `songs` that represents the available songs that the user can choose from, an array of arists called `artists` that represents the singers or bands that perform each song, an array of durations called, you guessed it, `durations` that stores the lengths of the songs, an integer called `array_size` that stores the length of the aforementioned arrays, an integer called `scrolling_timer` that keeps track of how long it has been since the user last scrolled, an integer called `scrolling_threshold` that is set to 750 and represents the time a user must wait before scrolling again, a string called `old_song` that keeps track of the previous song, and finally a string called `selected_song` that keeps track of the current song.
-     - Initially, `curr_index` is set to zero, `array_size` is set to zero, and `scrolling_timer` is set to `millis()`. 
+- The SongSelection class constructor. It takes no arguments, but it has several private field variables: an array of strings called `songs` that represents the available songs that the user can choose from, an array of arists called `artists` that represents the singers or bands that perform each song, an array of durations called, you guessed it, `durations` that stores the lengths of the songs, an integer called `array_size` that stores the length of the aforementioned arrays, an integer called `scrolling_timer` that keeps track of how long it has been since the user last scrolled, an integer called `scrolling_threshold` that is set to 750 and represents the time a user must wait before scrolling again, a string called `old_song` that keeps track of the previous song, and finally a string called `selected_song` that keeps track of the current song.
+- Initially, `curr_index` is set to zero, `array_size` is set to zero, and `scrolling_timer` is set to `millis()`. 
 - `void SongSelection::get_song_selection(char* request_buffer)`
-     - This function builds a request buffer that will be used to get the song list from the server. It takes in a single argument: a pointer to a `char` array `request_buffer` that will be modified to represent our get request.
-     - The function concatenates the appropriate URL to the request buffer. Note that nothing is returned because `request_buffer` is directly modified.
+- This function builds a request buffer that will be used to get the song list from the server. It takes in a single argument: a pointer to a `char` array `request_buffer` that will be modified to represent our get request.
+- The function concatenates the appropriate URL to the request buffer. Note that nothing is returned because `request_buffer` is directly modified.
 - `void SongSelection::parse_song_selection(std::string str)`
-     - This function parses the response from the get request in the previous method so that it is stored in the array fields discussed in the constructor. It takes in a single parameter: `str`, which is a string version of the response buffer from the aforementioned get request.
-     - We initialize `array_index` to zero. This variable represents the current index in the array that we are modifying.
-     - First, we will continue parsing while the length of the string is greater than zero. We find the first apostrophe because it represents the start of the name. Similarly, we find the next apostrophe because it represents the end of the name. We then take the substring of the response representing the song name and add it to the next open index in the `songs` array.
-     - Similarly, we find the next apostrophe, which signifies the end of the artist's name. We then take the substring of the response that represents the name and add it to the next open spot in the `artists` array.
-     - Next, we find the index of the next closing parentheses, which signifies the end of the duration. We take the substring representing the duration, convert it to a float, and then add it to our `durations` array at the next open position.
-     - Finally, we increment the `array_index` by one for the next iteration. We continue until the length of the string is zero.
-     - The `array_size` field is set to last value of `array_index`. 
+- This function parses the response from the get request in the previous method so that it is stored in the array fields discussed in the constructor. It takes in a single parameter: `str`, which is a string version of the response buffer from the aforementioned get request.
+- We initialize `array_index` to zero. This variable represents the current index in the array that we are modifying.
+- First, we will continue parsing while the length of the string is greater than zero. We find the first apostrophe because it represents the start of the name. Similarly, we find the next apostrophe because it represents the end of the name. We then take the substring of the response representing the song name and add it to the next open index in the `songs` array.
+- Similarly, we find the next apostrophe, which signifies the end of the artist's name. We then take the substring of the response that represents the name and add it to the next open spot in the `artists` array.
+- Next, we find the index of the next closing parentheses, which signifies the end of the duration. We take the substring representing the duration, convert it to a float, and then add it to our `durations` array at the next open position.
+- Finally, we increment the `array_index` by one for the next iteration. We continue until the length of the string is zero.
+- The `array_size` field is set to last value of `array_index`. 
 - `void SongSelection::update_song_index(bool forward)`
-     - This function modifies the `curr_index` field variable. It takes in a single parameter: `forward`, which is a boolean. It is `true` if we should scroll forward in the songs list, and `false` if we should scroll backwards.
-     - First, we increment `curr_index` if `forward` is true, and otherwise decrement it.
-     - Then, we make sure that `curr_index` is not out of bounds. If it is greater than or equal to `array_size`, we set it to zero because the function scrolls circularly. Similarly, if it is less than 0, we set it to the last valid index in the array.
+- This function modifies the `curr_index` field variable. It takes in a single parameter: `forward`, which is a boolean. It is `true` if we should scroll forward in the songs list, and `false` if we should scroll backwards.
+- First, we increment `curr_index` if `forward` is true, and otherwise decrement it.
+- Then, we make sure that `curr_index` is not out of bounds. If it is greater than or equal to `array_size`, we set it to zero because the function scrolls circularly. Similarly, if it is less than 0, we set it to the last valid index in the array.
 - `void SongSelection::display_song_selection(Adafruit_RA8875* tft)`
-     -This function displays information about the current song on the TFT display. It takes in a pointer to the tft object. 
-     -It accesses the `songs` array, `artists` array, and `durations` array at `curr_index` in order to extract the current values. It then uses the tft object's methods to display these values to the screen.
+-This function displays information about the current song on the TFT display. It takes in a pointer to the tft object. 
+-It accesses the `songs` array, `artists` array, and `durations` array at `curr_index` in order to extract the current values. It then uses the tft object's methods to display these values to the screen.
 - `std::string SongSelection::get_curr_song()`
-     - A simple getter function that returns the name of the current song. It does so by returning the value of the `songs` array at `curr_index`.
+- A simple getter function that returns the name of the current song. It does so by returning the value of the `songs` array at `curr_index`.
 - `void update_screen(int input, Adafruit_RA8875* tft)`
-     - This function updates the TFT screen when the user breaks a laser to scroll through song options. It takes an integer `input`, which represents the number of the laser that was broken, in addition to a pointer to a tft object. 
-     - Firstly, if it has been at least `scrolling_threshold` milliseconds from the last time the user scrolled, the function sets `old_song` to the value of `selected_song`. It then cllas `update_song_index(false)` to scroll backwards and updates the value of `selected_song` using `get_curr_song()`. Then, if the old and new songs aren't the same, it calls `display_song_selection(tft)` to display the new song information to the screen. It then resets `scrolling_timer` to `millis()`
-     - A similar process is followed if the second laser is broken in order to scroll forward through the songs. The only difference is that this time, 'update_song_index` is called with `true` in order to go forwards instead of backwards. 
-     - If `input` is three, the third laser has broken, which means that the user selected a song. `selected_song` is set to the current song, and then the function displays confirmation that the user selected this song to the TFT screen.
+- This function updates the TFT screen when the user breaks a laser to scroll through song options. It takes an integer `input`, which represents the number of the laser that was broken, in addition to a pointer to a tft object. 
+- Firstly, if it has been at least `scrolling_threshold` milliseconds from the last time the user scrolled, the function sets `old_song` to the value of `selected_song`. It then cllas `update_song_index(false)` to scroll backwards and updates the value of `selected_song` using `get_curr_song()`. Then, if the old and new songs aren't the same, it calls `display_song_selection(tft)` to display the new song information to the screen. It then resets `scrolling_timer` to `millis()`
+- A similar process is followed if the second laser is broken in order to scroll forward through the songs. The only difference is that this time, 'update_song_index` is called with `true` in order to go forwards instead of backwards. 
+- If `input` is three, the third laser has broken, which means that the user selected a song. `selected_song` is set to the current song, and then the function displays confirmation that the user selected this song to the TFT screen.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 UsernameGetter Library
@@ -165,17 +165,17 @@ UsernameGetter Library
 The UsernameGetter library implements the functionality for choosing a username by breaking lasers. The following functions describe the implementation:
 
 - `UsernameGetter::UsernameGetter()`
-     -The UsernameGetter class constructor has no parameters, but initializes several private variables. `alphabet` is a constant char array of the letters in the alphabet plus a blank space in the front. `query_string` holds the text that the user is building. 'char_index' refers to the position in `alphabet` that the player is currently in. `scrolling_timer` keeps track of how long it has been since the user last scrolled. The constant `scrolling_threshold` is set to 500 ms. `choosing_threshold` keeps track of how long it has been since the user has chosen a character. The constant `choosing_threshold` is set to 750ms.
+-The UsernameGetter class constructor has no parameters, but initializes several private variables. `alphabet` is a constant char array of the letters in the alphabet plus a blank space in the front. `query_string` holds the text that the user is building. 'char_index' refers to the position in `alphabet` that the player is currently in. `scrolling_timer` keeps track of how long it has been since the user last scrolled. The constant `scrolling_threshold` is set to 500 ms. `choosing_threshold` keeps track of how long it has been since the user has chosen a character. The constant `choosing_threshold` is set to 750ms.
 - `void UsernameGetter::update_name(int input, char* output)`
-     - A public function that updates `output`, the text shown to the user, based off input. Input 1 corresponds to scroll left, input 2 scroll right, input 3 choose letter. Each of these numbers matches up with the laser (i.e. left laser is one...). The fourth laser will set the state to the next state within the Game class.
-     - Within each case, the user can only scroll left/right at a minimum of every 500 ms. The same holds true for choosing a letter but at 750 ms.
-     - Once the user chooses a letter, `char_index` is set back to 0.
+- A public function that updates `output`, the text shown to the user, based off input. Input 1 corresponds to scroll left, input 2 scroll right, input 3 choose letter. Each of these numbers matches up with the laser (i.e. left laser is one...). The fourth laser will set the state to the next state within the Game class.
+- Within each case, the user can only scroll left/right at a minimum of every 500 ms. The same holds true for choosing a letter but at 750 ms.
+- Once the user chooses a letter, `char_index` is set back to 0.
 - `void UsernameGetter::set_char_index(int num)`
-     - A public function that will set the `char_index` variable to the input `num`. 
-     - Once a user wants to restart the game, we want to reset the index back to the starting point.
+- A public function that will set the `char_index` variable to the input `num`. 
+- Once a user wants to restart the game, we want to reset the index back to the starting point.
 - `void UsernameGetter::clear_query()`
-     - A public function that will clear out `query_string` with `memset`. 
-     - Once a user wants to restart the game, we want to make sure the username displayed on the screen is not the prior user's.
+- A public function that will clear out `query_string` with `memset`. 
+- Once a user wants to restart the game, we want to make sure the username displayed on the screen is not the prior user's.
 
 Hardware
 --------------------------------------------------------------
@@ -276,6 +276,10 @@ To allow the user to have view of the screen and mount the speaker, a piece of a
 
 A 3D printed screen holder was used to secure the screen to acrylic. The design of the screen holder is as shown below:
 
+![Figure [Screen Holder Design]: Design for the screen holder. Link to design file can be found <a href="https://github.com/jgonik/laserharpguitarhero/blob/master/screen_holder.stl">here</a>.](./images/screen_holder.png width="400px")
+
+Adding all the parts to the screen, our laser harp looked as follows:
+![Figure [Laser Harp]: Our finished laser harp frame.](./images/harp.png width="400px")
 
 Decision Making and Challenges
 ==============================================================
@@ -306,6 +310,6 @@ Energy Management
 
 
 
- 
+
 <style class="fallback">body{visibility:hidden}</style><script>markdeepOptions={tocStyle:'none'};</script>
 <!-- Markdeep: --><script src="https://casual-effects.com/markdeep/latest/markdeep.min.js?" charset="utf-8"></script>
