@@ -266,30 +266,20 @@ System Overview
 --------------------------------------------------------------
 
 
-Harp Code
-==============================================================
-
-example for how to write code nicely
-```````````````````````````````````````````````
-count_lines () {
-  local f=$1  
-  local m
-  m=`wc -l $f | sed 's/^\([0-9]*\).*$/\1/'`
-  return $m
-}
-```````````````````````````````````````````````
-
-[Link to nowhere](nowhere). -- link all python files this way
-
-
 Harp Frame
 ==============================================================
 To create a rectangular frame, 4 blocks of wood was used. On the top and bottom pieces of wood, 4 pairs of holes were drilled spaced evenly such that each pair of holes would align vertically with each other. On the top holes, lasers were put in and photoresistors were put in on the bottom. LED holes were made perpendicular to the holes made for lasers on the top piece of wood such that once the LEDs are put in, the user sitting at the front will be able to see them.
 
-To allow the user to have view of the screen and mount the speaker, a piece of acrylic was used. From a rectangular piece of acrylic, two pieces, a rectangle big enough to show the screen and a circle to fit the speaker was cut out to create a design shown as below:
+To allow the user to have view of the screen and mount the speaker, a piece of acrylic was used. From a rectangular piece of acrylic, two pieces, a rectangle big enough to show the screen and a circle to fit the speaker was cut out. Holes were also made so that we could drill the different parts together. The design used is shown as below:
+
+![Figure [Frame Backboard Design]: Design for the backboard. Link to design file can be found <a href="https://github.com/jgonik/laserharpguitarhero/blob/master/backing.dxf">here</a>.](./images/backboard.png width="400px")
 
 A 3D printed screen holder was used to secure the screen to acrylic. The design of the screen holder is as shown below:
 
+![Figure [Screen Holder Design]: Design for the screen holder. Link to design file can be found <a href="https://github.com/jgonik/laserharpguitarhero/blob/master/screen_holder.stl">here</a>.](./images/screen_holder.png width="400px")
+
+Adding all the parts to the screen, our laser harp looked as follows:
+![Figure [Laser Harp]: Our finished laser harp frame.](./images/harp.png width="400px")
 
 Decision Making and Challenges
 ==============================================================
