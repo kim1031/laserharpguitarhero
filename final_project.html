@@ -67,17 +67,53 @@ This is the code uploaded to the ESP32 which contains the necessary `setup()` an
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Game Library
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*TO-DO*
+This library controls the state machine and making updates to the state of the game. Combining all the various software components of our game, it makes calls to different classes and functions and integrates the libraries to form a more fully-fledged user experience from start screen to gameplay to leaderboard display. It's also responsible for parsing data about beatmaps.
+
+-`Game(Adafruit_RA8875* input_tft, DFRobotDFPlayerMini* input_mp3_player)`
+- `void setUpLED()`
+- `void gamePlay(int elapsed, char* request_buffer, char* reponse_buffer)`
+- `int getState()`
+- `int getScore()`
+- `void getSongData(char* request_buffer)` (private)
+- `void getSongList(char* request_buffer)` (private)
+- `void parseSongData(char* response_buffer, char* note_arr, float* note_time_arr, float* duration_arr)` (private)
+- `void extractTimes(char* note_arr, float* note_time_arr, float* duration_arr)` (private)
+- `void same_song()` (private)
+- `void new_round_same_user()` (private)
+- `void reset()` (private)
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 LaserString Library
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*TO-DO*
+This library wraps up all components of a "laser string" on our harp into one class. It contains functions necessary to time the toggling of the LEDs and to read user input ("plucking of the string"/breaking the laser) as well as scores any actions made by the player.
+
+- `LaserString(int LED_pin, int analog_pin)`
+- `void beginLights()`
+- `void LEDControl(bool on)`
+- `bool broken()`
+- `void setRefTime(int time_ms)`
+- `void toScoreNote()`
+- `void userAction()`
+- `int getRef()`
+- `int scoreAction(int time_ms)`
+- `void displayFeedback(int time_ms, Adafruit_RA8875* tft, int text_loc)`
+- `void reset()`
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 RectNote Library
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*TO-DO*
+This library creates a rectangular note that displays on the TFT screen for every note in the beatmap and controls the movement of these rectangles down the screen. These rectangles signal a player when to hit a certain laser.
+
+- `RectNote()`
+- `RectNote(float start_time, float end_time, int dur, int wid, int x, uint16_t color)`
+- `void update(int screen_bottom, Adafruit_RA8875* tft)`
+- `bool toPress()`
+- `bool passed()`
+- `float getStart()`
+- `float getEnd()`
+- `void updateLength(int screen_bottom)` (private)
+- `void updateYCoord(int screen_bottom)` (private)
+- `void drawRect(Adafruit_RA8875* tft, bool old)` (private)
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 StartScreen Library
@@ -300,13 +336,17 @@ Decision Making and Challenges
 
 Alignment of Lasers and Phototransistors
 --------------------------------------------------------------
-Our game relies heavily on being able to detect whether or not a laser is broken. For instance, the player must break the laser at the correct time in order to gain points while playing the song. We also use broken lasers as a means of navigating from one page to the other and even selecting a username. Thus, it is crucial that the detection of broken lasers is very accurate. In order to achieve this accuracy, we had to make sure that each laser is pointed exactly at its corresponding phototransistor and that it stayed that way even when we moved the laser harp or the harp was bumped or jostled. We first considered this issue when building the laser harp frame. Firstly, when drilling the holes in the wood for where the lasers and phototransistors would be placed, we tried our very best to make sure that the holes were aligned vertically on top of each other. This was a bit challenging since none of us had much experience with woodwork or power tools, but Tiffany and her MakerLodge training were key. Next, we tried to drill the holes so their diameters were as close as possible to the diameters of the lasers and phototransistors in order to ensure a snug fit. This was also quite difficult because drillbits only come in predetermined sizes, so the holes were a bit too large. In order to attempt to stabilize the lasers and phototransistors, we first tried simply wrapping them in electrical tape in order to increase their diameters so that they fit more snugly inside the holes. However, this didn't work very well because the lasers would still shift over time and could easily be jostled out of position. Thus, we decided to use a combination of this taping method in addition to hot glue. Once the lasers were taped and placed in a position that we liked, we hot glued the top of the wire that stuck out of the hole onto the wooden frame. This still wasn't completely perfect, and some of the lasers had to be adjusted at times, but it worked reliably for our purposes. For the phototransistors, we decided to forgo the electrical tape and solely use hot glue to secure them since their diameters were already pretty small, so you would have to use a lot of tape to make them fit securely in the holes. We first tested to make sure that phototransistors' measured voltage still changed reliably even when hot glue was placed on top of them. We found that the hot glue had no significant effect on the phototransistors' performance, so we went ahead with our plan. First, we turned on the lasers so we could see where the phototransistors should be placed. Then, we placed hot glue on each phototransistor and secured them to our liking. We also glued the wires that stuck out of the wooden frame into place as well. Thus, our lasers and phototransistors were beautifully aligned and secured!
+Our game relies heavily on being able to detect whether or not a laser is broken. For instance, the player must break the laser at the correct time in order to gain points while playing the song. We also use broken lasers as a means of navigating from one page to the other and even selecting a username. Thus, it is crucial that the detection of broken lasers is very accurate. In order to achieve this accuracy, we had to make sure that each laser is pointed exactly at its corresponding phototransistor and that it stayed that way even when we moved the laser harp or the harp was bumped or jostled. We first considered this issue when building the laser harp frame. Firstly, when drilling the holes in the wood for where the lasers and phototransistors would be placed, we tried our very best to make sure that the holes were aligned vertically on top of each other. This was a bit challenging since none of us had much experience with woodwork or power tools, but Tiffany and her MakerLodge training were key. 
+
+Next, we tried to drill the holes so their diameters were as close as possible to the diameters of the lasers and phototransistors in order to ensure a snug fit. This was also quite difficult because drillbits only come in predetermined sizes, so the holes were a bit too large. In order to attempt to stabilize the lasers and phototransistors, we first tried simply wrapping them in electrical tape in order to increase their diameters so that they fit more snugly inside the holes. However, this didn't work very well because the lasers would still shift over time and could easily be jostled out of position. Thus, we decided to use a combination of this taping method in addition to hot glue. Once the lasers were taped and placed in a position that we liked, we hot glued the top of the wire that stuck out of the hole onto the wooden frame. This still wasn't completely perfect, and some of the lasers had to be adjusted at times, but it worked reliably for our purposes. 
+
+For the phototransistors, we decided to forgo the electrical tape and solely use hot glue to secure them since their diameters were already pretty small, so you would have to use a lot of tape to make them fit securely in the holes. We first tested to make sure that phototransistors' measured voltage still changed reliably even when hot glue was placed on top of them. We found that the hot glue had no significant effect on the phototransistors' performance, so we went ahead with our plan. First, we turned on the lasers so we could see where the phototransistors should be placed. Then, we placed hot glue on each phototransistor and secured them to our liking. We also glued the wires that stuck out of the wooden frame into place as well. Thus, our lasers and phototransistors were beautifully aligned and secured!
 
 The Wiring
 --------------------------------------------------------------
 Having to connect so many wires to the breadboard specifically for the LEDs, lasers, and phototransistors, the wiring often became very messy and it was difficult to find out whether the wiring was done incorrectly or if a wire had been accidently taken out, not to mention the numerous times in which the wires broke. 
 
-In order to prevent such difficulties, we color-coded wires and twisted pairs of wires that go to the same piece. Wires for similar pieces were then also grouped together using tape and zip ties. For lasers, white wires went to power and black wires went to ground. For each "string," we attributed different colors, green, red, yellow, and blue, which we represented with LEDs. Wires for the phototransistors were hence set such that white wires always go to ground and the wire that goes to the ESP32, the resistor, and power is the same as the color it is assigned. Finally, for the LEDs, black wires were used to go to ground and accordingly colored wires went to the resistor and ESP32, which provided power. 
+In order to prevent such difficulties, we color-coded wires and twisted pairs of wires that go to the same piece. Wires for similar pieces were then also grouped together using tape and zip ties. For lasers, white wires went to power and black wires went to ground. For each "string," we attributed different colors, green, red, yellow, and blue, which we represented with LEDs. Wires for the phototransistors were hence set such that white wires always go to ground and the wire that goes to the ESP32, the resistor, and power is the same as the color it is assigned. Finally, for the LEDs, black wires were used to go to ground and accordingly colored wires went to the resistor and ESP32, which provides power. 
 
 MP3 Player
 --------------------------------------------------------------
