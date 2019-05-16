@@ -17,7 +17,7 @@ Below is a video of our group demonstrating the game. How fun!
 
 System Design
 ==============================================================
-Below is an overview of the design of our system. The vast majority of our project code was written for the ESP32 because that is where most of the game logic is handled. The python server code was mostly used for storing persistent data in databases, including note information for songs and user's scores for the leaderboards. In addition, we also wrote helper functions in Python that allowed us to easily create new note mappings for songs using our computers' keyboards instead of having to figure out note timings manually, which would be tedious.
+Below is an overview of the design of our system. The vast majority of our project code was written for the ESP32 because that is where most of the game logic is handled. The Python server code was mostly used for storing persistent data in databases, including note information for songs and user's scores for the leaderboards. In addition, we also wrote helper functions in Python that allowed us to easily create new note mappings for songs using our computers' keyboards instead of having to figure out note timings manually, which would be tedious.
 
 Software
 --------------------------------------------------------------
@@ -26,12 +26,12 @@ Software
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 leaderboards.py
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-This code lives on the server and handles get requests for obtaining leaderboard information and post requests for adding new information to the leaderboards database. This is all handled in the appropriately named `request_handler` function. First, we create a connection to our leaderboards database. Then,if the scores_table does not already exist, we create it. This table has three columns: a score column, a song name column, and a username column. We then take the values from the body of the post request and insert them into their respective columns. In paticular, the body of the post request should have three keys: 'score', 'song', and 'user'. We then close our connection to the database, and the post request is complete. If the request was instead a get request, we follow a similar process. First, we extract the name of the song that we want the leaderboards. This name should come from the query argument 'song'. Then, we get all of the rows in the database with that song name and order them in descending order by score. This is so that it will be easier to display the top scores in order on the ESP32 display. In addition, we only want the top ten scores, so we limit our results to ten rows. Then, we create a string called 'outs' that will hold the output that we want to send back to the ESP32. After that, we iterate over all the rows that we retrieved from the database and add them to the outs string with the following format: `"[score,username]"`. Thus, if your username is joules and you got a score of 18, the format would be `"[18,joules]"`. Multiple scores are represented as follows: `"[55,user1] [17,user3] [3,user2]."` Finally, we close our connection to the database and return this string to the ESP32 for parsing.
+This code lives on the server and handles get requests for obtaining leaderboard information and post requests for adding new information to the leaderboards database. This is all handled in the appropriately named `request_handler` function. First, we create a connection to our leaderboards database. Then, if the `scores_table` does not already exist, we create it. This table has three columns: a score column, a song name column, and a username column. We then take the values from the body of the post request and insert them into their respective columns. In paticular, the body of the post request should have three keys: 'score', 'song', and 'user'. We then close our connection to the database, and the post request is complete. If the request was instead a get request, we follow a similar process. First, we extract the name of the song that we want the leaderboards of. This name should come from the query argument 'song'. Then, we get all of the rows in the database with that song name and order them in descending order by score. This is so that it will be easier to display the top scores in order on the ESP32 display. In addition, we only want the top ten scores, so we limit our results to ten rows. Then, we create a string called `outs` that will hold the output that we want to send back to the ESP32. After that, we iterate over all the rows that we retrieved from the database and add them to the `outs` string with the following format: `"[score,username]"`. Thus, if your username is joules and you got a score of 18, the format would be `"[18,joules]"`. Multiple scores are represented as follows: `"[55,user1] [17,user3] [3,user2]."` Finally, we close our connection to the database and return this string to the ESP32 for parsing.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 get_song.py
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-This code is also on the server. It handles get requests that are sent when the user has selected a song and the ESP32 now needs to retrieve the note mapping for that song. This functionality occurs in the `request_handler` function. First, we check that the request is a get request, since this code is only designed to return values from our database rather than post any new values to the server. After that, we connect to our songs database and retrieve the name of the song from the request. In particular, the name of the song is found in a query argument called 'song'. Next, we get all of the values from the table with the same name as the song in our database. This database contains information about all of the notes that are played during a song. It stores which of the four notes is played, the time it started playing, and its duration. See `song_timing.py` for more information about how we obtain and store this information. Then, we close the connection to the database and return our results as a string to the ESP32 for parsing.
+This code is also on the server. It handles get requests that are sent when the user has selected a song and the ESP32 now needs to retrieve the note mapping for that song. This functionality occurs in the `request_handler` function. First, we check that the request is a get request, since this code is only designed to return values from our database rather than post any new values to the server. After that, we connect to our songs database and retrieve the name of the song from the request. In particular, the name of the song is found in a query argument called 'song'. Next, we get all of the values from the table with the same name as the song in our database. This database contains information about all of the notes that are played during gameplay of a song. It stores which of the four notes is played, the time it started playing, and its duration. See `song_timing.py` for more information about how we obtain and store this information. Then, we close the connection to the database and return our results as a string to the ESP32 for parsing.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 get_songlist.py
@@ -41,14 +41,18 @@ This file lives on the server and works to handle get requests for information a
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 song_timing.py
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-PLEASE DOUBLE CHECK
-
-This file is the basis for the note-mapping. On a high level, when this file is executed, a chosen song chosen is played, and the person will hit the `a`, `s`, `d`, or `f` keys to indicate that this note should be broken during the Laser Harp Guitar Hero game. These keys can also be held. Pressing the space bar will end the song. In-depth discussion of each function is described below:
+This file is the basis for the note-mapping. On a high level, when this file is executed, a chosen song chosen is played locally on the user's computer, and the person will hit the `a`, `s`, `d`, or `f` keys to indicate that this note (representing a corresponding laser) should be broken during the Laser Harp Guitar Hero game. These keys can also be held. Pressing the space bar will end the song. In-depth discussion of each function is described below:
+- Note that a note keypress of `a` represents the leftmost laser on the laser harp, `s` is the second laser, `d` the third, and `f` is the final laser all the way to the right.
 - `def map_notes_to_song(song, artist)`
-- Takes in the name of the song and artist
-- Uses the song anme to creates a table in the database. We replace spaces with `_` and remove quotation marks and commas from the song name to make interactions between the ESP and server easier.
-- The table has the columns `(key text, start real, duration real)`, where key is one of the four notes, start is the start time as a float, and duration is how long the note is held for.
-
+     - Takes in the name of the song and artist. Plays the song through the `playsound` Python library.
+     - Uses the song anme to create a table in the database. We replace spaces with `_` and remove quotation marks and commas from the song name to make interactions between the ESP and server easier. To delete any previous iteration of the song's beatmap, any existing table for the song is dropped from the database before a new fresh one is created.
+     - The table has the columns `(key text, start real, duration real)`, where key is one of the four notes, start is the start time as a float, and duration is how long the note is held for.
+     - The beatmap generation stops when a spacebar is detected, shutting off the MP3 player. The song, artist, and song duration (based on when the space is pressed) are recorded as a new line of a table `songlist` which holds all songs with available beatmaps for our game. If the song already exists in the table, its duration is simply updated in accordance with the new input.
+- `add_new_song_num(song_name)`
+     - Assigns each song an index number, which is later referenced by the ESP32 and the game logic to determine which file on the mp3 to play that matches the chosen song. 
+     - This info is recorded in a table in the database `song_nums.db`.
+- `delete_stuff()`
+     - An additional function which is able to delete songs from the `songlist` table in the `beatmaps.db` database useful for when we want to redo the beatmap for a certain song.
 
 
 <big>**ESP32 Libraries and Classes**</big>
@@ -56,27 +60,14 @@ This file is the basis for the note-mapping. On a high level, when this file is 
 We wanted to modularize our code in order to make it neater and easier to work with. This also eliminates the need for repetitive code that is both unnecessary and hard to debug. Thus, we split the main functionalities of our game into distinct classes and libraries that each represent one of the game's core features.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+laser_harp_hero.ino
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+This is the code uploaded to the ESP32 which contains the necessary `setup()` and `loop()` functions for operation. It sets up the WiFi, the TFT display, and the MP3 player, as well as intializes a `Game` object. In `loop()`, this file makes repeated calls to the `gamePlay()` function (see below) of the `Game` object, updating the state of the game appropriately with each pass. It also performs timing measurements and markings necessary for proper functionality of the game as well as carries HTTP requests when necessitated by the game's mechanisms.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Game Library
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 *TO-DO*
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-get_test_v2.ino
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*TO-DO*
-should change the name of this file lol
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-StartScreen Library
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-This library displays a welcome message to the user, acting as a home page for the game.
-
-- `StartScreen::StartScreen()`
-- An empty constructor 
-- `void StartScreen::display_entry(Adafruit_RA8875* tft)`
-- Passes in the display to be written on and writes the following text:
-- "Laser Harp Guitar Hero"
-- "hit the leftmost laser to start "
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 LaserString Library
@@ -84,80 +75,21 @@ LaserString Library
 *TO-DO*
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Leaderboard Library
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-This library is responsible for getting the leaderboard data from the server, parsing the server's response, and displaying the leaderboard information to the TFT screen. It does so using several functions:
-
-- `Leaderboard::Leaderboard()`
-- The Leaderboard class constructor. It takes in no arguments, but it has several private field variables: an array of scores represented as integers called `scores`, an array of usernames represented as strings called `users`, a string represented the song's name called `song_name`, and an integer `array_size` representing the size of the `scores` and `users` arrays. `song_name` is first initialized to an empty string and `array_size` is first set to zero.
-- `void Leaderboard::setSongName(std::string song_name)`
-- A simple function that sets the `song_name` private field variable to the parameter that is passed in.
-- `void Leaderboard::postToLeaderboard(char* request_buffer, int score, std::string user)`
-- Formats the request buffer for a post request to add a new score for the song represented by `song_name` to the server-side database. It takes in a pointer to a `char` array `request_buffer`, an integer `score`, and a string `user`. 
-- The function first creates the body of the post request using the parameters in addition to the `song_name` field variable. There are three keys that need to be included in the body of the post request: score, user, and song.
-- Then, it builds the request_buffer of the post request in the same way that we did during labs and exercises. 
-- Note that the function modifies the request_buffer `char` array and thus does not need to return anything.
-- `void Leaderboard::getLeaderboard(char* request_buffer)`
-- Formats the request buffer to make a get request for the leaderboard that is represented by the `song_name` field variable. It takes in a single parameter: a pointer to a `char` array called `request_buffer`. The function modifies this `request_buffer` by adding `song_name` to the appropriate URL. It does not return anything since `request_buffer` is directly modified.
-- `void Leaderboard::parseLeaderboard(char* response_buffer)`
-- Parses the `response_buffer` from the get request performed using the `request_buffer` from the previous method. The results are stored in the `users` array and the `score` array, which are private fields of the class.
-- First, the function converts the `char` array `response_buffer` to a C++ string `response` in order to make it easier to parse.
-- We also initialize an integer `array_index` that keeps track of the current index in the `scores` and `users` array that we are modifying.
-- Then, we begin to parse the string and continue to do so while the size of the string is greater than zero. First, we look for the index of the first comma, which signifies the end of the score. We then take the substring of `response` that represents this score, convert it to an integer, and then add it to the next open position in the `scores` array. Next, the string is spliced to remove the score that we just added.
-- After that, we find the next closing square bracket ("]"), which signifies the end of the user. We then take the substring of `response` that represents the user and add it to the next open position in the `users` array. After that, we splice the string to remove the user that we just added and increment `array_index` by one. The process continues while the string is not empty.
-- Finally, the `array_size` field variable is set to the final value of `array_index` after the while loop terminates.
-- `int Leaderboard::displayScore(Adafruit_RA8875* tft, LaserString* string_1, LaserString* string_2, LaserString* string_3, LaserString* string_4, int score)`
-- This function displays the user's score immediately after the game is over. It takes in a pointer to the TFT screen object, four pointers to `LaserString` objects that represent each of the lasers, and an integer `score`. 
-- First, it displays the user's score using the TFT's built-in display methods. Note that since we are using a different, larger screen than we did for the labs, these methods are slightly different than the ones we used for labs and exercises.
-- Next, it displays instructions to the user on how to navigate away from this screen. For instance, the user can press the first laser to replay the song, the second laser to choose a new song, the third laser to view the Leaderboards for the song, and the fourth laser to restart the game with a new username.
-- The function then checks if any of the lasers were broken using methods of the `LaserString` objects in order to handle the appropriate state transitions. See the description of the `LaserString` library for more details regarding these functions.
-- The function returns the number of the laser that was broken, or zero if none of the lasers were broken yet.
-- `int Leaderboard::displayLeaderboard(Adafruit_RA8875* tft, LaserString* string_1, LaserString* string_2, LaserString* string_3)`
-- This function is responsible for displaying the leaderboard contents on the TFT screen. It takes in a pointer to a tft screen object in addition to pointers to `LaserString` objects representing the first three lasers.
-- It first displays the title of the screen, which consists of "Leaderboards: " followed by the song name. 
-- Then, it iterates through the values stored in the `scores` and `users` arrays and displays them on the screen, making sure to put each one on a new line. Note that the values are already stored in the proper order of first place to last place because of the way that scores are stored in and returned from the database.
-- After that, the function displays instructions for the user. If they break the first laser, they replay the song, if they break the second laser, they choose a new song, and if they break the third laser, they go back to the home page and start again with a new username.
-- The function then checks if each of these lasers is broken using functions from the `LaserString` class. See the description of this class for more details.
-- The function returns the number of the laser that is broken as an integer, or zero if none of the lasers has been broken yet.
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 RectNote Library
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 *TO-DO*
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-SongSelection Library
+StartScreen Library
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The `SongSelection` library is responsible for getting data about songs from the server, parsing that data, and displaying it to the TFT display so that users can select the song that they want to play. It does so using the various functions described below:
+This library displays a welcome message to the user, acting as a home page for the game.
 
-- `SongSelection::SongSelection()`
-- The SongSelection class constructor. It takes no arguments, but it has several private field variables: an array of strings called `songs` that represents the available songs that the user can choose from, an array of arists called `artists` that represents the singers or bands that perform each song, an array of durations called, you guessed it, `durations` that stores the lengths of the songs, an integer called `array_size` that stores the length of the aforementioned arrays, an integer called `scrolling_timer` that keeps track of how long it has been since the user last scrolled, an integer called `scrolling_threshold` that is set to 750 and represents the time a user must wait before scrolling again, a string called `old_song` that keeps track of the previous song, and finally a string called `selected_song` that keeps track of the current song.
-- Initially, `curr_index` is set to zero, `array_size` is set to zero, and `scrolling_timer` is set to `millis()`. 
-- `void SongSelection::get_song_selection(char* request_buffer)`
-- This function builds a request buffer that will be used to get the song list from the server. It takes in a single argument: a pointer to a `char` array `request_buffer` that will be modified to represent our get request.
-- The function concatenates the appropriate URL to the request buffer. Note that nothing is returned because `request_buffer` is directly modified.
-- `void SongSelection::parse_song_selection(std::string str)`
-- This function parses the response from the get request in the previous method so that it is stored in the array fields discussed in the constructor. It takes in a single parameter: `str`, which is a string version of the response buffer from the aforementioned get request.
-- We initialize `array_index` to zero. This variable represents the current index in the array that we are modifying.
-- First, we will continue parsing while the length of the string is greater than zero. We find the first apostrophe because it represents the start of the name. Similarly, we find the next apostrophe because it represents the end of the name. We then take the substring of the response representing the song name and add it to the next open index in the `songs` array.
-- Similarly, we find the next apostrophe, which signifies the end of the artist's name. We then take the substring of the response that represents the name and add it to the next open spot in the `artists` array.
-- Next, we find the index of the next closing parentheses, which signifies the end of the duration. We take the substring representing the duration, convert it to a float, and then add it to our `durations` array at the next open position.
-- Finally, we increment the `array_index` by one for the next iteration. We continue until the length of the string is zero.
-- The `array_size` field is set to last value of `array_index`. 
-- `void SongSelection::update_song_index(bool forward)`
-- This function modifies the `curr_index` field variable. It takes in a single parameter: `forward`, which is a boolean. It is `true` if we should scroll forward in the songs list, and `false` if we should scroll backwards.
-- First, we increment `curr_index` if `forward` is true, and otherwise decrement it.
-- Then, we make sure that `curr_index` is not out of bounds. If it is greater than or equal to `array_size`, we set it to zero because the function scrolls circularly. Similarly, if it is less than 0, we set it to the last valid index in the array.
-- `void SongSelection::display_song_selection(Adafruit_RA8875* tft)`
--This function displays information about the current song on the TFT display. It takes in a pointer to the tft object. 
--It accesses the `songs` array, `artists` array, and `durations` array at `curr_index` in order to extract the current values. It then uses the tft object's methods to display these values to the screen.
-- `std::string SongSelection::get_curr_song()`
-- A simple getter function that returns the name of the current song. It does so by returning the value of the `songs` array at `curr_index`.
-- `void update_screen(int input, Adafruit_RA8875* tft)`
-- This function updates the TFT screen when the user breaks a laser to scroll through song options. It takes an integer `input`, which represents the number of the laser that was broken, in addition to a pointer to a tft object. 
-- Firstly, if it has been at least `scrolling_threshold` milliseconds from the last time the user scrolled, the function sets `old_song` to the value of `selected_song`. It then cllas `update_song_index(false)` to scroll backwards and updates the value of `selected_song` using `get_curr_song()`. Then, if the old and new songs aren't the same, it calls `display_song_selection(tft)` to display the new song information to the screen. It then resets `scrolling_timer` to `millis()`
-- A similar process is followed if the second laser is broken in order to scroll forward through the songs. The only difference is that this time, 'update_song_index` is called with `true` in order to go forwards instead of backwards. 
-- If `input` is three, the third laser has broken, which means that the user selected a song. `selected_song` is set to the current song, and then the function displays confirmation that the user selected this song to the TFT screen.
+- `StartScreen::StartScreen()`
+     - An empty constructor 
+- `void StartScreen::display_entry(Adafruit_RA8875* tft)`
+     - Passes in the display screen to be written on and writes the following text:
+     - "Laser Harp Guitar Hero"
+     - "hit the leftmost laser to start"
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 UsernameGetter Library
@@ -165,20 +97,98 @@ UsernameGetter Library
 The UsernameGetter library implements the functionality for choosing a username by breaking lasers. The following functions describe the implementation:
 
 - `UsernameGetter::UsernameGetter()`
--The UsernameGetter class constructor has no parameters, but initializes several private variables. `alphabet` is a constant char array of the letters in the alphabet plus a blank space in the front. `query_string` holds the text that the user is building. 'char_index' refers to the position in `alphabet` that the player is currently in. `scrolling_timer` keeps track of how long it has been since the user last scrolled. The constant `scrolling_threshold` is set to 500 ms. `choosing_threshold` keeps track of how long it has been since the user has chosen a character. The constant `choosing_threshold` is set to 750ms.
+     - The UsernameGetter class constructor has no parameters, but initializes several private variables. `alphabet` is a constant char array of the letters in the alphabet plus a blank space in the front. `query_string` holds the text that the user is building. 'char_index' refers to the position in `alphabet` that the player is currently in. `scrolling_timer` keeps track of how long it has been since the user last scrolled. The constant `scrolling_threshold` is set to 500 ms. `choosing_threshold` keeps track of how long it has been since the user has chosen a character. The constant `choosing_threshold` is set to 750ms.
 - `void UsernameGetter::update_name(int input, char* output)`
-- A public function that updates `output`, the text shown to the user, based off input. Input 1 corresponds to scroll left, input 2 scroll right, input 3 choose letter. Each of these numbers matches up with the laser (i.e. left laser is one...). The fourth laser will set the state to the next state within the Game class.
-- Within each case, the user can only scroll left/right at a minimum of every 500 ms. The same holds true for choosing a letter but at 750 ms.
-- Once the user chooses a letter, `char_index` is set back to 0.
+     - A public function that updates `output`, the text shown to the user, based off input. Input 1 corresponds to scroll left, input 2 scroll right, input 3 choose letter. Each of these numbers matches up with the laser (i.e. left laser is one...). The fourth laser will set the state to the next state within the Game class.
+     - Within each case, the user can only scroll left/right at a minimum of every 500 ms. The same holds true for choosing a letter but at 750 ms.
+     - Once the user chooses a letter, `char_index` is set back to 0.
 - `void UsernameGetter::set_char_index(int num)`
-- A public function that will set the `char_index` variable to the input `num`. 
-- Once a user wants to restart the game, we want to reset the index back to the starting point.
+     - A public function that will set the `char_index` variable to the input `num`. 
+     - Once a user wants to restart the game, we want to reset the index back to the starting point.
 - `void UsernameGetter::clear_query()`
-- A public function that will clear out `query_string` with `memset`. 
-- Once a user wants to restart the game, we want to make sure the username displayed on the screen is not the prior user's.
+     - A public function that will clear out `query_string` with `memset`. 
+     - Once a user wants to restart the game, we want to make sure the username displayed on the screen is not the prior user's. 
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+SongSelection Library
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The `SongSelection` library is responsible for getting data about songs from the server, parsing that data, and displaying it to the TFT display so that users can select the song that they want to play. It does so using the various functions described below:
+
+- `SongSelection::SongSelection()`
+     - The SongSelection class constructor. It takes no arguments, but it has several private field variables: an array of strings called `songs` that represents the available songs that the user can choose from, an array of arists called `artists` that represents the singers or bands that perform each song, an array of durations called, you guessed it, `durations` that stores the lengths of the songs, an integer called `array_size` that stores the length of the aforementioned arrays, an integer called `scrolling_timer` that keeps track of how long it has been since the user last scrolled, an integer called `scrolling_threshold` that is set to 750 and represents the time a user must wait before scrolling again, a string called `old_song` that keeps track of the previous song, and finally a string called `selected_song` that keeps track of the current song.
+     - Initially, `curr_index` is set to zero, `array_size` is set to zero, and `scrolling_timer` is set to `millis()`. 
+- `void SongSelection::get_song_selection(char* request_buffer)`
+     - This function builds a request buffer that will be used to get the song list from the server. It takes in a single argument: a pointer to a `char` array `request_buffer` that will be modified to represent our get request.
+     - The function concatenates the appropriate URL to the request buffer. Note that nothing is returned because `request_buffer` is directly modified.
+- `void SongSelection::parse_song_selection(std::string str)`
+     - This function parses the response from the get request in the previous method so that it is stored in the array fields discussed in the constructor. It takes in a single parameter: `str`, which is a string version of the response buffer from the aforementioned get request.
+     - We initialize `array_index` to zero. This variable represents the current index in the array that we are modifying.
+     - First, we will continue parsing while the length of the string is greater than zero. We find the first apostrophe because it represents the start of the name. Similarly, we find the next apostrophe because it represents the end of the name. We then take the substring of the response representing the song name and add it to the next open index in the `songs` array.
+     - Similarly, we find the next apostrophe, which signifies the end of the artist's name. We then take the substring of the response that represents the name and add it to the next open spot in the `artists` array.
+     - Next, we find the index of the next closing parentheses, which signifies the end of the duration. We take the substring representing the duration, convert it to a float, and then add it to our `durations` array at the next open position.
+     - Finally, we increment the `array_index` by one for the next iteration. We continue until the length of the string is zero.
+     - The `array_size` field is set to last value of `array_index`. 
+- `void SongSelection::update_song_index(bool forward)`
+     - This function modifies the `curr_index` field variable. It takes in a single parameter: `forward`, which is a boolean. It is `true` if we should scroll forward in the songs list, and `false` if we should scroll backwards.
+     - First, we increment `curr_index` if `forward` is true, and otherwise decrement it.
+     - Then, we make sure that `curr_index` is not out of bounds. If it is greater than or equal to `array_size`, we set it to zero because the function scrolls circularly. Similarly, if it is less than 0, we set it to the last valid index in the array.
+- `void SongSelection::display_song_selection(Adafruit_RA8875* tft)`
+     -This function displays information about the current song on the TFT display. It takes in a pointer to the tft object. 
+     -It accesses the `songs` array, `artists` array, and `durations` array at `curr_index` in order to extract the current values. It then uses the tft object's methods to display these values to the screen.
+- `std::string SongSelection::get_curr_song()`
+     - A simple getter function that returns the name of the current song. It does so by returning the value of the `songs` array at `curr_index`.
+     - `void update_screen(int input, Adafruit_RA8875* tft)`
+     - This function updates the TFT screen when the user breaks a laser to scroll through song options. It takes an integer `input`, which represents the number of the laser that was broken, in addition to a pointer to a tft object. 
+     - Firstly, if it has been at least `scrolling_threshold` milliseconds from the last time the user scrolled, the function sets `old_song` to the value of `selected_song`. It then cllas `update_song_index(false)` to scroll backwards and updates the value of `selected_song` using `get_curr_song()`. Then, if the old and new songs aren't the same, it calls `display_song_selection(tft)` to display the new song information to the screen. It then resets `scrolling_timer` to `millis()`
+     - A similar process is followed if the second laser is broken in order to scroll forward through the songs. The only difference is that this time, 'update_song_index` is called with `true` in order to go forwards instead of backwards. 
+     - If `input` is three, the third laser has broken, which means that the user selected a song. `selected_song` is set to the current song, and then the function displays confirmation that the user selected this song to the TFT screen.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Leaderboard Library
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+This library is responsible for getting the leaderboard data from the server, parsing the server's response, and displaying the leaderboard information to the TFT screen. It does so using several functions:
+
+- `Leaderboard::Leaderboard()`
+     - The Leaderboard class constructor. It takes in no arguments, but it has several private field variables: an array of scores represented as integers called `scores`, an array of usernames represented as strings called `users`, a string represented the song's name called `song_name`, and an integer `array_size` representing the size of the `scores` and `users` arrays. `song_name` is first initialized to an empty string and `array_size` is first set to zero.
+- `void Leaderboard::setSongName(std::string song_name)`
+     - A simple function that sets the `song_name` private field variable to the parameter that is passed in.
+- `void Leaderboard::postToLeaderboard(char* request_buffer, int score, std::string user)`
+     - Formats the request buffer for a post request to add a new score for the song represented by `song_name` to the server-side database. It takes in a pointer to a `char` array `request_buffer`, an integer `score`, and a string `user`. 
+     - The function first creates the body of the post request using the parameters in addition to the `song_name` field variable. There are three keys that need to be included in the body of the post request: score, user, and song.
+     - Then, it builds the request_buffer of the post request in the same way that we did during labs and exercises. 
+     - Note that the function modifies the request_buffer `char` array and thus does not need to return anything.
+- `void Leaderboard::getLeaderboard(char* request_buffer)`
+     - Formats the request buffer to make a get request for the leaderboard that is represented by the `song_name` field variable. It takes in a single parameter: a pointer to a `char` array called `request_buffer`. The function modifies this `request_buffer` by adding `song_name` to the appropriate URL. It does not return anything since `request_buffer` is directly modified.
+- `void Leaderboard::parseLeaderboard(char* response_buffer)`
+     - Parses the `response_buffer` from the get request performed using the `request_buffer` from the previous method. The results are stored in the `users` array and the `score` array, which are private fields of the class.
+     - First, the function converts the `char` array `response_buffer` to a C++ string `response` in order to make it easier to parse.
+     - We also initialize an integer `array_index` that keeps track of the current index in the `scores` and `users` array that we are modifying.
+     - Then, we begin to parse the string and continue to do so while the size of the string is greater than zero. First, we look for the index of the first comma, which signifies the end of the score. We then take the substring of `response` that represents this score, convert it to an integer, and then add it to the next open position in the `scores` array. Next, the string is spliced to remove the score that we just added.
+     - After that, we find the next closing square bracket ("]"), which signifies the end of the user. We then take the substring of `response` that represents the user and add it to the next open position in the `users` array. After that, we splice the string to remove the user that we just added and increment `array_index` by one. The process continues while the string is not empty.
+     - Finally, the `array_size` field variable is set to the final value of `array_index` after the while loop terminates.
+- `int Leaderboard::displayScore(Adafruit_RA8875* tft, LaserString* string_1, LaserString* string_2, LaserString* string_3, LaserString* string_4, int score)`
+     - This function displays the user's score immediately after the game is over. It takes in a pointer to the TFT screen object, four pointers to `LaserString` objects that represent each of the lasers, and an integer `score`. 
+     - First, it displays the user's score using the TFT's built-in display methods. Note that since we are using a different, larger screen than we did for the labs, these methods are slightly different than the ones we used for labs and exercises.
+     - Next, it displays instructions to the user on how to navigate away from this screen. For instance, the user can press the first laser to replay the song, the second laser to choose a new song, the third laser to view the Leaderboards for the song, and the fourth laser to restart the game with a new username.
+     - The function then checks if any of the lasers were broken using methods of the `LaserString` objects in order to handle the appropriate state transitions. See the description of the `LaserString` library for more details regarding these functions.
+     - The function returns the number of the laser that was broken, or zero if none of the lasers were broken yet.
+- `int Leaderboard::displayLeaderboard(Adafruit_RA8875* tft, LaserString* string_1, LaserString* string_2, LaserString* string_3)`
+     - This function is responsible for displaying the leaderboard contents on the TFT screen. It takes in a pointer to a tft screen object in addition to pointers to `LaserString` objects representing the first three lasers.
+     - It first displays the title of the screen, which consists of "Leaderboards: " followed by the song name. 
+     - Then, it iterates through the values stored in the `scores` and `users` arrays and displays them on the screen, making sure to put each one on a new line. Note that the values are already stored in the proper order of first place to last place because of the way that scores are stored in and returned from the database.
+     - After that, the function displays instructions for the user. If they break the first laser, they replay the song, if they break the second laser, they choose a new song, and if they break the third laser, they go back to the home page and start again with a new username.
+     - The function then checks if each of these lasers is broken using functions from the `LaserString` class. See the description of this class for more details.
+     - The function returns the number of the laser that is broken as an integer, or zero if none of the lasers has been broken yet.
+
 
 Hardware
 --------------------------------------------------------------
+The hardware of our system consists of four main aspects: the ESP32 microcontroller, the frame of the laser harp including all the lasers, LEDs, and phototransistors, the TFT screen, and the MP3 player attached to a speaker. We highlight here the role of each part in relation to the rest of the Laser Harp Guitar Hero game system. Greater detail about specific construction and wiring of these hardware components is reserved for discussion below.
+
+- ESP32: Handles all the software described above, as well as coordinates the other hardware components to correctly work together with the software in order, resulting in our integrated game.
+- Laser harp frame: We focus on the lasers, LEDs, and the phototransistors. The LEDs (one per laser string) flash in time with when the strings should be broken, info which is conveyed to the LED through the ESP32 via software which interprets pre-made beatmaps. The lasers and phototransistors together form the laser string, as the laser points directly into the phototransistor. Thus, when we break the beam, the voltage of the phototransistor sharply changes, which is read by the ESP32 and used by the software to detect and score user actions during gameplay. The function of all this is wrapped up into the `LaserString` class described above in the software section.
+- TFT screen: Displays all instructions for proceeding between states of the game, from user selection to song selection to the game itself. It also shows the notes running down the screen, indicating to the player when to press, as well as gives feedback both in game (score and specific action feedback like "Good" or "Perfect") and after the game in the form of score display and leaderboards. Software controls the when and what of the display.
+- MP3 player: Plays only during gameplay itself to accompany the notes on the screen. The timing of when to begin and end the song is carefully aligned with the start and end of the beatmap through careful state transitions in the code.
 
 Parts List
 ==============================================================
@@ -204,11 +214,13 @@ Parts List
 - Shrink wrap
 - Zip ties
 
-The 5.0" 40-pin TFT Display and the driver board display the whole graphic user interface for our game. The speaker, MP3 player, and micro SD Card are required to play music. Lasers and phototransistors serve as the strings of the harp. The LEDs help signal a user to break a particular laser at the appropriate time. In addition, both the phototransistors and LEDs require resistors for proper wiring. Finally, we used the wood, acrylic, screws, and nuts to make the laser harp's frame.
+The 5.0" 40-pin TFT Display and the driver board display the whole graphic user interface for our game. The speaker, MP3 player, and microSD card are required to play music. Lasers and phototransistors serve as the strings of the harp. The LEDs help signal a user to break a particular laser at the appropriate time. In addition, both the phototransistors and LEDs require resistors for proper wiring. Finally, we used the wood, acrylic, screws, and nuts to make the laser harp's frame.
 
 Wiring Schematic
 ==============================================================
-The ESP 32 is connected to the folloiwng components: screen, MP3 player, lasers, phototransistors, LEDs. With so many different pins being used, the wiring was initially very messy. When problems arose, it was hard to pinpoint whether the bug was in the code or in the wiring itself. To fix this issue, for the phototransistors, lasers, and LEDs, we intertwined two wires (one indicating color/power, the other ground) with a drill. We also snaked these wires down the side of the frame. Each component will be described separately below.
+The ESP 32 is connected to the following components: screen, MP3 player, lasers, phototransistors, LEDs. With so many different pins being used, the wiring was initially very messy. When problems arose, it was hard to pinpoint whether the bug was in the code or in the wiring itself. To fix this issue, for the phototransistors, lasers, and LEDs, we intertwined two wires (one indicating color/power, the other ground) with a drill. We also snaked these wires down the side of the frame. The wiring of each component will be described separately below.
+
+*INSERT SCHEMATIC + IMAGES AS GUIDE*
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Adafruit_RA8875 TFT Board
@@ -216,48 +228,44 @@ Adafruit_RA8875 TFT Board
 After soldering the header pins onto the driver board, the pins in the image were connected by following a guide <a href="https://github.com/sumotoy/RA8875/wiki/Connecting-the-Adafruit-RA8875-to-your-controller-(and-this-library)?fbclid=IwAR1OfXh6S7W0nMRQt_Oag5CO-H-l7iL8QXCisUw23c_3UlTpeu7haMk0fWs">here</a>.
 Some pins, such as Y+, Y-, X+, and X- are not used because we are not employing touch screen.
 
-
-
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 DFPlayer Mini MP3 Player
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-<!–– ![Figure [DFPlayer wiring]: wiring for MP3 player](./images/mp3_hookup.png width="300px") -->
-Following the schematic provided on the 6.08 website, 
+![Figure [MP3 Player]: Pinout diagram for MP3 player.](./images/mp3_wiring.jpg width="400px")
+![Figure [MP3 Player]: Wiring schematic for MP3 player to ESP32.](./images/mp3_hookup.png width="400px")
+We followed the schematic provided on the 6.08 website in order to hook up the MP3 player. However, it's important to note that we ultimately ended up connecting the module to 5V rather than 3.3V, as indicated in the schematics, since 3.3V often didn't provide enough power for the MP3 player when all the other loads were pulling power as well.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Lasers
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Black and white wires were soldered to the ends of the laser. Black represents ground and white power.
+Black and white wires were soldered to the ends of the laser. Black represents ground and white power. The lasers were connected directly between 3.3V and ground.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Phototransistors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The long leg of the phototransistor should connect to ground, while the short leg connects to a 4.7k ohm resistor and back to power. There is also a voltage divider in between this resistor to read the analog value. 
+The long leg of the phototransistor should connect to ground, while the short leg connects to a 4.7k ohm resistor and back to power. A voltage divider in between this resistor and the phototransistor is used to read the analog value of voltage. The reading was in terms of discrete "bins," which we converted back to a decimal voltage using the methods described and practiced in class. From left to right laser string, the voltage dividers for each were connected to analog reading pins A7, A6, A3, and A0 on the ESP32. 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 LEDs
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-On the harp, the order of the LEDs is green, red, yellow, blue. In this order, pins 12,..,..,.. are occupied. Each LED is also connected to a 4.7k ohm resistor. The colored wire is connected to power, and black goes to ground.
+On the harp, the order of the LEDs is green, red, yellow, blue. In this order, pins 13, 12, 14, and 26 are occupied. Each LED is also connected to a 4.7k ohm resistor. The resistor runs between the 3.3V power rail of the breadboard and the colored wired of the LED, while the black wire connects directly to ground. 
 
-State Machine Block Diagram
+
+Harp Frame
 ==============================================================
-![Figure [state machine]: State machine diagram of our game](./images/state_machine.png width="800px")
+To create a rectangular frame, 4 blocks of wood were used. Using around 3-inch long wood screws, the blocks of wood were joined together to form a box, roughly of dimensions 12 in. by 12 in. On the top and bottom pieces of wood, 4 pairs of holes were drilled spaced evenly such that each pair of holes would align vertically with each other. The lasers were placed into the top holes and photransistors were put in on the bottom, and the wires soldered onto these components were pull through the hole. Alignment was integral to calibrating the harp so that the laser beam would directly hit the phototransistors. LED holes were made perpendicular to the holes made for lasers on the top piece of wood such that once the LEDs are put in, the user sitting at the front will be able to see them flashing and indicating which notes to press.
 
-**1. Start:** A simple state that just provides a title screen for the game. When the user breaks the first (leftmost) laser, we move onto the "Enter Username" state.
+To allow the user to have view of the screen and mount the speaker, as well as to neaten the general design of the hardware of our game, a piece of acrylic was used as a backing. From a rectangular piece of acrylic (12 in. by 12 in.), a rectangle big enough to show the screen and a circle to fit the speaker was cut out. Holes were also made so that we could attach the parts to the acryllic with screws and hex nuts. Additionally, other holes on the border were made to screw the backing to the wood frame. The design used is shown as below:
 
-**2. Enter Username:** Users select their username using the first three lasers. The first laser scrolls backwards through the alphabet while the second laser scrolls forwards through the alphabet. The third laser is used to select a letter. The user breaks the fourth (rightmost) laser to confirm their name and move to the "Choose Song" state. 
+![Figure [Frame Backboard Design]: Design for the backboard. Link to design file can be found <a href="https://github.com/jgonik/laserharpguitarhero/blob/master/backing.dxf">here</a>.](./images/backboard.png width="400px")
 
-**3. Choose Song:** Users select the song they want to play using the first two lasers. The first laser scrolls backwards through the song list, while the second laser scrolls forward through the song list. Information about each song is displayed, including the name of the song, the song's artist, and its duration in seconds. The user breaks the third laser to select a song and move onto the "Play" state.
+A 3D printed screen holder was used to secure the screen to acrylic. The design of the screen holder is as shown below (the slit on the bottom is to fit the circuitry of the screen):
 
-**4. Play:** This is the state where the actual game occurs. First, the notes for the selected song are retrieved from the server via a get request. Next, the notes are displayed on the screen as colored rectangles, and the user must break the appropriate laser when each rectangular note reaches the bottom of the screen. The user earns points based on how accurately they break the lasers. Once all of the song's notes have been played, the game moves to the "Show Score" state. 
+![Figure [Screen Holder Design]: Design for the screen holder. Link to design file can be found <a href="https://github.com/jgonik/laserharpguitarhero/blob/master/screen_holder.stl">here</a>.](./images/screen_holder.png width="400px")
 
-**5. Show Score:** The user's score is stored in the leaderboards database via a post request. In addition, the score is printed to the screen along with further instructions. When the first laser is broken, the song is replayed and we move to the "Play Again" state. When the second laser is broken, the user can select another song to play with the same username, and we move to the "New Song" state. When the third laser is broken, the user can view leaderboards for that particular song, and we move to the "Leaderboard" state. When the fourth laser is broken, the user starts a new game with a new username, and we move to the "Start" state. 
+After adding all the various parts to our frame, our laser harp looked as follows:
+![Figure [Laser Harp]: Our finished laser harp frame.](./images/harp.png width="400px")
 
-**6. Play Again:** We keep the same song and user info and automatically move to the "Play" state.
-
-**7. New Song:** We keep the same username but clear the song information and automatically move to the "Choose Song" state.
-
-**8. Leaderboard:** We retrieve the leaderboard information for the specified song via a get request to our server-side database and display it on the screen. When the first laser is broken, the user plays the same song again and we move to the "Play Again" state. When the second laser is broken, the user selects another song to play with the same username, and we move to the "New Song" state. Finally, when the third laser is broken, the user starts a new game with a new username, and we move to the "Start" state.
 
 Functional Block Diagram
 ==============================================================
@@ -266,33 +274,39 @@ System Overview
 --------------------------------------------------------------
 
 
-Harp Frame
+State Machine Block Diagram
 ==============================================================
-To create a rectangular frame, 4 blocks of wood was used. On the top and bottom pieces of wood, 4 pairs of holes were drilled spaced evenly such that each pair of holes would align vertically with each other. On the top holes, lasers were put in and photoresistors were put in on the bottom. LED holes were made perpendicular to the holes made for lasers on the top piece of wood such that once the LEDs are put in, the user sitting at the front will be able to see them.
+![Figure [state machine]: State machine diagram of our game](./images/state_machine.png width="800px")
 
-To allow the user to have view of the screen and mount the speaker, a piece of acrylic was used. From a rectangular piece of acrylic, two pieces, a rectangle big enough to show the screen and a circle to fit the speaker was cut out. Holes were also made so that we could drill the different parts together. The design used is shown as below:
+**1. Start:** A simple state that just provides a title screen for the game. When the user breaks the first (leftmost) laser, we move onto the "Enter Username" state.
 
-![Figure [Frame Backboard Design]: Design for the backboard. Link to design file can be found <a href="https://github.com/jgonik/laserharpguitarhero/blob/master/backing.dxf">here</a>.](./images/backboard.png width="400px")
+**2. Enter Username:** Users select their username using the first three lasers. The first laser scrolls backwards through the alphabet while the second laser scrolls forwards through the alphabet. The third laser is used to select a character. The user breaks the fourth (rightmost) laser to confirm their name and move to the "Choose Song" state. 
 
-A 3D printed screen holder was used to secure the screen to acrylic. The design of the screen holder is as shown below:
+**3. Choose Song:** Users select the song they want to play using the first two lasers. The first laser scrolls backwards through the song list, while the second laser scrolls forward through the song list. Information about each song is displayed, including the name of the song, the song's artist, and its duration in seconds. The user breaks the third laser to select a song and moves onto the "Play" state.
 
-![Figure [Screen Holder Design]: Design for the screen holder. Link to design file can be found <a href="https://github.com/jgonik/laserharpguitarhero/blob/master/screen_holder.stl">here</a>.](./images/screen_holder.png width="400px")
+**4. Play:** This is the state where the actual game is played. First, the notes for the selected song are retrieved from the server via a get request. Next, the notes are displayed on the screen as colored rectangles, and the user must break the appropriate laser when each rectangular note reaches the bottom of the screen. The user earns points based on how accurately they break the lasers, and feedback about this is displayed for the user to see. Once all of the song's notes have been played, the game moves to the "Show Score" state. 
 
-Adding all the parts to the screen, our laser harp looked as follows:
-![Figure [Laser Harp]: Our finished laser harp frame.](./images/harp.png width="400px")
+**5. Show Score:** The user's score is sent to the leaderboards database via a post request. In addition, the score is printed to the screen along with further instructions. When the first laser is broken, the song is replayed and we move to the "Play Again" state. When the second laser is broken, the user can select another song to play with the same username, and we move to the "New Song" state. When the third laser is broken, the user can view leaderboards for that particular song, and we move to the "Leaderboard" state. When the fourth laser is broken, the user starts a new game with a new username, and we move to the "Start" state. 
+
+**6. Play Again:** We keep the same song and user info and automatically move to the "Play" state.
+
+**7. New Song:** We keep the same username but clear the song information and automatically move to the "Choose Song" state.
+
+**8. Leaderboard:** We retrieve the leaderboard information for the specified song via a get request to our server-side database and display it on the screen. When the first laser is broken, the user plays the same song again and we move to the "Play Again" state. When the second laser is broken, the user selects another song to play with the same username, and we move to the "New Song" state. Finally, when the third laser is broken, the user starts a new game with a new username, and we move to the "Start" state.
+
 
 Decision Making and Challenges
 ==============================================================
 
 Alignment of Lasers and Phototransistors
 --------------------------------------------------------------
-Our game relies heavily on being able to detect whether or not a laser is broken. For instance, the player must break the laser at the correc time in order to gain points while playing the song. We also use broken lasers as a means of navigating from one page to the other and even selecting a username. Thus, it is crucial that the detection of broken lasers is very accurate. In order to achieve this accuracy, we had to make sure that each laser is pointed exactly at its corresponding phototransistor and that it stayed that way even when we moved the laser harp or the harp was bumped or jostled. We first considered this issue when building the laser harp frame. Firstly, when drilling the holes in the wood for where the lasers and phototransistors would be placed, we tried our very best to make sure that the holes were aligned vertically on top of each other. This was a bit challenging since none of us had much experience with woodwork or power tools, but Tiffany and her MakerLodge training were key. Next, we tried to drill the holes so their diameters were as close as possible to the diameters of the lasers and phototransistors in order to ensure a snug fit. This was also quite difficult because drillbits only come in predetermined sizes, so the holes were a bit too large. In order to attempt to stabilize the lasers and phototransistors, we first tried simply wrapping them in electrical tape in order to increase their diameters so that they fit more snugly inside the holes. However, this didn't work very well because the lasers would still shift over time and could easily be jostled out of position. Thus, we decided to use a combination of this taping method in addition to hot glue. Once the lasers were taped and placed in a position that we liked, we hot glued the top of the wire that stuck out of the hole onto the wooden frame. This still wasn't completely perfect, and some of the lasers had to be adjusted at times, but it worked very reliably for our purposes. For the phototransistors, we decided to forgo the electrical tape and solely use hot glue to secure them since their diameters were already pretty small, so you would have to use a lot of tape to make them fit securely in the holes. We first tested to make sure that phototransistors' measured voltage still changed reliably even when hot glue was placed on top of them. We found that the hot glue had no significant effect on the phototransistors' performance, so we went ahead with our plan. First, we turned on the lasers so we could see where the phototransistors should be placed. Then, we placed hot glue on each phototransistor and secured them to our liking. We also glued the wires that stuck out of the wooden frame into place as well. Thus, our lasers and phototransistors were beautifully aligned and secured!
+Our game relies heavily on being able to detect whether or not a laser is broken. For instance, the player must break the laser at the correct time in order to gain points while playing the song. We also use broken lasers as a means of navigating from one page to the other and even selecting a username. Thus, it is crucial that the detection of broken lasers is very accurate. In order to achieve this accuracy, we had to make sure that each laser is pointed exactly at its corresponding phototransistor and that it stayed that way even when we moved the laser harp or the harp was bumped or jostled. We first considered this issue when building the laser harp frame. Firstly, when drilling the holes in the wood for where the lasers and phototransistors would be placed, we tried our very best to make sure that the holes were aligned vertically on top of each other. This was a bit challenging since none of us had much experience with woodwork or power tools, but Tiffany and her MakerLodge training were key. Next, we tried to drill the holes so their diameters were as close as possible to the diameters of the lasers and phototransistors in order to ensure a snug fit. This was also quite difficult because drillbits only come in predetermined sizes, so the holes were a bit too large. In order to attempt to stabilize the lasers and phototransistors, we first tried simply wrapping them in electrical tape in order to increase their diameters so that they fit more snugly inside the holes. However, this didn't work very well because the lasers would still shift over time and could easily be jostled out of position. Thus, we decided to use a combination of this taping method in addition to hot glue. Once the lasers were taped and placed in a position that we liked, we hot glued the top of the wire that stuck out of the hole onto the wooden frame. This still wasn't completely perfect, and some of the lasers had to be adjusted at times, but it worked reliably for our purposes. For the phototransistors, we decided to forgo the electrical tape and solely use hot glue to secure them since their diameters were already pretty small, so you would have to use a lot of tape to make them fit securely in the holes. We first tested to make sure that phototransistors' measured voltage still changed reliably even when hot glue was placed on top of them. We found that the hot glue had no significant effect on the phototransistors' performance, so we went ahead with our plan. First, we turned on the lasers so we could see where the phototransistors should be placed. Then, we placed hot glue on each phototransistor and secured them to our liking. We also glued the wires that stuck out of the wooden frame into place as well. Thus, our lasers and phototransistors were beautifully aligned and secured!
 
 The Wiring
 --------------------------------------------------------------
 Having to connect so many wires to the breadboard specifically for the LEDs, lasers, and phototransistors, the wiring often became very messy and it was difficult to find out whether the wiring was done incorrectly or if a wire had been accidently taken out, not to mention the numerous times in which the wires broke. 
 
-In order to prevent such difficulties, we color-coded wires and twisted pairs of wires that go to the same piece. Wires for similar pieces were then also grouped together using tape and zip ties. For lasers, white wires went to power and black wires went to ground. For each 'string,' we attributed different colors, green, red, yellow, and blue, which we represented with LEDs. Wires for the phototransistors were hence set such that white wires always go to power and the wire that goes to the ESP32 is the same as the color it is assigned. Finally, for the LEDs, black wires were used to go to power and accordingly colored wires went to the ESP32. 
+In order to prevent such difficulties, we color-coded wires and twisted pairs of wires that go to the same piece. Wires for similar pieces were then also grouped together using tape and zip ties. For lasers, white wires went to power and black wires went to ground. For each "string," we attributed different colors, green, red, yellow, and blue, which we represented with LEDs. Wires for the phototransistors were hence set such that white wires always go to ground and the wire that goes to the ESP32, the resistor, and power is the same as the color it is assigned. Finally, for the LEDs, black wires were used to go to ground and accordingly colored wires went to the resistor and ESP32, which provided power. 
 
 MP3 Player
 --------------------------------------------------------------
