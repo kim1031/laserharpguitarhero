@@ -17,7 +17,7 @@ Below is a video of our group demonstrating the game. How fun!
 
 System Design
 ==============================================================
-Below is an overview of the design of our system. The vast majority of our project code was written for the ESP32 because that is where most of the game logic is handled. The Python server code was mostly used for storing persistent data in databases, including note information for songs and user's scores for the leaderboards. In addition, we also wrote helper functions in Python that allowed us to easily create new note mappings for songs using our computers' keyboards instead of having to figure out note timings manually, which would be tedious.
+Below is an overview of the design of our system. The vast majority of our project code was written for the ESP32, as this is where the majority of the game logic is handled. The Python server code was mostly used for storing persistent data in databases, including note information for songs and users' scores for the leaderboards. In addition, we wrote helper functions in Python that allowed us to easily create new note mappings for songs using our computers' keyboards instead of manually figuring out note timings, which would be tedious.
 
 Software
 --------------------------------------------------------------
@@ -26,7 +26,7 @@ Software
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 leaderboards.py
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-This code lives on the server and handles get requests for obtaining leaderboard information and post requests for adding new information to the leaderboards database. This is all handled in the appropriately named `request_handler` function. First, we create a connection to our leaderboards database. Then, if the `scores_table` does not already exist, we create it. This table has three columns: a score column, a song name column, and a username column. We then take the values from the body of the post request and insert them into their respective columns. In paticular, the body of the post request should have three keys: 'score', 'song', and 'user'. We then close our connection to the database, and the post request is complete. If the request was instead a get request, we follow a similar process. First, we extract the name of the song that we want the leaderboards of. This name should come from the query argument 'song'. Then, we get all of the rows in the database with that song name and order them in descending order by score. This is so that it will be easier to display the top scores in order on the ESP32 display. In addition, we only want the top ten scores, so we limit our results to ten rows. Then, we create a string called `outs` that will hold the output that we want to send back to the ESP32. After that, we iterate over all the rows that we retrieved from the database and add them to the `outs` string with the following format: `"[score,username]"`. Thus, if your username is joules and you got a score of 18, the format would be `"[18,joules]"`. Multiple scores are represented as follows: `"[55,user1] [17,user3] [3,user2]."` Finally, we close our connection to the database and return this string to the ESP32 for parsing.
+This code lives on the server and handles get requests for obtaining leaderboard information and post requests for adding new information to the leaderboards database. This is all handled in the appropriately named `request_handler` function. First, we create a connection to our leaderboards database. Then, if the `scores_table` does not already exist, we create it. This table has three columns: score, song name , and username. We take the values from the body of the post request and insert them into their respective columns. In paticular, the body of the post request should have three keys: 'score', 'song', and 'user'. We then close our connection to the database, and the post request is complete. If a get request is made, we follow a similar process. First, we extract the name of the song that we want the leaderboards of. This name should come from the query argument 'song'. Then, we get all of the rows in the database with that song name and order them in descending order by score. This is so that it will be easier to display the top scores in order on the ESP32 display. In addition, we only want the top ten scores, so we limit our results to ten rows. Then, we create a string called `outs` that will hold the output that we want to send back to the ESP32. After that, we iterate over all the rows that we retrieved from the database and add them to the `outs` string with the following format: `"[score,username]"`. Thus, if your username is joules and you got a score of 18, the format would be `"[18,joules]"`. Multiple scores are represented as follows: `"[55,user1] [17,user3] [3,user2]."` Finally, we close our connection to the database and return this string to the ESP32 for parsing.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 get_song.py
@@ -236,7 +236,9 @@ The ESP 32 is connected to the following components: screen, MP3 player, lasers,
 Adafruit_RA8875 TFT Board
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 After soldering the header pins onto the driver board, the pins in the image were connected by following a guide <a href="https://github.com/sumotoy/RA8875/wiki/Connecting-the-Adafruit-RA8875-to-your-controller-(and-this-library)?fbclid=IwAR1OfXh6S7W0nMRQt_Oag5CO-H-l7iL8QXCisUw23c_3UlTpeu7haMk0fWs">here</a>.
-Some pins, such as Y+, Y-, X+, and X- are not used because we are not employing the touch screen. 
+Some pins, such as Y+, Y-, X+, and X- are not used because we are not employing the touch screen. RST and INT can be connected to any MCU pin, and we chose to use IO21 and IO16.
+
+![Figure [TFT Driver Board]: Wiring schematic for driver board to TFT screen](./images/screen_driver_board_connect.PNG width="400px")
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 DFPlayer Mini MP3 Player
@@ -329,10 +331,12 @@ We initially faced many struggles with configuring the MP3 Player. Sometimes the
 
 We also intended to use 2 MP3 Players, so that when a player broke a laser they were not supposed to, an error sound would play. We scrapped this idea and instead displayed a `MISS` message as feedback on the screen. This wouldn't ruin the flow of the song and was easily integrated into our score feedback display system.
 
-While adding more modern songs to our repertoire, we noticed that different songs would be played on the DFPlayer Mini MP3 Player than we had intended. Although we labeled each MP3 file name with a number 
+While adding more modern songs to our repertoire, we noticed that different songs would be played on the DFPlayer Mini MP3 Player than we had intended. For example, although we labeled each MP3 file name with a number, playing `3.mp3` would play what we had labeled as `7.mp3` instead of the third song. We then realized that the MP3 files were numbered based off the order they were added to the SD card, not what we labeled them. 
 
 Screen and Mount
 --------------------------------------------------------------
+Surprisingly, the RA8875 library does not support rotation for the screen. 
+
 
 Power
 --------------------------------------------------------------
