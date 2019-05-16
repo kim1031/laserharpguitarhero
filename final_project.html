@@ -51,7 +51,6 @@ This file is the basis for the note-mapping. On a high level, when this file is 
           
 
 
-
 <big>**ESP32 Libraries and Classes**</big>
 
 We wanted to modularize our code in order to make it neater and easier to work with. This also eliminates the need for repetitive code that is both unnecessary and hard to debug. Thus, we split the main functionalities of our game into distinct classes and libraries that each represent one of the game's core features.
@@ -209,7 +208,36 @@ The 5.0" 40-pin TFT Display and the driver board display the whole graphic user 
 
 Wiring Schematic
 ==============================================================
-*TO-DO*
+The ESP 32 is connected to the folloiwng components: screen, MP3 player, lasers, phototransistors, LEDs. With so many different pins being used, the wiring was initially very messy. When problems arose, it was hard to pinpoint whether the bug was in the code or in the wiring itself. To fix this issue, for the phototransistors, lasers, and LEDs, we intertwined two wires (one indicating color/power, the other ground) with a drill. We also snaked these wires down the side of the frame. Each component will be described separately below.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Adafruit_RA8875 TFT Board
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+After soldering the header pins onto the driver board, the pins in the image were connected by following a guide <a href="https://github.com/sumotoy/RA8875/wiki/Connecting-the-Adafruit-RA8875-to-your-controller-(and-this-library)?fbclid=IwAR1OfXh6S7W0nMRQt_Oag5CO-H-l7iL8QXCisUw23c_3UlTpeu7haMk0fWs">here</a>.
+Some pins, such as Y+, Y-, X+, and X- are not used because we are not employing touch screen.
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+DFPlayer Mini MP3 Player
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+<!–– ![Figure [DFPlayer wiring]: wiring for MP3 player](./images/mp3_hookup.png width="300px") -->
+Following the schematic provided on the 6.08 website, 
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Lasers
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Black and white wires were soldered to the ends of the laser. Black represents ground and white power.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Phototransistors
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The long leg of the phototransistor should connect to ground, while the short leg connects to a 4.7k ohm resistor and back to power. There is also a voltage divider in between this resistor to read the analog value. 
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+LEDs
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+On the harp, the order of the LEDs is green, red, yellow, blue. In this order, pins 12,..,..,.. are occupied. Each LED is also connected to a 4.7k ohm resistor. The colored wire is connected to power, and black goes to ground.
 
 State Machine Block Diagram
 ==============================================================
