@@ -67,18 +67,43 @@ Game Library
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 This library controls the state machine and making updates to the state of the game. Combining all the various software components of our game, it makes calls to different classes and functions and integrates the libraries to form a more fully-fledged user experience from start screen to gameplay to leaderboard display. It's also responsible for parsing data about beatmaps.
 
--`Game(Adafruit_RA8875* input_tft, DFRobotDFPlayerMini* input_mp3_player)`
+- `Game(Adafruit_RA8875* input_tft, DFRobotDFPlayerMini* input_mp3_player)`
+     - Constructor for Game objects
+     - Takes in a pointer to the screen and MP3 player so that they may be used within the class
+     - Initializes all four LaserString objects for our four notes (green, red, yellow, blue), initializes arrays of RectNotes to later hold beatmaps, sets score to 0 (start of a game), and state to go into the starting state
 - `void setUpLED()`
+     - Readies each of the four LaserString's LEDs to be able to toggle on and off
 - `void gamePlay(int elapsed, char* request_buffer, char* reponse_buffer)`
+     - Controls the state machine that underlies the game, called repeatedly by the `loop()` function of the ESP32 in order to constantly update game state
+     - Takes in `elapsed`, or the length of the song has been played once gameplay has actually begun, `request_buffer` and `response_buffer` to be able to interact with HTTP requests and responses
+     - Transistions between states, described in the state diagram below--each function of each state is typically described by a class (see libraries below)
+     - When in the game play state itself, `gamePlay()` updates each RectNote object so that it appears as if the notes are moving down the screen, as well as calls functions in LaserString so that LEDs are lit up appropriately and user input and scores are accounted for
 - `int getState()`
+     - Returns the current state of the score
+     - Important for calculations of `elapsed` in `laser_harp_hero.ino` (since we are focused on the gameplay state with this parameter)
 - `int getScore()`
+     - Returns the current score that user has obtained in gameplay mode
 - `void getSongData(char* request_buffer)` (private)
+     - Constructs the HTTP request buffer which is then sent up to the server by `laser_harp_hero.ino` in order to retrieve the beatmap of the selected song
 - `void getSongList(char* request_buffer)` (private)
+     - Constructs the HTTP request buffer which is then sent up to the server by `laser_harp_hero.ino` to obtain the full list of song options that can be played
 - `void parseSongData(char* response_buffer, char* note_arr, float* note_time_arr, float* duration_arr)` (private)
+     - Takes in the response buffer, which holds the beatmap in an string which needs to be parsed for data, that is returned by the HTTP requestion constructed in `getSongData()`
+     - Parses string to isolate each individual note in the beatmap
+     - These notes are separated into specific laser to hit, time to hit, and duration to continue breaking the laser, which are stored in corresponding entries in the `note_arr`, `note_time_arr`, and `duration_arr`, respectively, that are passed in
 - `void extractTimes(char* note_arr, float* note_time_arr, float* duration_arr)` (private)
+     - Takes the three arrays, now filled with beatmap data from `parseSongData()`, and initializes a RectNote object to represent each note in the beatmap
+     - RectNote objects will match in terms of length (representing duration of the note) and color (LED color for the corresponding LaserString)
+     - RectNote objects are stored in the appropriate array of the four based on which specific laser should be broken (there are four RectNote arrays, one per laser string)
 - `void same_song()` (private)
+     - Readies the game so that the player can replay the same song
+     - Resets the game (score, tracking of which RectNotes to display, etc.), but maintains the username of the player and the song
 - `void new_round_same_user()` (private)
+     - Readies the game so that the player can choose a new song to play
+     - Resets the game (score, tracking of which RectNotes to display, song, etc.), but maintains the username of the player
 - `void reset()` (private)
+     - Resets all aspects of the game, bringing it back to the start state, leaving all attributes as if the Game object were just initialized
+     - Lets a new user enter their name and play
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 LaserString Library
@@ -86,9 +111,14 @@ LaserString Library
 This library wraps up all components of a "laser string" on our harp into one class. It contains functions necessary to time the toggling of the LEDs and to read user input ("plucking of the string"/breaking the laser) as well as scores any actions made by the player.
 
 - `LaserString(int LED_pin, int analog_pin)`
+     - Initializes the pin of the LED and the pin of the phototransistor that will be used to read voltage
+     - Also initializes other attributes important to the functionality of the class, such as for taking in user input and scoring actions
 - `void beginLights()`
+     - Sets up the pin mode (output) of the LEDs and turns them off to begin
 - `void LEDControl(bool on)`
+     - Toggles the LED on and off based on whether the boolean `on` is true or false, respectively
 - `bool broken()`
+     - dsf
 - `void setRefTime(int time_ms)`
 - `void toScoreNote()`
 - `void userAction()`
