@@ -17,20 +17,22 @@ class SongSelection {
     float durations[30];
     int array_size;
     int curr_index;
+    int old_index;
     int scrolling_timer;
-    int scrolling_threshold = 750; //ms
+    const int scrolling_threshold = 750; //ms
     std::string old_song;
-    string selected_song;
+    std::string selected_song;
     
     
 
   public:
-    SongSelection();
+    SongSelection(); 
     void parse_song_selection(std::string str);
     void get_song_selection(char* request_buffer);
     void display_song_selection(Adafruit_RA8875* tft);
-    void update_song_index(bool forward);
+    void update_song_index(bool forward); // just increase index by one 
     std::string get_curr_song();
+    int get_song_num();
     void update_screen(int input, Adafruit_RA8875* tft);
 };
 
