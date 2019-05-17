@@ -13,11 +13,16 @@ One of our favorite childhood games is Guitar Hero. One day, whilst reminiscing 
 
 Below is a video of our group demonstrating the game. How fun!
 
-![A demo video! Watch Julia struggle!](https://youtu.be/lB0uD_ifc4c)
+<div id="center">
+<iframe id="video" src="https://player.vimeo.com/video/336696777" width="640" height="360" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>
+<p><a id="video" href="https://vimeo.com/336696777">Laser Harp Guitar Hero</a> from <a href="https://vimeo.com/user98606105">Julia Gonik</a> on <a href="https://vimeo.com">Vimeo</a>.</p>
+</div>
 
 System Design
 ==============================================================
 Below is an overview of the design of our system. The vast majority of our project code was written for the ESP32, as this is where the majority of the game logic is handled. The Python server code was mostly used for storing persistent data in databases, including note information for songs and users' scores for the leaderboards. In addition, we wrote helper functions in Python that allowed us to easily create new note mappings for songs using our computers' keyboards instead of manually figuring out note timings, which would be tedious.
+
+You can find all of our code <a href="https://github.com/jgonik/laserharpguitarhero">here</a>.
 
 Software
 --------------------------------------------------------------
@@ -65,17 +70,83 @@ This file contains the main driver code for our project. This code is uploaded t
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Game Library
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*TO-DO*
+This library controls the state machine and making updates to the state of the game. Combining all the various software components of our game, it makes calls to different classes and functions and integrates the libraries to form a more fully-fledged user experience from start screen to gameplay to leaderboard display. It's also responsible for parsing data about beatmaps.
+
+- `Game(Adafruit_RA8875* input_tft, DFRobotDFPlayerMini* input_mp3_player)`
+     - Constructor for Game objects
+     - Takes in a pointer to the screen and MP3 player so that they may be used within the class
+     - Initializes all four LaserString objects for our four notes (green, red, yellow, blue), initializes arrays of RectNotes to later hold beatmaps, sets score to 0 (start of a game), and state to go into the starting state
+- `void setUpLED()`
+     - Readies each of the four LaserString's LEDs to be able to toggle on and off
+- `void gamePlay(int elapsed, char* request_buffer, char* reponse_buffer)`
+     - Controls the state machine that underlies the game, called repeatedly by the `loop()` function of the ESP32 in order to constantly update game state
+     - Takes in `elapsed`, or the length of the song has been played once gameplay has actually begun, `request_buffer` and `response_buffer` to be able to interact with HTTP requests and responses
+     - Transistions between states, described in the state diagram below--each function of each state is typically described by a class (see libraries below)
+     - When in the game play state itself, `gamePlay()` updates each RectNote object so that it appears as if the notes are moving down the screen, as well as calls functions in LaserString so that LEDs are lit up appropriately and user input and scores are accounted for
+- `int getState()`
+     - Returns the current state of the score
+     - Important for calculations of `elapsed` in `laser_harp_hero.ino` (since we are focused on the gameplay state with this parameter)
+- `int getScore()`
+     - Returns the current score that user has obtained in gameplay mode
+- `void getSongData(char* request_buffer)` (private)
+     - Constructs the HTTP request buffer which is then sent up to the server by `laser_harp_hero.ino` in order to retrieve the beatmap of the selected song
+- `void getSongList(char* request_buffer)` (private)
+     - Constructs the HTTP request buffer which is then sent up to the server by `laser_harp_hero.ino` to obtain the full list of song options that can be played
+- `void parseSongData(char* response_buffer, char* note_arr, float* note_time_arr, float* duration_arr)` (private)
+     - Takes in the response buffer, which holds the beatmap in an string which needs to be parsed for data, that is returned by the HTTP requestion constructed in `getSongData()`
+     - Parses string to isolate each individual note in the beatmap
+     - These notes are separated into specific laser to hit, time to hit, and duration to continue breaking the laser, which are stored in corresponding entries in the `note_arr`, `note_time_arr`, and `duration_arr`, respectively, that are passed in
+- `void extractTimes(char* note_arr, float* note_time_arr, float* duration_arr)` (private)
+     - Takes the three arrays, now filled with beatmap data from `parseSongData()`, and initializes a RectNote object to represent each note in the beatmap
+     - RectNote objects will match in terms of length (representing duration of the note) and color (LED color for the corresponding LaserString)
+     - RectNote objects are stored in the appropriate array of the four based on which specific laser should be broken (there are four RectNote arrays, one per laser string)
+- `void same_song()` (private)
+     - Readies the game so that the player can replay the same song
+     - Resets the game (score, tracking of which RectNotes to display, etc.), but maintains the username of the player and the song
+- `void new_round_same_user()` (private)
+     - Readies the game so that the player can choose a new song to play
+     - Resets the game (score, tracking of which RectNotes to display, song, etc.), but maintains the username of the player
+- `void reset()` (private)
+     - Resets all aspects of the game, bringing it back to the start state, leaving all attributes as if the Game object were just initialized
+     - Lets a new user enter their name and play
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 LaserString Library
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*TO-DO*
+This library wraps up all components of a "laser string" on our harp into one class. It contains functions necessary to time the toggling of the LEDs and to read user input ("plucking of the string"/breaking the laser) as well as scores any actions made by the player.
+
+- `LaserString(int LED_pin, int analog_pin)`
+     - Initializes the pin of the LED and the pin of the phototransistor that will be used to read voltage
+     - Also initializes other attributes important to the functionality of the class, such as for taking in user input and scoring actions
+- `void beginLights()`
+     - Sets up the pin mode (output) of the LEDs and turns them off to begin
+- `void LEDControl(bool on)`
+     - Toggles the LED on and off based on whether the boolean `on` is true or false, respectively
+- `bool broken()`
+     - dsf
+- `void setRefTime(int time_ms)`
+- `void toScoreNote()`
+- `void userAction()`
+- `int getRef()`
+- `int scoreAction(int time_ms)`
+- `void displayFeedback(int time_ms, Adafruit_RA8875* tft, int text_loc)`
+- `void reset()`
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 RectNote Library
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*TO-DO*
+This library creates a rectangular note that displays on the TFT screen for every note in the beatmap and controls the movement of these rectangles down the screen. These rectangles signal a player when to hit a certain laser.
+
+- `RectNote()`
+- `RectNote(float start_time, float end_time, int dur, int wid, int x, uint16_t color)`
+- `void update(int screen_bottom, Adafruit_RA8875* tft)`
+- `bool toPress()`
+- `bool passed()`
+- `float getStart()`
+- `float getEnd()`
+- `void updateLength(int screen_bottom)` (private)
+- `void updateYCoord(int screen_bottom)` (private)
+- `void drawRect(Adafruit_RA8875* tft, bool old)` (private)
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 StartScreen Library
@@ -238,7 +309,7 @@ Adafruit_RA8875 TFT Board
 After soldering the header pins onto the driver board, the pins in the image were connected by following a guide <a href="https://github.com/sumotoy/RA8875/wiki/Connecting-the-Adafruit-RA8875-to-your-controller-(and-this-library)?fbclid=IwAR1OfXh6S7W0nMRQt_Oag5CO-H-l7iL8QXCisUw23c_3UlTpeu7haMk0fWs">here</a>.
 Some pins, such as Y+, Y-, X+, and X- are not used because we are not employing the touch screen. RST and INT can be connected to any MCU pin, and we chose to use IO21 and IO16.
 
-![Figure [TFT Driver Board]: Wiring schematic for driver board to TFT screen](./images/screen_driver_board_connect.PNG width="400px")
+![Figure [TFT Driver Board]: Wiring schematic for driver board to TFT screen](./images/screen_driver_board_connect.png width="400px")
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 DFPlayer Mini MP3 Player
@@ -285,8 +356,7 @@ After adding all the various parts to our frame, our laser harp looked as follow
 Functional Block Diagram
 ==============================================================
 
-System Overview
---------------------------------------------------------------
+![Figure [Functional Block Diagram]: Block diagram of our Laser Harp Guitar Hero.](./images/functional_block_diagram.png width="800px")
 
 
 State Machine Block Diagram
@@ -315,13 +385,17 @@ Decision Making and Challenges
 
 Alignment of Lasers and Phototransistors
 --------------------------------------------------------------
-Our game relies heavily on being able to detect whether or not a laser is broken. For instance, the player must break the laser at the correct time in order to gain points while playing the song. We also use broken lasers as a means of navigating from one page to the other and even selecting a username. Thus, it is crucial that the detection of broken lasers is very accurate. In order to achieve this accuracy, we had to make sure that each laser is pointed exactly at its corresponding phototransistor and that it stayed that way even when we moved the laser harp or the harp was bumped or jostled. We first considered this issue when building the laser harp frame. Firstly, when drilling the holes in the wood for where the lasers and phototransistors would be placed, we tried our very best to make sure that the holes were aligned vertically on top of each other. This was a bit challenging since none of us had much experience with woodwork or power tools, but Tiffany and her MakerLodge training were key. Next, we tried to drill the holes so their diameters were as close as possible to the diameters of the lasers and phototransistors in order to ensure a snug fit. This was also quite difficult because drillbits only come in predetermined sizes, so the holes were a bit too large. In order to attempt to stabilize the lasers and phototransistors, we first tried simply wrapping them in electrical tape in order to increase their diameters so that they fit more snugly inside the holes. However, this didn't work very well because the lasers would still shift over time and could easily be jostled out of position. Thus, we decided to use a combination of this taping method in addition to hot glue. Once the lasers were taped and placed in a position that we liked, we hot glued the top of the wire that stuck out of the hole onto the wooden frame. This still wasn't completely perfect, and some of the lasers had to be adjusted at times, but it worked reliably for our purposes. For the phototransistors, we decided to forgo the electrical tape and solely use hot glue to secure them since their diameters were already pretty small, so you would have to use a lot of tape to make them fit securely in the holes. We first tested to make sure that phototransistors' measured voltage still changed reliably even when hot glue was placed on top of them. We found that the hot glue had no significant effect on the phototransistors' performance, so we went ahead with our plan. First, we turned on the lasers so we could see where the phototransistors should be placed. Then, we placed hot glue on each phototransistor and secured them to our liking. We also glued the wires that stuck out of the wooden frame into place as well. Thus, our lasers and phototransistors were beautifully aligned and secured!
+Our game relies heavily on being able to detect whether or not a laser is broken. For instance, the player must break the laser at the correct time in order to gain points while playing the song. We also use broken lasers as a means of navigating from one page to the other and even selecting a username. Thus, it is crucial that the detection of broken lasers is very accurate. In order to achieve this accuracy, we had to make sure that each laser is pointed exactly at its corresponding phototransistor and that it stayed that way even when we moved the laser harp or the harp was bumped or jostled. We first considered this issue when building the laser harp frame. Firstly, when drilling the holes in the wood for where the lasers and phototransistors would be placed, we tried our very best to make sure that the holes were aligned vertically on top of each other. This was a bit challenging since none of us had much experience with woodwork or power tools, but Tiffany and her MakerLodge training were key. 
+
+Next, we tried to drill the holes so their diameters were as close as possible to the diameters of the lasers and phototransistors in order to ensure a snug fit. This was also quite difficult because drillbits only come in predetermined sizes, so the holes were a bit too large. In order to attempt to stabilize the lasers and phototransistors, we first tried simply wrapping them in electrical tape in order to increase their diameters so that they fit more snugly inside the holes. However, this didn't work very well because the lasers would still shift over time and could easily be jostled out of position. Thus, we decided to use a combination of this taping method in addition to hot glue. Once the lasers were taped and placed in a position that we liked, we hot glued the top of the wire that stuck out of the hole onto the wooden frame. This still wasn't completely perfect, and some of the lasers had to be adjusted at times, but it worked reliably for our purposes. 
+
+For the phototransistors, we decided to forgo the electrical tape and solely use hot glue to secure them since their diameters were already pretty small, so you would have to use a lot of tape to make them fit securely in the holes. We first tested to make sure that phototransistors' measured voltage still changed reliably even when hot glue was placed on top of them. We found that the hot glue had no significant effect on the phototransistors' performance, so we went ahead with our plan. First, we turned on the lasers so we could see where the phototransistors should be placed. Then, we placed hot glue on each phototransistor and secured them to our liking. We also glued the wires that stuck out of the wooden frame into place as well. Thus, our lasers and phototransistors were beautifully aligned and secured!
 
 The Wiring
 --------------------------------------------------------------
 Since we had to connect so many wires to the breadboard for the LEDs, lasers, phototransistors, speaker, and screen, the wiring often became very messy very quickly. It was difficult to examine the wiring while debugging and determine whether if the wiring was done incorrectly or if the problem was somewhere in our code. In addition, due to the sheer number of wires and the way they initially stuck out at odd angles, wires inevitably popped out of the board on occasion, leaving us wondering why the code was suddenly not working, only to realize that it was actually a missing wire connection after some fruitless debugging. In addition, the wires provided in the labkits often broke after extended use, and some baby chunks of wires even got lost somewhere in the depths of our breadboard, never to be seen again. Hyunji's breadboard was the only one that did not claim any chunks of wires as victims. 
 
-In order to solve these challenges, we color-coded our wires and twisted the pairs of wires that belong to each laser, phototransistor, and LED. Wires for the same type of hardware were then grouped together using tape and zip ties. For lasers, white wires went to power and black wires went to ground. For each LED, a wire that is the same color as the LED went to a resistor connected to power via an input pin on the ESP32, and a black wire went to ground. For the phototransistors, white wires go to ground and wires with the same color as the phototransistor's corresponding note and LED went to a resistor connected to power via a voltage divider.
+In order to solve these challenges, we color-coded our wires and twisted the pairs of wires that belong to each laser, phototransistor, and LED. Wires for the same type of hardware were then grouped together using tape and zip ties. For lasers, white wires went to power and black wires went to ground. For each LED, a wire that is the same color (green, red, yellow, or blue) as the LED went to a resistor connected to power via an input pin on the ESP32, and a black wire went to ground. For the phototransistors, white wires go to ground and wires with the same color as the phototransistor's corresponding note and LED went to a resistor connected to power via a voltage divider.
 
 In addition, we started using the spools of wire available in the lab to create the wiring for our breadboard instead of using the wires from the labkit. As a result, we were able to create wires that were exactly the right length we needed and significantly neaten the wiring on our breadboard. We also were able to stop worrying about the wires breaking and getting lost in our breadboards.
 
@@ -335,7 +409,11 @@ While adding more modern songs to our repertoire, we noticed that different song
 
 Screen and Mount
 --------------------------------------------------------------
+There were so many struggles we faced with trying to get our screen to work. After soldering the driver board and connecting the wires, we were confused when running a program just for the screen worked, but running a program that also involved the MP3 Player did not work. UHH IDK HOW WE FIXED
 
+Another struggle we faced was that our screen, even though we had not changed any of our wirings at all, stopped working. We initially tried to rewire from the start just in case some wires broke within the breadboard (which had happened quite a lot). However, not being able to find the cause, we had to obtain a new driver board and screen to use. Considering that the new driver board and screen fixed the issue, it is probable that the screen had somehow broken. 
+
+Of course, we didn't want to leave the screen dangling on its own on the side, where there was much risk of the screen falling and being damaged as well as the fact that it would not be very user friendly. In order to solve this problem, we initially tried to create a mount to hold the screen in place by manually cutting a frame from styrofoam. However, we found that the screen was not stable as a slight tap on the back could cause it to fall out. Instead, what we opted for was to 3D print a frame and cut the rectangle on the acrylic to be slightly smaller than the actual screen such that while the user will not be missing anything going on in the screen, the screen will also be secure and stable. 
 
 Power
 --------------------------------------------------------------
@@ -347,6 +425,6 @@ Energy Management
 
 
 
-
+<link rel="stylesheet" href="./final_project.css">
 <style class="fallback">body{visibility:hidden}</style><script>markdeepOptions={tocStyle:'none'};</script>
 <!-- Markdeep: --><script src="https://casual-effects.com/markdeep/latest/markdeep.min.js?" charset="utf-8"></script>
