@@ -13,11 +13,17 @@ One of our favorite childhood games is Guitar Hero. One day, whilst reminiscing 
 
 Below is a video of our group demonstrating the game. How fun!
 
-![A demo video! Watch Julia struggle!](https://youtu.be/lB0uD_ifc4c)
+<div id="center">
+<iframe id="video" src="https://player.vimeo.com/video/336696777" width="640" height="360" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>
+<p><a id="video" href="https://vimeo.com/336696777">Laser Harp Guitar Hero</a> from <a href="https://vimeo.com/user98606105">Julia Gonik</a> on <a href="https://vimeo.com">Vimeo</a>.</p>
+Watch Julia struggle!
+</div>
 
 System Design
 ==============================================================
 Below is an overview of the design of our system. The vast majority of our project code was written for the ESP32, as this is where the majority of the game logic is handled. The Python server code was mostly used for storing persistent data in databases, including note information for songs and users' scores for the leaderboards. In addition, we wrote helper functions in Python that allowed us to easily create new note mappings for songs using our computers' keyboards instead of manually figuring out note timings, which would be tedious.
+
+You can find all of our code <a href="https://github.com/jgonik/laserharpguitarhero">here</a>.
 
 Software
 --------------------------------------------------------------
@@ -332,7 +338,7 @@ The ESP 32 is connected to the following components: screen, MP3 player, lasers,
 
 ![Figure [Wiring]: A closer look at the breadboard](./images/breadboard_close_up.JPG width="600px")
 
-![Figure [Wiring]: The ESP32 steals the show. Note that the re-orange wires in the front of the image connect the speaker to the MP3 player](./images/esp_close_up.JPG width="600px")
+![Figure [Wiring]: The ESP32 steals the show. Note that the red-orange wires in the front of the image connect the speaker to the MP3 player](./images/esp_close_up.JPG width="600px")
 
 ![Figure [Wiring]: The wiring for a small but mighty MP3 player.](./images/mp3_player.JPG width="600px")
 
@@ -392,8 +398,7 @@ After adding all the various parts to our frame, our laser harp looked as follow
 Functional Block Diagram
 ==============================================================
 
-System Overview
---------------------------------------------------------------
+![Figure [Functional Block Diagram]: Block diagram of our game.](./images/functional_block_diagram.png width="800px")
 
 
 State Machine Block Diagram
@@ -430,7 +435,7 @@ For the phototransistors, we decided to forgo the electrical tape and solely use
 
 The Wiring
 --------------------------------------------------------------
-Since we had to connect so many wires to the breadboard for the LEDs, lasers, phototransistors, speaker, and screen, the wiring often became very messy very quickly. It was difficult to examine the wiring while debugging and determine whether if the wiring was done incorrectly or if the problem was somewhere in our code. In addition, due to the sheer number of wires and the way they initially stuck out at odd angles, wires inevitably popped out of the board on occasion, leaving us wondering why the code was suddenly not working, only to realize that it was actually a missing wire connection after some fruitless debugging. In addition, the wires provided in the labkits often broke after extended use, and some baby chunks of wires even got lost somewhere in the depths of our breadboard, never to be seen again. Hyunji's breadboard was the only one that did not claim any chunks of wires as victims. 
+Since we had to connect so many wires to the breadboard for the LEDs, lasers, phototransistors, speaker, and screen, the wiring often became very messy very quickly. It was difficult to examine the wiring while debugging and determine if the wiring was done incorrectly or if the problem was somewhere in our code. In addition, due to the sheer number of wires and the way they initially stuck out at odd angles, wires inevitably popped out of the board on occasion, leaving us wondering why the code was suddenly not working, only to realize that it was actually a missing wire connection after some fruitless debugging. In addition, the wires provided in the labkits often broke after extended use, and some baby chunks of wires even got lost somewhere in the depths of our breadboards, never to be seen again. Hyunji's breadboard was the only one that did not claim any chunks of wires as victims. 
 
 In order to solve these challenges, we color-coded our wires and twisted the pairs of wires that belong to each laser, phototransistor, and LED. Wires for the same type of hardware were then grouped together using tape and zip ties. For lasers, white wires went to power and black wires went to ground. For each LED, a wire that is the same color (green, red, yellow, or blue) as the LED went to a resistor connected to power via an input pin on the ESP32, and a black wire went to ground. For the phototransistors, white wires go to ground and wires with the same color as the phototransistor's corresponding note and LED went to a resistor connected to power via a voltage divider.
 
@@ -438,7 +443,7 @@ In addition, we started using the spools of wire available in the lab to create 
 
 MP3 Player
 --------------------------------------------------------------
-We initially faced many struggles with configuring the MP3 Player. Sometimes the module could not be found by our program, the speaker would stop playing midway through a song, or the entire system would constantly reboot. At this stage, the wiring was still all over the place, so it is hard to pinpoint exactly what went wrong. After we cleaned up the wiring, however, we found that connecting the MP3 player to 5V instead of 3.3V led to an error-free experience. 
+We initially faced many struggles with configuring the MP3 Player. Sometimes the module could not be found by our program, the speaker would stop playing midway through a song, or the entire system would constantly reboot. We were able to get the MP3 module to work some of the time, but not consistently. At this stage, the wiring was still all over the place, so it is likely that the issue was bad wiring that was hard to debug due to the messiness of our system. After we cleaned up the wiring, the system was still not working perfectly. The MP3 player would start playing a song and then cut out abruptly. We realized that it was most likely an issue with power; the 3.3 V output on the ESP32 was likely delivering less than 3.3 V due to the power use from other modules, such as the large display. Thus, when we connected the MP3 player to 5 V, it began behaving reliably.
 
 We also intended to use 2 MP3 Players, so that when a player broke a laser they were not supposed to, an error sound would play. We scrapped this idea and instead displayed a `MISS` message as feedback on the screen. This wouldn't ruin the flow of the song and was easily integrated into our score feedback display system.
 
@@ -446,18 +451,72 @@ While adding more modern songs to our repertoire, we noticed that different song
 
 Screen and Mount
 --------------------------------------------------------------
+We faced many struggles when trying to get our screen to work. After soldering the driver board and connecting the wires, we were confused because the screen and MP3 player would work perfectly separately, but when we uploaded a program that used both the screen and MP3 player, one of the modules would stop working. We realized that this was likely a problem with power, since the ESP32 would occassionally give us a brownout warning. Thus, we decided to turn off the Wifi during gameplay after making a get request for song information. This decreased the power draw during gameplay significantly and allowed both the screen and the MP3 player to work simultaneously.
 
+Another struggle we faced was that our screen stopped working even though we hadn't changed any of the wiring. Even a simple test script that just drew circles on the screen would not work; the screen would either just flicker or not turn on at all. We initially tried to completely rewire just in case some wires broke within the breadboard, which happened fairly frequently. We also noticed that the driver board was getting fairly hot to the touch while powering the screen. No matter how we tested, we could not find the cause of the issue. Ultimately, we had to obtain a new driver board and screen. Considering that the new driver board and screen fixed the issue, it is probable that the screen had somehow broken. 
 
-Power
---------------------------------------------------------------
+In addition, we didn't want to leave the screen dangling on the side of the breadboard because that would risk the screen being damaged. This would also not be very user friendly because the user would have to crane their neck to the side to see the notes they have to hit, which would be very difficult while trying to accurately break lasers. In order to solve this problem, we initially created a prototype mount to hold the screen in place by manually cutting a frame from styrofoam. We then 3D printed this frame for the screen.
+
+We initially did not know where we wanted to place the mount for the screen and the speaker. We either wanted to place it on top of the harp frame or behind it, in the middle of the hollow wooden rectangle. There were concerns about placing the acrylic mount behind the laser harp because we thought that there might not be enough room for users to break the lasers as they play the game. However, placing the mount on top of the harp would be unstable and difficult to design, so we ultimately chose to place the backing behind the harp. There was still enough room for the user to hit the lasers because the backing sits behind the frame, so there is still hollow space between the backing and the front of the harp. In addition, this made it easier for us to attach both our breadboard and speaker to the acrylic backing. We simply cut out a rectangle for the screen and a circle for the harp. Small holes for screws were also cut out. We could screw the speaker directly to the harp, and the holder we made for the screen also had holes so that it could be screwed in. In addition, we made sure that the hole for the screen was slightly smaller than the size of the screen itself so that there was no risk of the screen falling out and becoming damaged.
 
 
 Energy Management
 ==============================================================
+We initially faced challenges with power because our screen and MP3 player would not work at the same time. They would work perfectly when they ran separately, but when we ran code that used both modules, the ESP32 would constantly reboot, or one of the modules would not work correctly. We realized that this was likely an issue with power because the ESP32 would occasionally issue an error message that said that the brownout detector was triggered. Thus, we decided to conserve energy by turning off the ESP32's Wifi module during actual gameplay after making a get request for note information. The Wifi Module is not needed during gameplay, so this saved a considerable amount of energy and allowed the MP3 player and screen to work in harmony.
+
+ Time (seconds)| Current (A)
+---------------|------------
+     0         |    0.52   
+     5         |    0.60 
+     10        |    0.53
+     15        |    0.57
+     20        |    0.52
+     25        |    0.52
+     30        |    0.53
+     35        |    0.52
+     40        |    0.52
+     45        |    0.50
+     50        |    0.57
+     55        |    0.52
+     60        |    0.52
+     65        |    0.52
+     70        |    0.52
+     75        |    0.52
+     80        |    0.52
+     85        |    0.52
+     90        |    0.53
+     95        |    0.52
+     100       |    0.52
+     105       |    0.54
+     110       |    0.52
+     115       |    0.52
+
+Across this two minute reading, the average current draw is 12.7 / 24 = 0.5291666667 A. Across these two minutes, the user selected username, song, and played the game. After choosing a song, the WiFi is turned off to conserve power, but as we can see, the current remains relatively stable. The LEDs and phototransistors are now in use.
+
+With a battery capacity of 1500 mAH, our system would last for 1500 mAH / 529.1666667 mA = 2.83464567 hours. Luckily, most of our players thus far have either become tired, frustrated, or defeated after 10 minutes.
+
+Rock on!
+~ Team 77
+
+Shenanigans
+==============================================================
+![Figure [Shenanigans]: Joie is a mood.](./images/joie1.jpeg width = "400px")
+
+![Figure [Shenanigans]: Look how much fun she's having!](./images/joie2.jpeg width="400px")
+
+![Figure [Shenanigans]: Wild humans amazed by a functioning laser harp](./images/julia_and_tiff.jpg width="400px")
 
 
+<div id="center"> 
+Here's a video of the first time our project worked!!
 
+**Foul langugage & cringiness warning**
 
+<iframe src="https://player.vimeo.com/video/336712147" width="640" height="360" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>
+<p><a href="https://vimeo.com/336712147">Laser Harp Guitar Hero - 1st Trial</a> from <a href="https://vimeo.com/user35610578">Joie Le</a> on <a href="https://vimeo.com">Vimeo</a>.</p>
+"I can never top this; this is the peak of my career" - Tiffany
+</div>   
 
+<link rel="stylesheet" href="./final_project.css">
 <style class="fallback">body{visibility:hidden}</style><script>markdeepOptions={tocStyle:'none'};</script>
 <!-- Markdeep: --><script src="https://casual-effects.com/markdeep/latest/markdeep.min.js?" charset="utf-8"></script>
