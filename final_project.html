@@ -118,14 +118,32 @@ This library wraps up all components of a "laser string" on our harp into one cl
 - `void LEDControl(bool on)`
      - Toggles the LED on and off based on whether the boolean `on` is true or false, respectively
 - `bool broken()`
-     - dsf
+     - Calculates the voltage in decimals based on what the ESP reads from the phototransistor 
+     - If this voltage is above a threshold of 1.5V, we return that the laser has been broken; otherwise we return false
 - `void setRefTime(int time_ms)`
+     - Sets a correct reference time for when the laser should be broken (stored in `ref_hand_in_time`)
+     - Used so we can check user actions for accuracy
+     - Updated each time it's indicated by a RectNote that we should hit this specific LaserString
 - `void toScoreNote()`
+     - Sets a instance variable `scored` to false
+     - Tells us that the most recent user action has not been scored
 - `void userAction()`
-- `int getRef()`
+     - Marks the time in `actual_hand_in_time` whenever the user puts in their hand to break a laser
+     - This is only updated if the user has taken their hand out, then put it back in (time recorded on the transition from unbroken to broken)
 - `int scoreAction(int time_ms)`
+     - Compares the time difference between `ref_hand_in_time` and `actual_hand_in_time` to determine how accurate the user was
+     - A difference of 10 ms is "Perfect", adding 5 to the score
+     - A difference of 25 ms is "Great", adding 3 to the score
+     - A difference of 50 ms is "Good", adding 2 to the score
+     - A difference of 100 ms is "OK", adding 1 to the score
+     - Anything else is a "Miss", and doesn't impact score
 - `void displayFeedback(int time_ms, Adafruit_RA8875* tft, int text_loc)`
+     - Displays the feedback (the level of accuracy of the score--different possible described in `scoreAction` description)
+     - Written below where the RectNote object hits the white bar on the screen
+     - The feedback lingers for half a second before disappear, offering players the time to read what's written
 - `void reset()`
+     - Resets the class to how it is when initialized--no reference times or actual times for hand-in, no feedback, etc.
+     - Useful for when we want to restart the game to a state before gameplay has begun
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 RectNote Library
@@ -133,15 +151,38 @@ RectNote Library
 This library creates a rectangular note that displays on the TFT screen for every note in the beatmap and controls the movement of these rectangles down the screen. These rectangles signal a player when to hit a certain laser.
 
 - `RectNote()`
+     - An empty constructor for when we want to declare an array of RectNotes without initializing values yet
 - `RectNote(float start_time, float end_time, int dur, int wid, int x, uint16_t color)`
+     - Constructor which initializes various attributes of a RectNote object
+     - Start time and end time are passed, as well as duration `dur` are passed in at the time of creation depending on the object's corresponding note in the beatmap
+     - Width `wid` and starting `x` position, as well as color (should match LED) are all predetermined by which laser the RectNote corresponds to
+     - Widths are always 150 pixels
+     - The possible `x` positions in order are 50, 250, 450, 650
 - `void update(int screen_bottom, Adafruit_RA8875* tft)`
+     - Calls the functions `drawRect`, `updateLength`, and `updateYCoord` below to shift the RectNote forward one timestep so that it looks like it's moving down the screen
+     - Covers up old location, then redraws the rectangle in its updated location and with its updated dimensions
+     - Also determines whether a rectangle has passed out of bounds (i.e. the note it represents is out of bounds)
 - `bool toPress()`
+     - Returns whether the RectNote's corresponding laser should be broken
+     - Determined by whether the RectNote has hit the white boundary at the bottom
 - `bool passed()`
+     - If the rectangle is out of bounds, then we return true
+     - Otherwise return false
 - `float getStart()`
+     - Gives the `start_time` of the rectangle's corresponding note in the beatmap, noted when creating the RectNote
 - `float getEnd()`
-- `void updateLength(int screen_bottom)` (private)
-- `void updateYCoord(int screen_bottom)` (private)
+     - Gives the `end_time` of the rectangle's corresponding note in the beatmap, noted when creating the RectNote
+- `void updateLength(int screen_bottom)` (private)    
+     - Used when the RectNote has just started appearing on the screen and isn't fully displayed yet
+     - Also used when RectNote is at the bottom of the screen and is disappearing
+     - Appropriately grows/shrinks the length of the rectangle by 3 pixels to make it appear as if the rectangle is sliding in or out of the view of the screen
+- `void updateYCoord(int screen_bottom)` (private)     
+     - Used when the rectangle of RectNote is fully on the screen
+     - Move the entire rectangle down by 3 pixels by adding 3 to its y-coordinate
 - `void drawRect(Adafruit_RA8875* tft, bool old)` (private)
+     - Draws the rectangle using TFT method `fillRect`
+     - If `old` is set to true, we cover up the old locations rectangle by redrawing in black to match the background color
+     - Otherwise, we are drawing the rectangle in its new location
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 StartScreen Library

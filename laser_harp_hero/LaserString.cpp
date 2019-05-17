@@ -57,10 +57,6 @@ void LaserString::setRefTime(int time_ms)
     ref_hand_in_time = time_ms;
 }
 
-int LaserString::getRef()
-{
-    return actual_hand_in_time;
-}
 
 void LaserString::toScoreNote() 
 {
