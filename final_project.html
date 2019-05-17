@@ -422,6 +422,36 @@ Energy Management
 ==============================================================
 We initially faced challenges with power because our screen and MP3 player would not work at the same time. They would work perfectly when they ran separately, but when we ran code that used both modules, the ESP32 would constantly reboot, or one of the modules would not work correctly. We realized that this was likely an issue with power because the ESP32 would occasionally issue an error message that said that the brownout detector was triggered. Thus, we decided to conserve energy by turning off the ESP32's Wifi module during actual gameplay after making a get request for note information. The Wifi Module is not needed during gameplay, so this saved a considerable amount of energy and allowed the MP3 player and screen to work in harmony.
 
+ Time (seconds)| Current (A)
+---------------|------------
+     0         |    0.52   
+     5         |    0.60 
+     10        |    0.53
+     15        |    0.57
+     20        |    0.52
+     25        |    0.52
+     30        |    0.53
+     35        |    0.52
+     40        |    0.52
+     45        |    0.50
+     50        |    0.57
+     55        |    0.52
+     60        |    0.52
+     65        |    0.52
+     70        |    0.52
+     75        |    0.52
+     80        |    0.52
+     85        |    0.52
+     90        |    0.53
+     95        |    0.52
+     100       |    0.52
+     105       |    0.54
+     110       |    0.52
+     115       |    0.52
+
+Across this two minute reading, the average current draw is 12.7 / 24 = 0.5291666667 A. Across these two minutes, the user selected username, song, and played the game. After choosing a song, the WiFi is turned off to conserve power, but as we can see, the current remains relatively stable. The LEDs and phototransistors are now in use.
+
+With a battery capacity of 1500 mAH, our system would last for 1500 mAH / 529.1666667 mA = 2.83464567 hours. Luckily, most of our players thus far have either become tired, frustrated, or defeated after 10 minutes.
 
 
 <link rel="stylesheet" href="./final_project.css">
